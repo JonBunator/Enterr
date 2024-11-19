@@ -1,14 +1,23 @@
 from flask import Flask, jsonify, send_from_directory
+from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+dev_mode = os.getenv('FLASK_ENV') != 'production'
 app = Flask(__name__, static_folder='../frontend/dist')
+
+if dev_mode:
+    socketio = SocketIO(app, cors_allowed_origins=f"http://localhost:5173")
+else:
+    socketio = SocketIO(app)
+
 
 # Serve React frontend in production
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    if os.getenv('FLASK_ENV') != 'production':
+    if dev_mode:
         return jsonify({"message": "Frontend not served in debug mode. Start the frontend separately."})
 
     if path != '' and os.path.exists(os.path.join(app.static_folder, path)):
@@ -20,7 +29,11 @@ def serve_frontend(path):
 def users():
     return jsonify({"users": ["Alice", "Bob", "Charlie"]})
 
+# Handle a custom event from the client
+@socketio.on('custom_event')
+def handle_custom_event(data):
+    print(f"Received data: {data}")
+    emit('message', {'data': 'Hello from Flask!'})
+
 if __name__ == '__main__':
-    load_dotenv()
-    debug_mode = os.getenv('FLASK_ENV') != 'production'
-    app.run(debug=debug_mode, port = 8080)
+    socketio.run(app, debug=dev_mode, port=8080)

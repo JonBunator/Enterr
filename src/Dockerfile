@@ -19,4 +19,5 @@ COPY --from=frontend /app/frontend/dist /app/frontend/dist
 WORKDIR /app/backend
 RUN pip3 install --no-cache-dir -r requirements.txt
 EXPOSE 8080
-CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "-w", "4"]
+# Note: More than 1 worker is not supported with socketio
+CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "-w", "1", "--worker-class", "eventlet"]

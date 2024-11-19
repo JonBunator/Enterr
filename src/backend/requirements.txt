@@ -1,3 +1,5 @@
 Flask==3.1.0
+Flask-SocketIO==5.4.1
 python-dotenv==1.0.1
 gunicorn==23.0.0
+eventlet==0.38.0
