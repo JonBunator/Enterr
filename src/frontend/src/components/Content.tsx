@@ -1,33 +1,30 @@
-import { useEffect } from 'react'
 import axios from 'axios'
-import { useWebSocket } from './WebSocketProvider';
+import { useEffect } from 'react'
+import { useWebSocket } from './WebSocketProvider'
 
 export default function Content() {
-    const { emit, on } = useWebSocket();
-    
+  const { emit, on } = useWebSocket()
+
   const fetchAPI = async () => {
-    const response = await axios.get("/api/users");
-    console.log(response.data.users);
+    const response = await axios.get('/api/users')
+    // eslint-disable-next-line ts/no-unsafe-member-access
+    console.log(response.data.users)
   }
 
   useEffect(() => {
-    fetchAPI();
-  }, []);
+    fetchAPI().catch(console.error)
+  }, [])
 
   function handleClick() {
-    emit('custom_event', { message: 'Hello from React!' });
+    emit('custom_event', { message: 'Hello from React!' })
   }
 
   useEffect(() => {
     on('message', (data) => {
-      console.log(data);
-    });
-    emit('custom_event', { message: 'Hello from React!' });
-  }, [on, emit]);
+      console.log(data)
+    })
+    emit('custom_event', { message: 'Hello from React!' })
+  }, [on, emit])
 
-  return (
-        <button onClick={handleClick}>
-          Send message
-        </button>
-  )
+  return <button type="button" onClick={handleClick}>Send message</button>
 }

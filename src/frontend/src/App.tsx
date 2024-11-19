@@ -1,12 +1,11 @@
+import Content from './components/Content'
+import WebSocketProvider from './components/WebSocketProvider'
 import './App.css'
-import WebSocketProvider from './components/WebSocketProvider';
-import Content from './components/Content';
-
 
 export default function App() {
   return (
     <WebSocketProvider>
-      <Content/>
+      <Content />
     </WebSocketProvider>
   )
 }
