@@ -1,2 +1,6 @@
 venv
 .env
+.idea
+downloaded_files
+__pycache__/
+images

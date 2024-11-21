@@ -3,3 +3,6 @@ Flask-SocketIO==5.4.1
 python-dotenv==1.0.1
 gunicorn==23.0.0
 eventlet==0.38.0
+seleniumbase==4.32.12
+lxml==5.3.0
+PyAutoGUI==0.9.54
