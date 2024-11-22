@@ -1,14 +1,17 @@
-from dataclasses import dataclass
+from enum import Enum
 from seleniumbase import SB
+
+from database.database import ActionFailedDetails, ActionStatusCode
 from .find_form_automatically import find_login_automatically, XPaths
 
-class LoginStatusCode:
-    SUCCESS = 0
-    AUTOMATIC_FORM_DETECTION_FAILED = 1
-    USERNAME_FIELD_NOT_FOUND = 2
-    PASSWORD_FIELD_NOT_FOUND = 3
-    SUBMIT_BUTTON_NOT_FOUND = 4
-    LOGIN_FAILED = 5
+class LoginStatusCode(Enum):
+    SUCCESS = ActionStatusCode.SUCCESS
+    AUTOMATIC_FORM_DETECTION_FAILED = ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED
+    USERNAME_FIELD_NOT_FOUND = ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
+    PASSWORD_FIELD_NOT_FOUND = ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND
+    PIN_FIELD_NOT_FOUND = ActionFailedDetails.PIN_FIELD_NOT_FOUND
+    SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
+    FAILED = ActionStatusCode.FAILED
 
 def login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
     with SB(uc=True, ad_block=True, xvfb=True) as sb:
@@ -44,6 +47,6 @@ def login(url: str, username: str, password: str, x_paths: XPaths = None) -> Log
         
         if sb.cdp.get_current_url() == url:
             return LoginStatusCode.SUCCESS
-        return LoginStatusCode.LOGIN_FAILED
+        return LoginStatusCode.FAILED
 
             
