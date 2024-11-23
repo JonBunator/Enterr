@@ -1,13 +1,18 @@
+from abc import abstractmethod, ABC
 from functools import wraps
 from typing import Type, Callable, List
-
 from flask import jsonify
-from pydantic import BaseModel, ValidationError
-
+from pydantic import BaseModel
+from database.database import db
 from endpoints.models.api_response_model import ApiGetResponse
 
+class GetRequestBaseModel(BaseModel, ABC):
+    @staticmethod
+    @abstractmethod
+    def from_sql_model(data: db.Model) -> "GetRequestBaseModel":
+        pass
 
-def validate_get_request(response_model: Type[BaseModel]):
+def validate_get_request(response_model: Type[GetRequestBaseModel]):
     """
     A reusable decorator for handling GET requests, ensuring standardized error handling
     and response structure.

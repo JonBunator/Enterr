@@ -1,14 +1,10 @@
-from datetime import datetime, timedelta
-
-from database.database import init_db, Website, db, ActionInterval
+from database.database import init_db
 from flask import Flask, jsonify, send_from_directory
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
-
-from endpoints.decorators.get_request_validator import validate_get_request
-from endpoints.decorators.post_request_validator import validate_post_request
-from endpoints.models.website_model import AddWebsite, AddActionInterval, GetWebsite
+from endpoints.rest_endpoints import register_rest_endpoints
+from endpoints.webhook_endpoints import register_webhook_endpoints
 
 load_dotenv()
 dev_mode = os.getenv('FLASK_ENV') != 'production'
@@ -18,7 +14,6 @@ if dev_mode:
     socketio = SocketIO(app, cors_allowed_origins=f"http://localhost:5173")
 else:
     socketio = SocketIO(app)
-
 
 # Serve React frontend in production
 @app.route('/', defaults={'path': ''})
@@ -32,24 +27,8 @@ def serve_frontend(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-
-@app.route('/api/websites', methods=['GET'])
-@validate_get_request(GetWebsite)
-def get_websites():
-    return Website.query.all()
-
-@app.route('/api/websites/add', methods=['POST'])
-@validate_post_request(AddWebsite)
-def add_website(website_request: AddWebsite):
-        website = website_request.to_sql_model()
-        db.session.add(website)
-        db.session.commit()
-
-# Handle a custom event from the client
-@socketio.on('custom_event')
-def handle_custom_event(data):
-    print(f"Received data: {data}")
-    emit('message', {'data': 'Hello from Flask!'})
+register_rest_endpoints(app)
+register_webhook_endpoints(socketio)
 
 
 if __name__ == '__main__':
