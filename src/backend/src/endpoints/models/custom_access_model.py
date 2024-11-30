@@ -10,6 +10,23 @@ class AddCustomAccess(BaseModel):
     pin_xpath: Optional[str] = None
     submit_button_xpath: str
 
+class EditCustomAccess(BaseModel):
+    id: int
+    username_xpath: Optional[str] = None
+    password_xpath: Optional[str] = None
+    pin_xpath: Optional[str] = None
+    submit_button_xpath: Optional[str] = None
+
+    def edit_existing_model(self, existing_custom_access: CustomAccess) -> CustomAccess:
+        if self.username_xpath is not None:
+            existing_custom_access.username_xpath = self.username_xpath
+        if self.password_xpath is not None:
+            existing_custom_access.password_xpath = self.password_xpath
+        if self.pin_xpath is not None:
+            existing_custom_access.pin_xpath = self.pin_xpath
+        if self.submit_button_xpath is not None:
+            existing_custom_access.submit_button_xpath = self.submit_button_xpath
+        return existing_custom_access
 
 class GetCustomAccess(GetRequestBaseModel):
     id: int

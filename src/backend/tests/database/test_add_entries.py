@@ -19,6 +19,7 @@ def app():
 def create_website(dt: datetime) -> Website:
     return Website(
         url="https://example.com",
+        login_url="https://example.com/login",
         name="Example",
         username="user123",
         password="password123",
@@ -40,6 +41,7 @@ def test_website_entry_creation(app):
         website_in_db = Website.query.first()
         assert website_in_db is not None
         assert website_in_db.url == "https://example.com"
+        assert website_in_db.login_url == "https://example.com/login"
         assert website_in_db.name == "Example"
         assert website_in_db.username == "user123"
         assert website_in_db.password == "password123"
@@ -53,6 +55,7 @@ def test_website_entry_creation_null_values(app):
     with app.app_context():
         new_website = Website(
             url="https://example.com",
+            login_url="https://example.com/login",
             name="Example",
             username="user123",
             password="password123",

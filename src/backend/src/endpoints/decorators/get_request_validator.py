@@ -3,6 +3,8 @@ from functools import wraps
 from typing import Type, Callable, List
 from flask import jsonify
 from pydantic import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
+from http import HTTPStatus
 from database.database import db
 from endpoints.models.api_response_model import ApiGetResponse
 
@@ -35,12 +37,16 @@ def validate_get_request(response_model: Type[GetRequestBaseModel]):
 
                 # Prepare the success response
                 response = ApiGetResponse(success=True, message="Operation successful", data=response_data)
-                return jsonify(response.model_dump()), 200
+                return jsonify(response.model_dump()), HTTPStatus.OK
 
+            except SQLAlchemyError as e:
+                # In case of sql error
+                response = ApiGetResponse(success=False, message="SQL error", error=str(e))
+                return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
             except Exception as e:
                 # Handle general exceptions and return a 500 Internal Server Error response
                 response = ApiGetResponse(success=False, message="An error occurred", error=str(e))
-                return jsonify(response.model_dump()), 500
+                return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
 
         return wrapper
 

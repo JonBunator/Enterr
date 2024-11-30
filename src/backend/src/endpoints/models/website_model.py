@@ -4,21 +4,31 @@ from pydantic import BaseModel
 
 from database.database import Website, ActionInterval
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval
-from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess
+from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
+from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
+from utils.utils import edit_timedelta, timedelta_to_parts
 
+
+class ExpirationInterval(BaseModel):
+    days: Optional[int] = None
+    hours: Optional[int] = None
+    minutes: Optional[int] = None
 
 class AddWebsite(BaseModel):
     url: str
+    login_url: str
     name: str
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[timedelta] = None
+    expiration_interval: Optional[ExpirationInterval] = None
     custom_access: Optional[AddCustomAccess] = None
     action_interval: Optional[AddActionInterval] = None
 
     def to_sql_model(self) -> Website:
+        expiration_interval = None
+        if self.expiration_interval is not None:
+            expiration_interval = timedelta(days=self.expiration_interval.days, hours=self.expiration_interval.hours, minutes=self.expiration_interval.minutes)
         website = Website(
             url=self.url,
             name=self.name,
@@ -26,7 +36,7 @@ class AddWebsite(BaseModel):
             password=self.password,
             pin=self.pin,
             added_at=datetime.now(),
-            expiration_interval=self.expiration_interval,
+            expiration_interval=expiration_interval,
         )
         if self.action_interval is not None:
             ai: AddActionInterval = self.action_interval
@@ -41,28 +51,68 @@ class AddWebsite(BaseModel):
             website.action_interval = action_interval
         return website
 
+class EditWebsite(BaseModel):
+    id: int
+    url: Optional[str] = None
+    login_url: Optional[str] = None
+    name: Optional[str] = None
+    username:Optional[str] = None
+    password: Optional[str] = None
+    pin: Optional[str] = None
+    expiration_interval: Optional[ExpirationInterval] = None
+    custom_access: Optional[EditCustomAccess] = None
+    action_interval: Optional[EditActionInterval] = None
+
+    def edit_existing_model(self, existing_website: Website) -> Website:
+        if self.url is not None:
+            existing_website.url = self.url
+        if self.login_url is not None:
+            existing_website.login_url = self.login_url
+        if self.name is not None:
+            existing_website.name = self.name
+        if self.username is not None:
+            existing_website.username = self.username
+        if self.password is not None:
+            existing_website.password = self.password
+        if self.pin is not None:
+            existing_website.pin = self.pin
+        if self.expiration_interval is not None:
+            existing_website.expiration_interval = edit_timedelta(
+                existing_website.expiration_interval,
+                days=self.expiration_interval.days,
+                hours=self.expiration_interval.hours,
+                minutes=self.expiration_interval.minutes)
+        if self.custom_access is not None:
+            existing_website.custom_access = self.custom_access.edit_existing_model(existing_website.custom_access)
+        if self.action_interval is not None:
+            existing_website.action_interval = self.action_interval.edit_existing_model(existing_website.action_interval)
+
+        return existing_website
 
 class GetWebsite(GetRequestBaseModel):
     id: int
     url: str
+    login_url: str
     name: str
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[str] = None
+    expiration_interval: Optional[ExpirationInterval] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
 
     @staticmethod
     def from_sql_model(website: Website) -> "GetWebsite":
+        days, hours, minutes, seconds = timedelta_to_parts(website.expiration_interval)
         return GetWebsite(
             id=website.id,
             url=website.url,
+            login_url=website.login_url,
             name=website.name,
             username=website.username,
             password=website.password,
             pin=website.pin,
-            expiration_interval=str(website.expiration_interval),
+            expiration_interval=ExpirationInterval(days=days, hours=hours, minutes=minutes),
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,
         )

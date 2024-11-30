@@ -3,7 +3,8 @@ from flask import request, jsonify
 from pydantic import ValidationError
 from typing import Callable, Type
 from pydantic import BaseModel
-
+from sqlalchemy.exc import SQLAlchemyError
+from http import HTTPStatus
 from endpoints.models.api_response_model import ApiPostResponse
 
 
@@ -28,17 +29,20 @@ def validate_post_request(request_model: Type[BaseModel]):
 
                 # Return a 200 OK status code
                 response = ApiPostResponse(success=True, message="Operation successful")
-                return jsonify(response.model_dump()), 200
+                return jsonify(response.model_dump()), HTTPStatus.OK
 
             except ValidationError as e:
                 # In case of validation errors, return a 400 Bad Request response
                 response = ApiPostResponse(success=False, message="Invalid request data", error=str(e))
-                return jsonify(response.model_dump()), 400
-
-            except Exception as e:
+                return jsonify(response.model_dump()), HTTPStatus.BAD_REQUEST
+            except SQLAlchemyError as e:
+                # In case of sql error
+                response = ApiPostResponse(success=False, message="SQL error", error=str(e))
+                return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
+            except  Exception as e:
                 # Handle general exceptions and return a 500 Internal Server Error response
                 response = ApiPostResponse(success=False, message="An error occurred", error=str(e))
-                return jsonify(response.model_dump()), 500
+                return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
 
         return wrapper
 
