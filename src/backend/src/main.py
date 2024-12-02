@@ -3,8 +3,10 @@ from flask import Flask, jsonify, send_from_directory
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
+
 from endpoints.rest_endpoints import register_rest_endpoints
 from endpoints.webhook_endpoints import register_webhook_endpoints
+from execution.scheduler import Scheduler
 
 load_dotenv()
 dev_mode = os.getenv('FLASK_ENV') != 'production'
@@ -32,7 +34,8 @@ register_webhook_endpoints(socketio)
 
 
 if __name__ == '__main__':
-    init_db(app)
-    socketio.run(app, debug=dev_mode, port=8080)
-    #response = login("https://www.uicore.co/framework/elements/user-login/", "test@mail.com", "password", x_paths=None)
+    with app.app_context():
+        init_db(app)
+        Scheduler(app=app).start()
+        socketio.run(app, debug=dev_mode, port=8080, use_reloader=False)
     #print(response)

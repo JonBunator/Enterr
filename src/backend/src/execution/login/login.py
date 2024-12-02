@@ -13,6 +13,10 @@ class LoginStatusCode(Enum):
     SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
     FAILED = ActionStatusCode.FAILED
 
+def random_login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
+    print("random login")
+    return LoginStatusCode.SUCCESS
+
 def login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
     with SB(uc=True, ad_block=True, xvfb=True) as sb:
         sb.activate_cdp_mode(url)

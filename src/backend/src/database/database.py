@@ -1,19 +1,20 @@
 from datetime import datetime, timedelta
+from random import randint
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from enum import Enum
 
-db = SQLAlchemy()
+_db = SQLAlchemy()
 
 def init_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-    db.init_app(app)
+    _db.init_app(app)
     with app.app_context():
-        db.create_all()
+        _db.create_all()
 
-class Website(db.Model):
+class Website(_db.Model):
     __tablename__ = "website"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -36,7 +37,7 @@ class Website(db.Model):
     # Relationship to ActionInterval
     action_interval: Mapped["ActionInterval"] = relationship()
 
-class CustomAccess(db.Model):
+class CustomAccess(_db.Model):
     __tablename__ = "custom_access"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -61,8 +62,7 @@ class ActionFailedDetails(Enum):
     PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
     SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
 
-
-class ActionHistory(db.Model):
+class ActionHistory(_db.Model):
     __tablename__ = "action_history"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -71,9 +71,9 @@ class ActionHistory(db.Model):
     execution_status: Mapped[Optional[ActionStatusCode]] = mapped_column(nullable=False)
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
 
-    website_id: Mapped[int] = mapped_column(db.ForeignKey("website.id"), nullable=False)
+    website_id: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
 
-class ActionInterval(db.Model):
+class ActionInterval(_db.Model):
     __tablename__ = "action_interval"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -83,4 +83,19 @@ class ActionInterval(db.Model):
     interval_hours_max: Mapped[int] = mapped_column(nullable=False)
 
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
+
+    def get_random_action_datetime(self) -> datetime:
+        """
+        Gets random datetime between interval_start to interval_end date and interval_hours_min to interval_hours_max hours.
+        @return: Random datetime.
+        """
+        delta = self.interval_end - self.interval_start
+        random_delta = timedelta(seconds=randint(0, int(delta.total_seconds())))
+        random_date = (datetime.now() + self.interval_start + random_delta).date()
+
+        random_hour = randint(self.interval_hours_min, self.interval_hours_max)
+        random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(hours=random_hour)
+        return random_datetime
+
+
 

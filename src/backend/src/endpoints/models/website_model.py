@@ -9,10 +9,36 @@ from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAcces
 from utils.utils import edit_timedelta, timedelta_to_parts
 
 
-class ExpirationInterval(BaseModel):
+class TimeDelta(BaseModel):
     days: Optional[int] = None
     hours: Optional[int] = None
     minutes: Optional[int] = None
+
+    @staticmethod
+    def from_timedelta(td: timedelta) -> "TimeDelta":
+        days, hours, minutes, seconds =  timedelta_to_parts(td)
+        return TimeDelta(
+            days=days,
+            hours=hours,
+            minutes=minutes
+        )
+
+class DateTime(BaseModel):
+    day: Optional[int] = None
+    month: Optional[int] = None
+    year: Optional[int] = None
+    hour: Optional[int] = None
+    minute: Optional[int] = None
+
+    @staticmethod
+    def from_datetime(dt: datetime) -> "DateTime":
+        return DateTime(
+            day=dt.day,
+            month=dt.month,
+            year=dt.year,
+            hour=dt.hour,
+            minute=dt.minute
+        )
 
 class AddWebsite(BaseModel):
     url: str
@@ -21,7 +47,7 @@ class AddWebsite(BaseModel):
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[ExpirationInterval] = None
+    expiration_interval: Optional[TimeDelta] = None
     custom_access: Optional[AddCustomAccess] = None
     action_interval: Optional[AddActionInterval] = None
 
@@ -31,6 +57,7 @@ class AddWebsite(BaseModel):
             expiration_interval = timedelta(days=self.expiration_interval.days, hours=self.expiration_interval.hours, minutes=self.expiration_interval.minutes)
         website = Website(
             url=self.url,
+            login_url=self.login_url,
             name=self.name,
             username=self.username,
             password=self.password,
@@ -59,7 +86,7 @@ class EditWebsite(BaseModel):
     username:Optional[str] = None
     password: Optional[str] = None
     pin: Optional[str] = None
-    expiration_interval: Optional[ExpirationInterval] = None
+    expiration_interval: Optional[TimeDelta] = None
     custom_access: Optional[EditCustomAccess] = None
     action_interval: Optional[EditActionInterval] = None
 
@@ -97,13 +124,13 @@ class GetWebsite(GetRequestBaseModel):
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[ExpirationInterval] = None
+    expiration_interval: Optional[TimeDelta] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
+    next_schedule: Optional[DateTime] = None
 
     @staticmethod
     def from_sql_model(website: Website) -> "GetWebsite":
-        days, hours, minutes, seconds = timedelta_to_parts(website.expiration_interval)
         return GetWebsite(
             id=website.id,
             url=website.url,
@@ -112,7 +139,8 @@ class GetWebsite(GetRequestBaseModel):
             username=website.username,
             password=website.password,
             pin=website.pin,
-            expiration_interval=ExpirationInterval(days=days, hours=hours, minutes=minutes),
+            expiration_interval=TimeDelta.from_timedelta(website.expiration_interval),
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,
+            next_schedule=DateTime.from_datetime(website.next_schedule) if website.next_schedule else None,
         )

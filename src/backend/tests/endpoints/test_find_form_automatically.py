@@ -2,7 +2,7 @@ import os
 import pytest
 from lxml.etree import HTML
 
-from endpoints.find_form_automatically import find_login_automatically
+from execution.login.find_form_automatically import find_login_automatically
 
 
 # Gather the file names to pass as parameters

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from flask import Flask
-from database.database import Website, db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
+from database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
     ActionInterval
 
 import pytest
@@ -11,10 +11,10 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     with app.app_context():
-        db.init_app(app)
-        db.create_all()
+        _db.init_app(app)
+        _db.create_all()
         yield app
-        db.drop_all()
+        _db.drop_all()
 
 def create_website(dt: datetime) -> Website:
     return Website(
@@ -35,8 +35,8 @@ def test_website_entry_creation(app):
         now = datetime.now()
         new_website = create_website(now)
 
-        db.session.add(new_website)
-        db.session.commit()
+        _db.session.add(new_website)
+        _db.session.commit()
 
         website_in_db = Website.query.first()
         assert website_in_db is not None
@@ -61,8 +61,8 @@ def test_website_entry_creation_null_values(app):
             password="password123",
             added_at=datetime.now()
         )
-        db.session.add(new_website)
-        db.session.commit()
+        _db.session.add(new_website)
+        _db.session.commit()
 
         website_in_db = Website.query.first()
 
@@ -83,8 +83,8 @@ def test_website_with_custom_accesses(app):
         )
 
         website.custom_access = custom_access
-        db.session.add(website)
-        db.session.commit()
+        _db.session.add(website)
+        _db.session.commit()
 
         retrieved_website = Website.query.one()
 
@@ -115,8 +115,8 @@ def test_website_with_action_history(app):
         )
 
         website.action_histories.extend([action_history_1, action_history_2])
-        db.session.add(website)
-        db.session.commit()
+        _db.session.add(website)
+        _db.session.commit()
 
         retrieved_website = Website.query.filter_by(name="Example").one()
 
@@ -148,8 +148,8 @@ def test_website_with_action_intervals(app):
         )
 
         website.action_interval = interval
-        db.session.add(website)
-        db.session.commit()
+        _db.session.add(website)
+        _db.session.commit()
 
         retrieved_website = Website.query.filter_by(name="Example").one()
 

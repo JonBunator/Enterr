@@ -5,13 +5,13 @@ from flask import jsonify
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from http import HTTPStatus
-from database.database import db
+from database.database import _db
 from endpoints.models.api_response_model import ApiGetResponse
 
 class GetRequestBaseModel(BaseModel, ABC):
     @staticmethod
     @abstractmethod
-    def from_sql_model(data: db.Model) -> "GetRequestBaseModel":
+    def from_sql_model(data: _db.Model) -> "GetRequestBaseModel":
         pass
 
 def validate_get_request(response_model: Type[GetRequestBaseModel]):
