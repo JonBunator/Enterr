@@ -12,6 +12,7 @@ class IDataBase:
     @staticmethod
     def add_website(request: AddWebsite):
         website = request.to_sql_model()
+        website.next_schedule = website.action_interval.get_random_action_datetime()
         db.session.add(website)
         db.session.commit()
 

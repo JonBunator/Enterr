@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 from flask import Flask
 from database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
@@ -139,12 +140,12 @@ def test_website_with_action_intervals(app):
     """Test that ActionInterval objects are correctly added to a Website."""
     with app.app_context():
         website = create_website(datetime.now())
-
+        random.seed(1)
         interval = ActionInterval(
-            interval_start=timedelta(hours=8),
-            interval_end=timedelta(hours=12),
-            interval_hours_min=2,
-            interval_hours_max=4,
+            date_minutes_start=1440,
+            date_minutes_end=1440,
+            allowed_time_minutes_start=600,
+            allowed_time_minutes_end=660,
         )
 
         website.action_interval = interval
@@ -156,7 +157,7 @@ def test_website_with_action_intervals(app):
         assert retrieved_website is not None
 
         interval = retrieved_website.action_interval
-        assert interval.interval_start == timedelta(hours=8)
-        assert interval.interval_end == timedelta(hours=12)
-        assert interval.interval_hours_min == 2
-        assert interval.interval_hours_max == 4
+        assert interval.date_minutes_start == 1440
+        assert interval.date_minutes_end == 1440
+        assert interval.allowed_time_minutes_start == 600
+        assert interval.allowed_time_minutes_end == 660

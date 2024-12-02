@@ -58,10 +58,7 @@ class Scheduler:
                     username=XPath(access.username_xpath),
                     password=XPath(access.password_xpath),
                     submit_button=XPath(access.submit_button_xpath))
-            if website.next_schedule is not None:
                 action_time = website.next_schedule
-            else:
-                action_time = website.action_interval.get_random_action_datetime()
                 IDataBase.schedule_website_login(website, action_time)
             self.scheduler.add_job(
                 login_task,

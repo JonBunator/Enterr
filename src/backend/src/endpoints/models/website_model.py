@@ -66,16 +66,7 @@ class AddWebsite(BaseModel):
             expiration_interval=expiration_interval,
         )
         if self.action_interval is not None:
-            ai: AddActionInterval = self.action_interval
-            action_interval = ActionInterval(
-                interval_start=timedelta(days=ai.interval_start_days, hours=ai.interval_start_hours,
-                                         minutes=ai.interval_start_minutes),
-                interval_end=timedelta(days=ai.interval_end_days, hours=ai.interval_end_hours,
-                                       minutes=ai.interval_end_minutes),
-                interval_hours_min=ai.interval_hours_min,
-                interval_hours_max=ai.interval_hours_max,
-            )
-            website.action_interval = action_interval
+            website.action_interval = self.action_interval.to_sql_model()
         return website
 
 class EditWebsite(BaseModel):

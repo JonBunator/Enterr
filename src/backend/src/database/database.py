@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import ForeignKey
 from enum import Enum
 
@@ -77,24 +77,51 @@ class ActionInterval(_db.Model):
     __tablename__ = "action_interval"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    interval_start: Mapped[timedelta] = mapped_column(nullable=False)
-    interval_end: Mapped[timedelta] = mapped_column(nullable=False)
-    interval_hours_min: Mapped[int] = mapped_column(nullable=False)
-    interval_hours_max: Mapped[int] = mapped_column(nullable=False)
+    date_minutes_start: Mapped[int] = mapped_column(nullable=False)
+    date_minutes_end: Mapped[int] = mapped_column(nullable=False)
+    allowed_time_minutes_start: Mapped[int] = mapped_column(nullable=False)
+    allowed_time_minutes_end: Mapped[int] = mapped_column(nullable=False)
 
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
+    def __init__(self, date_minutes_start, date_minutes_end, allowed_time_minutes_start, allowed_time_minutes_end):
+        self.date_minutes_start = date_minutes_start
+        self.date_minutes_end = date_minutes_end
+        self.allowed_time_minutes_start = allowed_time_minutes_start
+        self.allowed_time_minutes_end = allowed_time_minutes_end
+
+        self.validate_date_range()
+
+    def validate_date_range(self):
+        """
+        Custom validation to ensure that date_minutes_start and date_minutes_end are
+        valid according to allowed_time_minutes_start and allowed_time_minutes_end.
+        """
+        if self.allowed_time_minutes_start == 0 and self.allowed_time_minutes_end == 1440:
+            # If allowed_time_minutes_start = 0 and allowed_time_minutes_end = 1440, allow any value
+            return
+        else:
+            # Otherwise, check if the value is a multiple of 1440 (i.e., a full day in minutes)
+            if self.date_minutes_start % 1440 != 0:
+                raise ValueError(f"date_minutes_start must be a multiple of 1440 minutes.")
+            if self.date_minutes_end % 1440 != 0:
+                raise ValueError(f"date_minutes_end must be a multiple of 1440 minutes.")
+
+
     def get_random_action_datetime(self) -> datetime:
         """
-        Gets random datetime between interval_start to interval_end date and interval_hours_min to interval_hours_max hours.
+        Gets random datetime between interval_minutes_start to interval_minutes_end date offset
+        and interval_minutes_min to interval_minutes_max time offset.
         @return: Random datetime.
         """
-        delta = self.interval_end - self.interval_start
-        random_delta = timedelta(seconds=randint(0, int(delta.total_seconds())))
-        random_date = (datetime.now() + self.interval_start + random_delta).date()
 
-        random_hour = randint(self.interval_hours_min, self.interval_hours_max)
-        random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(hours=random_hour)
+        random_date_delta = randint(self.date_minutes_start, self.date_minutes_end)
+        random_date = datetime.now() + timedelta(minutes=random_date_delta)
+        if self.date_minutes_start % 1440 == 0 and self.date_minutes_end % 1440 == 0:
+            random_time = randint(self.allowed_time_minutes_start, self.allowed_time_minutes_end)
+            random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(minutes=random_time)
+        else:
+            random_datetime = random_date
         return random_datetime
 
 

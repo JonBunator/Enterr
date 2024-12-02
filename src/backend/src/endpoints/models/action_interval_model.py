@@ -1,74 +1,51 @@
-from datetime import timedelta
 from typing import Optional
-
 from pydantic import BaseModel
 from database.database import ActionInterval
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from utils.utils import edit_timedelta
 
 
 class AddActionInterval(BaseModel):
-    interval_start_days: int = 0
-    interval_start_hours: int = 0
-    interval_start_minutes: int = 0
-    interval_end_days: int = 0
-    interval_end_hours: int = 0
-    interval_end_minutes: int = 0
-    interval_hours_min: int = 0
-    interval_hours_max: int = 24
+    date_minutes_start: int = 0
+    date_minutes_end: int = 0
+    allowed_time_minutes_start: int = 0
+    allowed_time_minutes_end: int = 0
+
+    def to_sql_model(self) -> ActionInterval:
+        return ActionInterval(date_minutes_start=self.date_minutes_start,
+                              date_minutes_end=self.date_minutes_end,
+                              allowed_time_minutes_start=self.allowed_time_minutes_start,
+                              allowed_time_minutes_end=self.allowed_time_minutes_end)
 
 class EditActionInterval(BaseModel):
-    interval_start_days: Optional[int] = None
-    interval_start_hours: Optional[int] = None
-    interval_start_minutes: Optional[int] = None
-    interval_end_days: Optional[int] = None
-    interval_end_hours: Optional[int] = None
-    interval_end_minutes: Optional[int] = None
-    interval_hours_min: Optional[int] = None
-    interval_hours_max: Optional[int] = None
+    date_minutes_start: Optional[int] = None
+    date_minutes_end: Optional[int] = None
+    allowed_time_minutes_start: Optional[int] = None
+    allowed_time_minutes_end: Optional[int] = None
 
     def edit_existing_model(self, existing_action_interval: ActionInterval) -> ActionInterval:
-        existing_action_interval.interval_start = edit_timedelta(existing_action_interval.interval_start, self.interval_start_days, self.interval_start_hours, self.interval_start_minutes)
-        existing_action_interval.interval_end = edit_timedelta(existing_action_interval.interval_end, self.interval_end_days, self.interval_end_hours, self.interval_end_minutes)
-
-        if self.interval_hours_min is not None:
-            existing_action_interval.interval_hours_min = self.interval_hours_min
-        if self.interval_hours_max is not None:
-            existing_action_interval.interval_hours_max = self.interval_hours_max
-
+        if self.date_minutes_start is not None:
+            existing_action_interval.date_minutes_start = self.date_minutes_start
+        if self.date_minutes_end is not None:
+            existing_action_interval.date_minutes_end = self.date_minutes_end
+        if self.allowed_time_minutes_start is not None:
+            existing_action_interval.allowed_time_minutes_start = self.allowed_time_minutes_start
+        if self.allowed_time_minutes_end is not None:
+            existing_action_interval.allowed_time_minutes_end = self.allowed_time_minutes_end
         return existing_action_interval
 
 class GetActionInterval(GetRequestBaseModel):
     id: int
-    interval_start_days: int
-    interval_start_hours: int
-    interval_start_minutes: int
-    interval_end_days: int
-    interval_end_hours: int
-    interval_end_minutes: int
-    interval_hours_min: int
-    interval_hours_max: int
+    date_minutes_start: int
+    date_minutes_end: int
+    allowed_time_minutes_start: int
+    allowed_time_minutes_end: int
 
     @staticmethod
     def from_sql_model(action_interval: ActionInterval) -> "GetActionInterval":
-        interval_start_days = action_interval.interval_start.days
-        interval_start_seconds = action_interval.interval_start.seconds
-        interval_start_hours, remainder = divmod(interval_start_seconds, 3600)
-        interval_start_minutes = remainder // 60
-
-        interval_end_days = action_interval.interval_end.days
-        interval_end_seconds = action_interval.interval_end.seconds
-        interval_end_hours, remainder = divmod(interval_end_seconds, 3600)
-        interval_end_minutes = remainder // 60
-
         return GetActionInterval(
             id=action_interval.id,
-            interval_start_days=interval_start_days,
-            interval_start_hours=interval_start_hours,
-            interval_start_minutes=interval_start_minutes,
-            interval_end_days=interval_end_days,
-            interval_end_hours=interval_end_hours,
-            interval_end_minutes=interval_end_minutes,
-            interval_hours_min=action_interval.interval_hours_min,
-            interval_hours_max=action_interval.interval_hours_max,
+            date_minutes_start=action_interval.date_minutes_start,
+            date_minutes_end=action_interval.date_minutes_end,
+            allowed_time_minutes_start=action_interval.allowed_time_minutes_start,
+            allowed_time_minutes_end=action_interval.allowed_time_minutes_end
         )
