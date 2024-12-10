@@ -19,7 +19,7 @@ def random_login(url: str, username: str, password: str, x_paths: XPaths = None)
     print("random login finished", url)
     return LoginStatusCode.SUCCESS
 
-def login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
+def login(url: str, success_url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
     with SB(uc=True, ad_block=True, xvfb=True) as sb:
         sb.activate_cdp_mode(url)
         sb.uc_gui_click_captcha()
@@ -45,7 +45,7 @@ def login(url: str, username: str, password: str, x_paths: XPaths = None) -> Log
         
         sb.cdp.save_screenshot("./images/bscan.png")
         
-        if sb.cdp.get_current_url() == url:
+        if sb.cdp.get_current_url() == success_url:
             return LoginStatusCode.SUCCESS
         return LoginStatusCode.FAILED
 

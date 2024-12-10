@@ -27,6 +27,7 @@ class Scheduler:
             website = IDataBase.get_website(website_id)
             start_time = datetime.now()
             url = website.url
+            success_url = website.success_url
             username = website.username
             password = website.password
             x_paths = None
@@ -38,7 +39,7 @@ class Scheduler:
                     submit_button=XPath(access.submit_button_xpath))
 
             # login
-            status = login(url=url, username=username, password=password, x_paths=x_paths)
+            status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths)
 
             executions_status = LoginStatusCode.SUCCESS
             failed_details = None

@@ -42,7 +42,7 @@ class DateTime(BaseModel):
 
 class AddWebsite(BaseModel):
     url: str
-    login_url: str
+    success_url: str
     name: str
     username: str
     password: str
@@ -57,7 +57,7 @@ class AddWebsite(BaseModel):
             expiration_interval = timedelta(days=self.expiration_interval.days, hours=self.expiration_interval.hours, minutes=self.expiration_interval.minutes)
         website = Website(
             url=self.url,
-            login_url=self.login_url,
+            success_url=self.success_url,
             name=self.name,
             username=self.username,
             password=self.password,
@@ -72,7 +72,7 @@ class AddWebsite(BaseModel):
 class EditWebsite(BaseModel):
     id: int
     url: Optional[str] = None
-    login_url: Optional[str] = None
+    success_url: Optional[str] = None
     name: Optional[str] = None
     username:Optional[str] = None
     password: Optional[str] = None
@@ -84,8 +84,8 @@ class EditWebsite(BaseModel):
     def edit_existing_model(self, existing_website: Website) -> Website:
         if self.url is not None:
             existing_website.url = self.url
-        if self.login_url is not None:
-            existing_website.login_url = self.login_url
+        if self.success_url is not None:
+            existing_website.success_url = self.success_url
         if self.name is not None:
             existing_website.name = self.name
         if self.username is not None:
@@ -110,7 +110,7 @@ class EditWebsite(BaseModel):
 class GetWebsite(GetRequestBaseModel):
     id: int
     url: str
-    login_url: str
+    success_url: str
     name: str
     username: str
     password: str
@@ -125,7 +125,7 @@ class GetWebsite(GetRequestBaseModel):
         return GetWebsite(
             id=website.id,
             url=website.url,
-            login_url=website.login_url,
+            success_url=website.success_url,
             name=website.name,
             username=website.username,
             password=website.password,

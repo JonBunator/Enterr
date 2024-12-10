@@ -19,7 +19,7 @@ class Website(_db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     url: Mapped[str] = mapped_column(nullable=False)
-    login_url: Mapped[str] = mapped_column(nullable=False)
+    success_url: Mapped[str] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(nullable=False)
     username: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
@@ -68,7 +68,7 @@ class ActionHistory(_db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     execution_started: Mapped[datetime] = mapped_column(nullable=False)
     execution_ended: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    execution_status: Mapped[Optional[ActionStatusCode]] = mapped_column(nullable=False)
+    execution_status: Mapped[ActionStatusCode] = mapped_column(nullable=False)
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
