@@ -1,21 +1,22 @@
 # ------------------- BUILD BACKEND -------------------
-FROM python:3.9-slim AS backend
+FROM python:3.13-slim AS backend
 WORKDIR /app/backend
 COPY backend/ .
 RUN pip3 install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # ------------------- BUILD FRONTEND -------------------
-FROM node:18 AS frontend
+FROM node:20 AS frontend
 WORKDIR /app/frontend
 COPY frontend/ .
 RUN npm install
 RUN npm run build
 
 # ------------ COMBINE BACKEND AND FRONTEND ------------
-FROM python:3.9-slim
+FROM python:3.13-slim
 WORKDIR /app
 COPY --from=backend /app/backend /app/backend
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
+ENV PYTHONPATH=/app/backend/src:$PYTHONPATH
 WORKDIR /app/backend
 RUN pip3 install --no-cache-dir -r requirements.txt
 EXPOSE 8080

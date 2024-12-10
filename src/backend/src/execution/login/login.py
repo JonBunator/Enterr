@@ -12,9 +12,11 @@ class LoginStatusCode(Enum):
     PIN_FIELD_NOT_FOUND = ActionFailedDetails.PIN_FIELD_NOT_FOUND
     SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
     FAILED = ActionStatusCode.FAILED
-
+import time
 def random_login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
-    print("random login")
+    print("random login", url)
+    time.sleep(10)
+    print("random login finished", url)
     return LoginStatusCode.SUCCESS
 
 def login(url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
@@ -28,12 +30,6 @@ def login(url: str, username: str, password: str, x_paths: XPaths = None) -> Log
 
             if x_paths is None:
                 return LoginStatusCode.AUTOMATIC_FORM_DETECTION_FAILED
-            print(x_paths.username)
-            print("\n")
-            print(x_paths.password)
-            print("\n")
-            print(x_paths.submit_button)
-            print("\n")
     
         if sb.cdp.send_keys(x_paths.username, username) == False:
             return LoginStatusCode.USERNAME_FIELD_NOT_FOUND

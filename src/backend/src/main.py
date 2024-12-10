@@ -4,17 +4,19 @@ from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
 
+from database.database_events import register_database_events
 from endpoints.rest_endpoints import register_rest_endpoints
 from endpoints.webhook_endpoints import register_webhook_endpoints
 from execution.scheduler import Scheduler
 
 load_dotenv()
 dev_mode = os.getenv('FLASK_ENV') != 'production'
-app = Flask(__name__, static_folder='../frontend/dist')
 
 if dev_mode:
+    app = Flask(__name__, static_folder='../../frontend/dist')
     socketio = SocketIO(app, cors_allowed_origins=f"http://localhost:5173")
 else:
+    app = Flask(__name__)
     socketio = SocketIO(app)
 
 # Serve React frontend in production
@@ -36,6 +38,8 @@ register_webhook_endpoints(socketio)
 if __name__ == '__main__':
     with app.app_context():
         init_db(app)
-        Scheduler(app=app).start()
+        scheduler = Scheduler(app=app)
+        register_database_events(scheduler=scheduler)
+        scheduler.start()
         socketio.run(app, debug=dev_mode, port=8080, use_reloader=False)
     #print(response)

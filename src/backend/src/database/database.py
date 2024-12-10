@@ -46,7 +46,7 @@ class CustomAccess(_db.Model):
     pin_xpath: Mapped[Optional[str]] = mapped_column(nullable=True)
     submit_button_xpath: Mapped[str] = mapped_column(nullable=False)
 
-    website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
+    website: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
 
 class ActionStatusCode(Enum):
@@ -71,7 +71,7 @@ class ActionHistory(_db.Model):
     execution_status: Mapped[Optional[ActionStatusCode]] = mapped_column(nullable=False)
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
 
-    website_id: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
+    website: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
 
 class ActionInterval(_db.Model):
     __tablename__ = "action_interval"
