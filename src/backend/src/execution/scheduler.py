@@ -6,7 +6,7 @@ from flask import Flask
 from database.change_database import IDataBase
 from database.database import ActionHistory, Website
 from execution.login.find_form_automatically import XPaths, XPath
-from execution.login.login import LoginStatusCode, random_login, login
+from execution.login.login import LoginStatusCode, login
 
 
 class Scheduler:

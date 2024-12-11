@@ -9,9 +9,9 @@ from enum import Enum
 _db = SQLAlchemy()
 
 def init_db(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-    _db.init_app(app)
     with app.app_context():
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+        _db.init_app(app)
         _db.create_all()
 
 class Website(_db.Model):

@@ -13,10 +13,10 @@ load_dotenv()
 dev_mode = os.getenv('FLASK_ENV') != 'production'
 
 if dev_mode:
-    app = Flask(__name__, static_folder='../../frontend/dist')
+    app = Flask(__name__)
     socketio = SocketIO(app, cors_allowed_origins=f"http://localhost:5173")
 else:
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../../frontend/dist')
     socketio = SocketIO(app)
 
 # Serve React frontend in production
@@ -33,13 +33,10 @@ def serve_frontend(path):
 
 register_rest_endpoints(app)
 register_webhook_endpoints(socketio)
-
-
-if __name__ == '__main__':
-    with app.app_context():
-        init_db(app)
-        scheduler = Scheduler(app=app)
-        register_database_events(scheduler=scheduler)
-        scheduler.start()
-        socketio.run(app, debug=dev_mode, port=8080, use_reloader=False)
-    #print(response)
+with app.app_context():
+    init_db(app)
+    scheduler = Scheduler(app=app)
+    register_database_events(scheduler=scheduler)
+    scheduler.start()
+    if dev_mode: 
+        socketio.run(app, debug=True, port=8080, use_reloader=False)
