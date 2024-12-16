@@ -1,0 +1,44 @@
+.activity {
+  border: 1px solid #515151;
+
+  .activity-card.MuiCardContent-root {
+    padding: 0;
+  }
+
+  .activity-table {
+    td {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+  }
+
+  .activity-status {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+
+    .next-run {
+      line-height: 0.9rem;
+    }
+
+    .expiration {
+      font-weight: 500;
+      line-height: 0.9rem;
+    }
+  }
+
+  .login-history {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    margin: -8px;
+    border-radius: 4px;
+
+    &:hover {
+      background: #2b2d30;
+      cursor: pointer;
+    }
+  }
+}

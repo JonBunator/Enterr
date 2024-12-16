@@ -1,0 +1,59 @@
+.status-icon-container {
+  border-radius: 4px;
+  width: 1.35rem;
+  height: 1.35rem;
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  &.success {
+    background: #c4f8d6;
+    color: #14532d;
+
+    &.hover:hover {
+      background: #84f2ab;
+    }
+  }
+
+  &.error {
+    background: #f7c5c5;
+    color: #521714;
+
+    &.hover:hover {
+      background: #ee8686;
+    }
+  }
+
+  &.running {
+    background: #c4f1f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    span {
+      color: #144b53;
+    }
+
+    &.hover:hover {
+      background: #84e2f0;
+    }
+  }
+
+  &.paused {
+    background: #f8f5c4;
+    color: #535314;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    span {
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &.hover:hover {
+      background: #f2ed84;
+    }
+  }
+}

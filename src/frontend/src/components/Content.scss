@@ -1,0 +1,15 @@
+html, body,  #root {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.content {
+  z-index: 2;
+  height: 100%;
+  padding: 24px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
