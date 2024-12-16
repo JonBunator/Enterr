@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-from database.database import Website, _db as db, ActionHistory
+from database.database import Website, _db as db, ActionHistory, ActionFailedDetails, ActionStatusCode
 from endpoints.models.website_model import AddWebsite, EditWebsite
 
 class IDataBase:
@@ -32,6 +32,15 @@ class IDataBase:
         website = db.session.get(Website, website_id)
         website.action_histories.append(action_history)
         website.next_schedule = website.action_interval.get_random_action_datetime()
+        db.session.commit()
+        return action_history.id
+
+    @staticmethod
+    def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails):
+        existing_action_history = db.session.get(ActionHistory, action_history_id)
+        existing_action_history.execution_ended = datetime.now()
+        existing_action_history.execution_status = execution_status
+        existing_action_history.failed_details = failed_details
         db.session.commit()
 
     @staticmethod

@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from flask import Flask
 from database.change_database import IDataBase
-from database.database import ActionHistory, Website
+from database.database import ActionHistory, Website, ActionStatusCode, ActionFailedDetails
 from execution.login.find_form_automatically import XPaths, XPath
 from execution.login.login import LoginStatusCode, login
 
@@ -38,26 +38,28 @@ class Scheduler:
                     password=XPath(access.password_xpath),
                     submit_button=XPath(access.submit_button_xpath))
 
-            # login
-            status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths)
-
-            executions_status = LoginStatusCode.SUCCESS
-            failed_details = None
-            if status != LoginStatusCode.SUCCESS:
-                executions_status = LoginStatusCode.FAILED
-                if executions_status != LoginStatusCode.FAILED:
-                    failed_details = executions_status.value
-
             action_history = ActionHistory(
                 execution_started=start_time,
-                execution_ended=datetime.now(),
-                execution_status=executions_status.value,
-                failed_details=failed_details,
+                execution_status=ActionStatusCode.IN_PROGRESS,
             )
-            IDataBase.add_action_history(website_id=website.id, action_history=action_history)
+            action_history_id = IDataBase.add_action_history(website_id=website.id, action_history=action_history)
+        # login
+        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths)
+
+        executions_status = LoginStatusCode.SUCCESS
+        failed_details = None
+        if status != LoginStatusCode.SUCCESS:
+            executions_status = LoginStatusCode.FAILED
+            if executions_status != LoginStatusCode.FAILED:
+                failed_details = executions_status.value
+        with self.app.app_context():
+            IDataBase.action_history_finish_execution(action_history_id=action_history_id,
+                                               execution_status=ActionStatusCode(executions_status.value),
+                                               failed_details=failed_details)
+
+
 
     def add_task(self, website_id: int):
-        print("adding task", website_id)
         website = IDataBase.get_website(website_id)
         self.scheduler.add_job(
             self._login_task,
@@ -65,9 +67,12 @@ class Scheduler:
             args=[website_id],
             id=f"login_{website_id}",
             replace_existing=True,
-            misfire_grace_time=3600
+            coalescing=True,
         )
         self.scheduler.print_jobs()
+
+    def remove_task(self, website_id: int):
+        self.scheduler.remove_job(job_id=f"login_{website_id}")
 
 
 

@@ -3,4 +3,4 @@ venv
 .idea
 downloaded_files
 __pycache__/
-images
+config/images

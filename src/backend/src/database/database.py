@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
@@ -10,7 +11,11 @@ _db = SQLAlchemy()
 
 def init_db(app):
     with app.app_context():
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+        dev_mode = os.getenv('FLASK_ENV') != 'production'
+        if dev_mode:
+            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        else:
+            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////config/database.db'
         _db.init_app(app)
         _db.create_all()
 
@@ -98,7 +103,7 @@ class ActionInterval(_db.Model):
         valid according to allowed_time_minutes_start and allowed_time_minutes_end.
         """
         if self.allowed_time_minutes_start == 0 and self.allowed_time_minutes_end == 1440:
-            # If allowed_time_minutes_start = 0 and allowed_time_minutes_end = 1440, allow any value
+            # allow any value
             return
         else:
             # Otherwise, check if the value is a multiple of 1440 (i.e., a full day in minutes)

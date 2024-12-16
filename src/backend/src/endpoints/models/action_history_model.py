@@ -7,7 +7,7 @@ from endpoints.decorators.get_request_validator import GetRequestBaseModel
 class GetActionHistory(GetRequestBaseModel):
     id: int
     execution_started: datetime
-    execution_ended: datetime
+    execution_ended: Optional[datetime]
     execution_status: str
     failed_details: Optional[str]
 

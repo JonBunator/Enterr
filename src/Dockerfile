@@ -28,5 +28,8 @@ RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
+ENV FLASK_ENV=production
+VOLUME /config
+
 # Note: More than 1 worker is not supported with socketio
 CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "-w", "1", "--worker-class", "eventlet"]
