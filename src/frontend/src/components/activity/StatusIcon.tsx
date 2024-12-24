@@ -4,10 +4,10 @@ import { CircularProgress } from '@mui/material'
 import './StatusIcon.scss'
 
 export enum ActivityStatusCode {
-  RUNNING = 0,
-  ERROR = 1,
-  PAUSED = 2,
-  SUCCESS = 3,
+  IN_PROGRESS = 'IN_PROGRESS',
+  FAILED = 'FAILED',
+  PAUSED = 'PAUSED',
+  SUCCESS = 'SUCCESS',
 }
 
 interface StatusIconProps {
@@ -25,11 +25,11 @@ export default function StatusIcon(props: StatusIconProps) {
       icon = <CheckIcon />
       type = 'success'
       break
-    case ActivityStatusCode.ERROR:
+    case ActivityStatusCode.FAILED:
       icon = <XMarkIcon />
       type = 'error'
       break
-    case ActivityStatusCode.RUNNING:
+    case ActivityStatusCode.IN_PROGRESS:
       icon = <CircularProgress size={14} />
       type = 'running'
       break

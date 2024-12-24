@@ -14,9 +14,9 @@ export default function ActivityStatus(props: ActivityStatusProps) {
     switch (status) {
       case ActivityStatusCode.SUCCESS:
         return 'Last login was successful'
-      case ActivityStatusCode.ERROR:
+      case ActivityStatusCode.FAILED:
         return 'Last login failed'
-      case ActivityStatusCode.RUNNING:
+      case ActivityStatusCode.IN_PROGRESS:
         return 'Currently running...'
       case ActivityStatusCode.PAUSED:
         return 'Login is paused'

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from database.database import ActionStatusCode, ActionFailedDetails, ActionHistory
+from dataAccess.database.database import ActionHistory
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
 
 

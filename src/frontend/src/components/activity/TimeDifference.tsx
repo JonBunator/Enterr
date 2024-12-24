@@ -19,18 +19,18 @@ export default function TimeDifference(props: TimeDifferenceProps) {
     const now = new Date()
     const diffInMs = datetime.getTime() - now.getTime()
 
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
-
-    if (diffInMinutes <= 0) {
+    const diffInMinutes = Math.ceil(diffInMs / (1000 * 60))
+    if (diffInMinutes < -1) {
       return negativeDifference ?? 'Time difference is negative'
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60)
     const diffInDays = Math.floor(diffInHours / 24)
     const remainingMinutes = diffInMinutes % 60
-
     const prefixString = prefix ?? ''
-
+    if (diffInMinutes === 0 || diffInMinutes === -1) {
+      return `${prefixString}under a minute`
+    }
     if (diffInDays > 0) {
       return `${prefixString}${diffInDays} day${diffInDays > 1 ? 's' : ''}`
     }
@@ -51,6 +51,10 @@ export default function TimeDifference(props: TimeDifferenceProps) {
 
     return () => clearInterval(interval)
   }, [getFormatedTime])
+
+  useEffect(() => {
+    setFormattedTime(getFormatedTime())
+  }, [datetime, getFormatedTime])
 
   return (
     <>

@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from flask import Flask
-from database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
+from dataAccess.database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
     ActionInterval
 
 import pytest

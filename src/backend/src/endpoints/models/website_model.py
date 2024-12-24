@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 from typing import Optional
 from pydantic import BaseModel
 
-from database.database import Website, ActionInterval
+from dataAccess.database.database import Website
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess

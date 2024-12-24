@@ -1,5 +1,5 @@
 from sqlalchemy.event import listens_for
-from database.database import Website, ActionHistory
+from dataAccess.database.database import Website, ActionHistory
 from execution.scheduler import Scheduler
 from sqlalchemy.orm import object_session
 
@@ -10,7 +10,6 @@ def register_database_events(scheduler: Scheduler):
         if session:
             @listens_for(session, "after_commit")
             def after_commit(_session):
-                print(target.id)
                 scheduler.add_task(target.id)
 
     @listens_for(ActionHistory, "after_insert")

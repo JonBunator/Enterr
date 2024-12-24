@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from database.database import ActionInterval
+from dataAccess.database.database import ActionInterval
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
 
 

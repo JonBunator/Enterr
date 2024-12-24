@@ -5,7 +5,7 @@ from flask import jsonify
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from http import HTTPStatus
-from database.database import _db
+from dataAccess.database.database import _db
 from endpoints.models.api_response_model import ApiGetResponse
 
 class GetRequestBaseModel(BaseModel, ABC):
