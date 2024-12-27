@@ -34,13 +34,19 @@ class Website(_db.Model):
     next_schedule: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
     # Relationship to CustomAccess
-    custom_access: Mapped[Optional["CustomAccess"]] = relationship()
+    custom_access: Mapped[Optional["CustomAccess"]] = relationship(
+        "CustomAccess", cascade="all, delete-orphan", backref="parent_website", uselist=False
+    )
 
     # Relationship to ActionHistory
-    action_histories: Mapped[List["ActionHistory"]] = relationship()
+    action_histories: Mapped[List["ActionHistory"]] = relationship(
+        "ActionHistory", cascade="all, delete-orphan", backref="parent_website"
+    )
 
     # Relationship to ActionInterval
-    action_interval: Mapped["ActionInterval"] = relationship()
+    action_interval: Mapped["ActionInterval"] = relationship(
+        "ActionInterval", cascade="all, delete-orphan", backref="parent_website", uselist=False
+    )
 
 class CustomAccess(_db.Model):
     __tablename__ = "custom_access"

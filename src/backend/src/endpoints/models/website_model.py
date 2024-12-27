@@ -107,6 +107,9 @@ class EditWebsite(BaseModel):
 
         return existing_website
 
+class DeleteWebsite(BaseModel):
+    id: int
+
 class GetWebsite(GetRequestBaseModel):
     id: int
     url: str

@@ -5,7 +5,8 @@ from dataAccess.data_access import DataAccess
 from endpoints.decorators.get_request_validator import validate_get_request
 from endpoints.decorators.post_request_validator import validate_post_request
 from endpoints.models.action_history_model import GetActionHistory
-from endpoints.models.website_model import GetWebsite, AddWebsite, EditWebsite
+from endpoints.models.website_model import GetWebsite, AddWebsite, EditWebsite, DeleteWebsite
+
 
 def register_rest_endpoints(app: Flask, data_access: DataAccess):
     @app.route('/api/websites', methods=['GET'])
@@ -22,6 +23,11 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     @validate_post_request(EditWebsite)
     def edit_website(website_request: EditWebsite):
         data_access.edit_website(website_request)
+
+    @app.route('/api/websites/delete', methods=['POST'])
+    @validate_post_request(DeleteWebsite)
+    def delete_website(website_request: DeleteWebsite):
+        data_access.delete_website(website_request)
 
     @app.route('/api/action_history/<int:website_id>', methods=['GET'])
     @validate_get_request(GetActionHistory)

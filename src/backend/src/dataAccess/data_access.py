@@ -1,7 +1,7 @@
 from typing import List
 from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import Website, ActionHistory, ActionFailedDetails, ActionStatusCode
-from endpoints.models.website_model import AddWebsite, EditWebsite
+from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite
 from endpoints.webhook_endpoints import WebhookEndpoints
 
 class DataAccess:
@@ -25,6 +25,11 @@ class DataAccess:
         existing_website = DataBase.get_website(request.id)
         website = request.edit_existing_model(existing_website)
         DataBase.edit_website(website)
+        self.webhook_endpoints.login_data_changed()
+
+    def delete_website(self, request: DeleteWebsite):
+        website = DataBase.get_website(request.id)
+        DataBase.delete_website(website)
         self.webhook_endpoints.login_data_changed()
 
     def add_action_history(self, website_id: int, action_history: ActionHistory):

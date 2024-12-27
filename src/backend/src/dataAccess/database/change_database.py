@@ -23,6 +23,11 @@ class DataBase:
         db.session.commit()
 
     @staticmethod
+    def delete_website(website: Website):
+        db.session.delete(website)
+        db.session.commit()
+
+    @staticmethod
     def add_action_history(website_id: int, action_history: ActionHistory) -> int:
         website = db.session.get(Website, website_id)
         website.action_histories.append(action_history)
@@ -33,6 +38,8 @@ class DataBase:
     @staticmethod
     def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails):
         existing_action_history = db.session.get(ActionHistory, action_history_id)
+        if existing_action_history is None:
+            return
         existing_action_history.execution_ended = datetime.now()
         existing_action_history.execution_status = execution_status
         existing_action_history.failed_details = failed_details

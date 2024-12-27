@@ -16,6 +16,7 @@ import {
 import { motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import { useWebSocket } from '../WebSocketProvider.tsx'
+import ActionsPopover from './ActionsPopover.tsx'
 import { getActivity } from './activityRequests.ts'
 import ActivityStatus from './ActivityStatus.tsx'
 import StatusIcon, { ActivityStatusCode } from './StatusIcon.tsx'
@@ -38,143 +39,6 @@ enum Order {
 }
 
 type OrderType = 'asc' | 'desc'
-
-const sampleData: ActivityRow[] = [
-  {
-    id: 1,
-    status: ActivityStatusCode.IN_PROGRESS,
-    name: 'Test Website',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 25),
-    loginHistory: [
-      ActivityStatusCode.PAUSED,
-      ActivityStatusCode.FAILED,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'None',
-  },
-  {
-    id: 2,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'This is',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 3,
-    status: ActivityStatusCode.FAILED,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 4,
-    status: ActivityStatusCode.FAILED,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 5,
-    status: ActivityStatusCode.PAUSED,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 6,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 7,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 8,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 9,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 10,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 11,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-  {
-    id: 12,
-    status: ActivityStatusCode.SUCCESS,
-    name: 'Jane Smith',
-    nextLogin: new Date(new Date().getTime() + 1000 * 60 * 60 * 50),
-    loginHistory: [
-      ActivityStatusCode.SUCCESS,
-      ActivityStatusCode.SUCCESS,
-    ],
-    screenshots: 'Available',
-  },
-
-]
 
 export default function Activity() {
   const [order, setOrder] = useState<Order>(Order.ASC)
@@ -254,7 +118,7 @@ export default function Activity() {
   return (
     <Card className="activity" component={motion.div} layout initial={{ height: 0 }} animate={{ height: 'auto' }}>
       <CardContent className="activity-card" component={motion.div} layout>
-        <TableContainer sx={{ height: 600, width: 900 }} component={motion.div} layout>
+        <TableContainer sx={{ height: 600, width: 1100 }} component={motion.div} layout>
           <Table stickyHeader className="activity-table" component={motion.table} layout>
             <TableHead component={motion.thead} layout>
               <TableRow component={motion.tr} layout>
@@ -287,6 +151,7 @@ export default function Activity() {
                 </TableCell>
                 <TableCell>Login History</TableCell>
                 <TableCell>Screenshots</TableCell>
+                <TableCell />
               </TableRow>
             </TableHead>
             <TableBody component={motion.tbody} layout>
@@ -324,6 +189,9 @@ export default function Activity() {
                     </Tooltip>
                   </TableCell>
                   <TableCell>{row.screenshots}</TableCell>
+                  <TableCell>
+                    <ActionsPopover websiteId={row.id} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

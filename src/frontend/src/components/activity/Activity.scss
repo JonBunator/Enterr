@@ -1,6 +1,4 @@
 .activity {
-  border: 1px solid #515151;
-
   .activity-card.MuiCardContent-root {
     padding: 0;
   }
@@ -9,6 +7,9 @@
     td {
       padding-top: 12px;
       padding-bottom: 12px;
+      &:last-child {
+        padding-right: 0;
+      }
     }
   }
 
