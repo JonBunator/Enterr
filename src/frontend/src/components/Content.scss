@@ -6,10 +6,24 @@ html, body,  #root {
 
 .content {
   z-index: 2;
-  height: 100%;
   padding: 24px;
   position: relative;
-  display: flex;
   justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(16, auto);
+  grid-template-rows: auto auto;
+  gap: 24px;
 }
+
+.search {
+  grid-column: span 15;
+}
+
+.add-website {
+  grid-column: span 1;
+}
+
+.activity {
+  grid-column: span 16;
+}
+

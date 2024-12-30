@@ -11,6 +11,38 @@ export interface ActivityData {
   screenshots: string
 }
 
+export interface CustomAccess {
+  username_xpath: string
+  password_xpath: string
+  pin_xpath: string | null
+  submit_button_xpath: string
+}
+
+export interface TimeDelta {
+  days: number
+  hours: number
+  minutes: number
+}
+
+export interface ActionInterval {
+  date_minutes_start: number
+  date_minutes_end: number
+  allowed_time_minutes_start: number
+  allowed_time_minutes_end: number
+}
+
+export interface ChangeWebsite {
+  url: string
+  success_url: string
+  name: string
+  username: string
+  password: string
+  pin: string | null
+  expiration_interval: TimeDelta | null
+  custom_access: CustomAccess | null
+  action_interval: ActionInterval
+}
+
 export async function getActivity(): Promise<ActivityData[]> {
   const websites = await getWebsites()
 

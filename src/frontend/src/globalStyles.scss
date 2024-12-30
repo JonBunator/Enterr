@@ -16,4 +16,17 @@
 
 .MuiPaper-root {
   border: 1px solid #515151;
+  box-shadow:  none !important;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }

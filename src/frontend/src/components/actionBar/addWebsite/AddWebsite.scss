@@ -1,0 +1,12 @@
+.add-website.MuiButton-root {
+    border: 1px solid #515151;
+    background: #121212;
+    color: rgba(255, 255, 255, 0.7);
+    &:hover {
+      background: #1e1e1e;
+      border: 1px solid #fff;
+  }
+  .icon {
+    color: #fff;
+  }
+}

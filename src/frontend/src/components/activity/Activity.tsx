@@ -126,7 +126,7 @@ export default function Activity() {
                   <TableSortLabel
                     active={orderBy === 'status'}
                     direction={(orderBy === 'status' ? order : Order.ASC) as OrderType}
-                    onClick={async () => handleSortRequest('status')}
+                    onClick={() => void handleSortRequest('status')}
                   >
                     Status
                   </TableSortLabel>
@@ -135,7 +135,7 @@ export default function Activity() {
                   <TableSortLabel
                     active={orderBy === 'name'}
                     direction={(orderBy === 'name' ? order : Order.ASC) as OrderType}
-                    onClick={async () => handleSortRequest('name')}
+                    onClick={() => void handleSortRequest('name')}
                   >
                     Name
                   </TableSortLabel>
@@ -144,7 +144,7 @@ export default function Activity() {
                   <TableSortLabel
                     active={orderBy === 'nextLogin'}
                     direction={(orderBy === 'nextLogin' ? order : Order.ASC) as OrderType}
-                    onClick={async () => handleSortRequest('nextLogin')}
+                    onClick={() => void handleSortRequest('nextLogin')}
                   >
                     Schedule of Next Login
                   </TableSortLabel>

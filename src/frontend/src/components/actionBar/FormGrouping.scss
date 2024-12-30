@@ -1,0 +1,61 @@
+.form-grouping {
+  border: 1px solid #515151;
+  border-radius: 4px;
+  padding: 10px;
+  position: relative;
+  background: #323232;
+  margin-top: 16px;
+
+  .form-grouping-title {
+    top: -12px;
+    padding-left: 4px;
+  }
+
+  .form-grouping-checkbox {
+    top: -16px;
+    .MuiCheckbox-root {
+     padding: 4px;
+    }
+    .form-grouping-checkbox-label {
+      margin: 0;
+    }
+  }
+
+  .form-grouping-title, .form-grouping-checkbox {
+    position: absolute;
+    border: none;
+    background: none;
+    left: 16px;
+    margin: 0;
+    border-radius: 4px;
+    padding-right: 4px;
+    z-index: 0;
+  }
+
+  .form-grouping-title-before, .form-grouping-checkbox-before {
+    border: none;
+    width: 100%;
+    height: 50%;
+    content: "";
+    top: 0;
+    left: 0;
+    border-radius: 0;
+    position: absolute;
+    z-index: -1;
+  }
+
+  .form-grouping-container {
+    display: flex;
+    &.row {
+      flex-direction: row;
+    }
+    &.column {
+      flex-direction: column;
+    }
+    gap: 16px;
+    padding: 24px 16px 16px;
+  }
+  .form-grouping-subtitle {
+    margin-top: 16px;
+  }
+}

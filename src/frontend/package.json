@@ -15,10 +15,13 @@
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^6.2.0",
+    "@mui/x-date-pickers": "^7.23.3",
     "axios": "^1.7.7",
+    "dayjs": "^1.11.13",
     "framer-motion": "^11.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-use-measure": "^2.1.1",
     "sass": "^1.82.0",
     "socket.io-client": "^4.8.1"
   },
