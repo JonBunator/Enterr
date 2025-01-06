@@ -14,21 +14,15 @@ export interface ActivityData {
 export interface CustomAccess {
   username_xpath: string
   password_xpath: string
-  pin_xpath: string | null
+  pin_xpath: string
   submit_button_xpath: string
-}
-
-export interface TimeDelta {
-  days: number
-  hours: number
-  minutes: number
 }
 
 export interface ActionInterval {
   date_minutes_start: number
-  date_minutes_end: number
-  allowed_time_minutes_start: number
-  allowed_time_minutes_end: number
+  date_minutes_end: number | null
+  allowed_time_minutes_start: number | null
+  allowed_time_minutes_end: number | null
 }
 
 export interface ChangeWebsite {
@@ -37,8 +31,8 @@ export interface ChangeWebsite {
   name: string
   username: string
   password: string
-  pin: string | null
-  expiration_interval: TimeDelta | null
+  pin: string
+  expiration_interval_minutes: number | null
   custom_access: CustomAccess | null
   action_interval: ActionInterval
 }

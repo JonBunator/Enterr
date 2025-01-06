@@ -1,18 +1,50 @@
+import type { ChangeWebsite } from '../../activity/activityRequests.ts'
 import { useState } from 'react'
+import TimeTextfields from '../../form/TimeTextfields.tsx'
 import FormGrouping from '../FormGrouping.tsx'
-import TimeTextfields from './TimeTextfields.tsx'
 
-export default function ExpirationIntervalForm() {
-  const [expirationIntervalEnabled, setExpirationIntervalEnabled] = useState<boolean>(false)
+interface ExpirationIntervalFormProps {
+  value: ChangeWebsite
+  onChange?: (value: ChangeWebsite) => void
+}
+
+export default function ExpirationIntervalForm(props: ExpirationIntervalFormProps) {
+  const { value, onChange } = props
+  const [expirationIntervalEnabled, setExpirationIntervalEnabled] = useState<boolean>(value.expiration_interval_minutes !== null)
+
+  function handleEnabledChange(enabled: boolean) {
+    setExpirationIntervalEnabled(enabled)
+    if (enabled) {
+      onChange?.({
+        ...value,
+        expiration_interval_minutes: null,
+      })
+    }
+  }
+
+  function validateExpirationInterval(minutes: string): string {
+    if (Number(minutes) <= 0) {
+      return 'Expiration interval must be greater than 0min.'
+    }
+    return ''
+  }
 
   return (
     <FormGrouping
       checked={expirationIntervalEnabled}
-      onChange={setExpirationIntervalEnabled}
+      onChange={handleEnabledChange}
       title="Account expiration (Optional)"
       subtitle="Determines after what period of time since the last successful login the account should be marked as expired."
     >
-      <TimeTextfields value={0} />
+      <TimeTextfields
+        identifier="expiration-interval"
+        value={value.expiration_interval_minutes ?? 0}
+        onChange={minutes => onChange?.({
+          ...value,
+          expiration_interval_minutes: minutes,
+        })}
+        onValidate={validateExpirationInterval}
+      />
 
     </FormGrouping>
 

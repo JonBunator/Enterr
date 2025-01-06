@@ -10,6 +10,7 @@ export default function AddWebsite() {
   const [open, setOpen] = useState(false)
 
   async function handleAdd(website: ChangeWebsite) {
+    setOpen(false)
     await addWebsite(website)
   }
 

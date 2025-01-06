@@ -10,6 +10,17 @@ class AddCustomAccess(BaseModel):
     pin_xpath: Optional[str] = None
     submit_button_xpath: str
 
+    def to_sql_model(self) -> CustomAccess:
+        username_xpath = self.username_xpath if self.username_xpath != '' else None
+        password_xpath = self.password_xpath if self.password_xpath != '' else None
+        pin_xpath = self.pin_xpath if self.pin_xpath != '' else None
+        submit_button_xpath = self.submit_button_xpath if self.submit_button_xpath != '' else None
+
+        return CustomAccess(username_xpath=username_xpath,
+                              password_xpath=password_xpath,
+                              pin_xpath=pin_xpath,
+                              submit_button_xpath=submit_button_xpath)
+
 class EditCustomAccess(BaseModel):
     id: int
     username_xpath: Optional[str] = None

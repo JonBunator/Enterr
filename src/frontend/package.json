@@ -21,6 +21,7 @@
     "framer-motion": "^11.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-imask": "^7.6.1",
     "react-use-measure": "^2.1.1",
     "sass": "^1.82.0",
     "socket.io-client": "^4.8.1"

@@ -6,7 +6,7 @@ from dataAccess.database.database import Website
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
-from utils.utils import edit_timedelta, timedelta_to_parts
+from utils.utils import timedelta_to_parts
 
 
 class TimeDelta(BaseModel):
@@ -47,26 +47,28 @@ class AddWebsite(BaseModel):
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[TimeDelta] = None
+    expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[AddCustomAccess] = None
-    action_interval: Optional[AddActionInterval] = None
+    action_interval: AddActionInterval
 
     def to_sql_model(self) -> Website:
         expiration_interval = None
-        if self.expiration_interval is not None:
-            expiration_interval = timedelta(days=self.expiration_interval.days, hours=self.expiration_interval.hours, minutes=self.expiration_interval.minutes)
+        if self.expiration_interval_minutes is not None:
+            expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
         website = Website(
             url=self.url,
             success_url=self.success_url,
             name=self.name,
             username=self.username,
             password=self.password,
-            pin=self.pin,
+            pin=self.pin if self.pin != '' else None,
             added_at=datetime.now(),
             expiration_interval=expiration_interval,
         )
-        if self.action_interval is not None:
-            website.action_interval = self.action_interval.to_sql_model()
+        if self.custom_access is not None:
+            website.custom_access = self.custom_access.to_sql_model()
+
+        website.action_interval = self.action_interval.to_sql_model()
         return website
 
 class EditWebsite(BaseModel):
@@ -77,7 +79,7 @@ class EditWebsite(BaseModel):
     username:Optional[str] = None
     password: Optional[str] = None
     pin: Optional[str] = None
-    expiration_interval: Optional[TimeDelta] = None
+    expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[EditCustomAccess] = None
     action_interval: Optional[EditActionInterval] = None
 
@@ -94,12 +96,8 @@ class EditWebsite(BaseModel):
             existing_website.password = self.password
         if self.pin is not None:
             existing_website.pin = self.pin
-        if self.expiration_interval is not None:
-            existing_website.expiration_interval = edit_timedelta(
-                existing_website.expiration_interval,
-                days=self.expiration_interval.days,
-                hours=self.expiration_interval.hours,
-                minutes=self.expiration_interval.minutes)
+        if self.expiration_interval_minutes is not None:
+            existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
         if self.custom_access is not None:
             existing_website.custom_access = self.custom_access.edit_existing_model(existing_website.custom_access)
         if self.action_interval is not None:

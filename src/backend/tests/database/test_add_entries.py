@@ -48,7 +48,7 @@ def test_website_entry_creation(app):
         assert website_in_db.password == "password123"
         assert website_in_db.pin == "1234"
         assert website_in_db.added_at == now
-        assert website_in_db.expiration_interval == timedelta(days=1)
+        assert website_in_db.expiration_interval_minutes == timedelta(days=1)
         assert website_in_db.next_schedule == now
 
 def test_website_entry_creation_null_values(app):
@@ -69,7 +69,7 @@ def test_website_entry_creation_null_values(app):
 
         assert website_in_db is not None
         assert website_in_db.pin is None
-        assert website_in_db.expiration_interval is None
+        assert website_in_db.expiration_interval_minutes is None
         assert website_in_db.next_schedule is None
 
 def test_website_with_custom_accesses(app):

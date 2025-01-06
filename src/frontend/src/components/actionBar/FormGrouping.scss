@@ -23,7 +23,7 @@
 
   .form-grouping-title, .form-grouping-checkbox {
     position: absolute;
-    border: none;
+    border: none !important;
     background: none;
     left: 16px;
     margin: 0;
@@ -33,6 +33,7 @@
   }
 
   .form-grouping-title-before, .form-grouping-checkbox-before {
+    &.MuiPaper-root {
     border: none;
     width: 100%;
     height: 50%;
@@ -42,6 +43,7 @@
     border-radius: 0;
     position: absolute;
     z-index: -1;
+    }
   }
 
   .form-grouping-container {

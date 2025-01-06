@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Checkbox, FormControlLabel, Paper, Typography } from '@mui/material'
+import { Checkbox, FormControlLabel, FormGroup, Paper, Typography } from '@mui/material'
 import { motion } from 'framer-motion'
 import useMeasure from 'react-use-measure'
 import './FormGrouping.scss'
@@ -38,50 +38,52 @@ function ResizablePanel(props: ResizablePanelProps) {
 export default function FormGrouping(props: FormGroupingProps) {
   const { title, subtitle, elevation, column, backgroundElevation, disableCheckbox, checked, onChange, children } = props
   return (
-    <Paper className="form-grouping" elevation={elevation ?? 12}>
-      {disableCheckbox
-        ? (
-            <Typography className="form-grouping-title">
-              <Paper
-                elevation={backgroundElevation ?? 24}
-                className="form-grouping-title-before"
-              />
-              {title}
-            </Typography>
-          )
-        : (
-            <div className="form-grouping-checkbox">
-              <Paper
-                elevation={backgroundElevation ?? 24}
-                className="form-grouping-checkbox-before"
-              />
-              <FormControlLabel
-                className="form-grouping-checkbox-label"
-                control={(
-                  <Checkbox
-                    checked={checked}
-                    onChange={event => onChange?.(event.target.checked)}
-                  />
-                )}
-                label={title}
-              />
+    <FormGroup>
+      <Paper className="form-grouping" elevation={elevation ?? 8}>
+        {disableCheckbox
+          ? (
+              <Typography className="form-grouping-title">
+                <Paper
+                  elevation={backgroundElevation ?? 2}
+                  className="form-grouping-title-before"
+                />
+                {title}
+              </Typography>
+            )
+          : (
+              <div className="form-grouping-checkbox">
+                <Paper
+                  elevation={backgroundElevation ?? 2}
+                  className="form-grouping-checkbox-before"
+                />
+                <FormControlLabel
+                  className="form-grouping-checkbox-label"
+                  control={(
+                    <Checkbox
+                      checked={checked}
+                      onChange={event => onChange?.(event.target.checked)}
+                    />
+                  )}
+                  label={title}
+                />
+              </div>
+            )}
+        <ResizablePanel keyProp={checked === true ? 1 : 0}>
+          {(checked || checked === undefined) && (
+            <div className={`form-grouping-container ${column === true ? 'column' : 'row'}`}>
+              {children}
             </div>
           )}
-      <ResizablePanel keyProp={checked === true ? 1 : 0}>
-        {(checked || checked === undefined) && (
-          <div className={`form-grouping-container ${column === true ? 'column' : 'row'}`}>
-            {children}
-          </div>
+        </ResizablePanel>
+        {subtitle !== undefined && (
+          <Typography
+            className="form-grouping-subtitle"
+            sx={{ color: 'text.secondary' }}
+          >
+            {subtitle}
+          </Typography>
         )}
-      </ResizablePanel>
-      {subtitle !== undefined && (
-        <Typography
-          className="form-grouping-subtitle"
-          sx={{ color: 'text.secondary' }}
-        >
-          {subtitle}
-        </Typography>
-      )}
-    </Paper>
+      </Paper>
+    </FormGroup>
   )
 }

@@ -1,15 +1,30 @@
-import { Grid2, TextField } from '@mui/material'
+import type { ChangeWebsite } from '../../activity/activityRequests.ts'
+import { Grid2 } from '@mui/material'
+import TextFieldForm from '../../form/TextFieldForm.tsx'
 import FormGrouping from '../FormGrouping.tsx'
 import CustomAccessForm from './CustomAccessForm.tsx'
 
-export default function AccessForm() {
+interface AccessFormProps {
+  value: ChangeWebsite
+  onChange?: (value: ChangeWebsite) => void
+}
+
+export default function AccessForm(props: AccessFormProps) {
+  const { value, onChange } = props
   return (
     <FormGrouping disableCheckbox title="Access *" column>
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 4 }}>
-          <TextField
+          <TextFieldForm
+            identifier="username"
             variant="filled"
             label="Username"
+            value={value.username}
+            onChange={username =>
+              onChange?.({
+                ...value,
+                username,
+              })}
             required
             fullWidth
             helperText="The username that should be used to login."
@@ -17,24 +32,38 @@ export default function AccessForm() {
         </Grid2>
 
         <Grid2 size={{ xs: 4 }}>
-          <TextField
+          <TextFieldForm
+            identifier="password"
             variant="filled"
             label="Password"
+            value={value.password}
+            onChange={password =>
+              onChange?.({
+                ...value,
+                password,
+              })}
             required
             fullWidth
             helperText="The password that should be used to login."
           />
         </Grid2>
         <Grid2 size={{ xs: 4 }}>
-          <TextField
+          <TextFieldForm
+            identifier="pin"
             variant="filled"
             label="PIN"
+            value={value.pin}
+            onChange={pin =>
+              onChange?.({
+                ...value,
+                pin,
+              })}
             fullWidth
             helperText="Some websites require an additional pin to login. This is not a 2FA pin that is receiced by SMS, email etc."
           />
         </Grid2>
         <Grid2 size={{ xs: 12 }}>
-          <CustomAccessForm />
+          <CustomAccessForm value={value} onChange={onChange} />
         </Grid2>
       </Grid2>
     </FormGrouping>

@@ -7,8 +7,29 @@ import WebSocketProvider from './components/WebSocketProvider'
 import './globalStyles.scss'
 
 const darkTheme = createTheme({
+  components: {
+    MuiDialog: {
+      defaultProps: {
+        PaperProps: {
+          elevation: 2,
+        },
+      },
+    },
+    MuiPaper: {
+      defaultProps: {
+        elevation: 1,
+      },
+    },
+  },
   palette: {
     mode: 'dark',
+    primary: {
+      main: '#c2b8fc',
+    },
+    background: {
+      default: '#080808',
+      paper: '#080808',
+    },
   },
 })
 export default function App() {
