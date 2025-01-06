@@ -44,6 +44,7 @@ const emptyChangeWebsite: ChangeWebsite = {
   username: '',
   password: '',
   pin: '',
+  take_screenshot: true,
   expiration_interval_minutes: null,
   custom_access: null,
   action_interval: {

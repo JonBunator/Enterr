@@ -73,7 +73,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
           />
         </Grid2>
         <Grid2 size={{ xs: 12 }}>
-          <FormControlLabel control={<Checkbox defaultChecked />} label="Save screenshot" />
+          <FormControlLabel control={<Checkbox checked={value.take_screenshot} onChange={event => onChange?.({ ...value, take_screenshot: event.target.checked })} />} label="Save screenshot" />
           <FormHelperText sx={{ marginTop: 0 }}>Saves screenshot after login attempt.</FormHelperText>
         </Grid2>
       </Grid2>

@@ -34,6 +34,7 @@ export interface ChangeWebsite {
   username: string
   password: string
   pin: string
+  take_screenshot: boolean
   expiration_interval_minutes: number | null
   custom_access: CustomAccess | null
   action_interval: ActionInterval
