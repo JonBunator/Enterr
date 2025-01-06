@@ -8,21 +8,6 @@ from endpoints.models.action_interval_model import AddActionInterval, GetActionI
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
 from utils.utils import timedelta_to_parts
 
-
-class TimeDelta(BaseModel):
-    days: Optional[int] = None
-    hours: Optional[int] = None
-    minutes: Optional[int] = None
-
-    @staticmethod
-    def from_timedelta(td: timedelta) -> "TimeDelta":
-        days, hours, minutes, seconds =  timedelta_to_parts(td)
-        return TimeDelta(
-            days=days,
-            hours=hours,
-            minutes=minutes
-        )
-
 class DateTime(BaseModel):
     day: Optional[int] = None
     month: Optional[int] = None
@@ -116,13 +101,19 @@ class GetWebsite(GetRequestBaseModel):
     username: str
     password: str
     pin: Optional[str] = None
-    expiration_interval: Optional[TimeDelta] = None
+    expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
     next_schedule: Optional[DateTime] = None
 
     @staticmethod
     def from_sql_model(website: Website) -> "GetWebsite":
+        if website.expiration_interval is None:
+            expiration_interval_minutes = None
+        else:
+            expiration_interval_parts = timedelta_to_parts(website.expiration_interval)
+            expiration_interval_minutes = expiration_interval_parts.days * 24 * 60 + expiration_interval_parts.hours * 60 + expiration_interval_parts.minutes
+
         return GetWebsite(
             id=website.id,
             url=website.url,
@@ -131,7 +122,7 @@ class GetWebsite(GetRequestBaseModel):
             username=website.username,
             password=website.password,
             pin=website.pin,
-            expiration_interval=TimeDelta.from_timedelta(website.expiration_interval),
+            expiration_interval_minutes=expiration_interval_minutes,
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,
             next_schedule=DateTime.from_datetime(website.next_schedule) if website.next_schedule else None,
