@@ -28,3 +28,12 @@ export async function deleteWebsite(websiteId: number) {
     },
   })
 }
+
+export async function editWebsite(websiteId: number, website: ChangeWebsite) {
+  const body = { id: websiteId, ...website }
+  await axios.post('/api/websites/edit', body, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}

@@ -6,12 +6,6 @@ export interface ActionInterval {
   allowed_time_minutes_end: number
 }
 
-export interface ExpirationInterval {
-  days: number
-  hours: number
-  minutes: number
-}
-
 export interface NextSchedule {
   day: number
   hour: number
@@ -22,9 +16,9 @@ export interface NextSchedule {
 
 export interface CutomAccess {
   id: number
-  username_xpath: number
+  username_xpath: string
   password_xpath: string
-  pin_xpath: string | null
+  pin_xpath: string
   submit_button_xpath: string
 }
 
@@ -36,7 +30,7 @@ export interface Website {
   username: string
   password: string
   pin: string | null
-  expiration_interval: ExpirationInterval | null
+  expiration_interval_minutes: number | null
   custom_access: CutomAccess | null
   action_interval: ActionInterval | null
   next_schedule: NextSchedule | null

@@ -1,3 +1,4 @@
+import type { ChangeWebsite } from './activityRequests.ts'
 import {
   GlobeAltIcon,
   PauseCircleIcon,
@@ -7,9 +8,11 @@ import {
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
 import React, { useState } from 'react'
-import { deleteWebsite } from '../../api/apiRequests.ts'
+import { deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
+import { getChangeWebsite } from './activityRequests.ts'
+import AddEditWebsite from './AddEditWebsite.tsx'
 
 interface ActionsPopoverProps {
   websiteId: number
@@ -22,6 +25,9 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [deletionApprovalDialogOpen, setDeletionApprovalDialogOpen] = useState<boolean>(false)
   const [saveWebsiteVisitDialogOpen, setSaveWebsiteVisitDialogOpen] = useState<boolean>(false)
+
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
+  const [editWebsiteValue, setEditWebsiteValue] = useState<ChangeWebsite | undefined>(undefined)
 
   const { success, error, loading } = useSnackbar()
 
@@ -55,6 +61,24 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
   }
 
+  async function handleOpenEditDialog() {
+    handleClose()
+    setEditDialogOpen(true)
+    setEditWebsiteValue(await getChangeWebsite(websiteId))
+  }
+
+  async function handleEdit(value: ChangeWebsite) {
+    setEditDialogOpen(false)
+    loading('Editing website...')
+    try {
+      await editWebsite(websiteId, value)
+      success('Website edited successfully')
+    }
+    catch (e) {
+      error('Failed to edit website', (e as Error).message)
+    }
+  }
+
   return (
     <>
       <Tooltip title="Options">
@@ -83,6 +107,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           </>
         )}
       />
+      <AddEditWebsite value={editWebsiteValue} open={editDialogOpen} add={false} onClose={() => setEditDialogOpen(false)} onChange={value => void handleEdit(value)} />
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -108,7 +133,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           </ListItemIcon>
           <ListItemText primary="Open website" />
         </MenuItem>
-        <MenuItem onClick={() => console.log('')}>
+        <MenuItem onClick={() => void handleOpenEditDialog()}>
           <ListItemIcon>
             <PencilSquareIcon className="icon" />
           </ListItemIcon>

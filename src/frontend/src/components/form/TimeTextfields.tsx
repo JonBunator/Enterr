@@ -116,7 +116,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
         variant="filled"
         fullWidth
         helperText={minutesHelperText}
-        validationValue={minutes.toString()}
+        validationValue={value.toString()}
         onValidate={onValidate}
       />
     </>

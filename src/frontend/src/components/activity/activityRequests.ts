@@ -6,6 +6,7 @@ export interface ActivityData {
   status: ActivityStatusCode
   name: string
   url: string
+  success_url: string
   nextLogin: Date
   expirationDate?: Date
   loginHistory: ActivityStatusCode[]
@@ -51,11 +52,9 @@ export async function getActivity(): Promise<ActivityData[]> {
     const lastSuccessfulLogin = loginHistory.find(login => login.execution_status === ActivityStatusCode.SUCCESS)
     let expirationDate: Date | undefined
 
-    if (lastSuccessfulLogin && lastSuccessfulLogin.execution_ended != null && website.expiration_interval != null) {
+    if (lastSuccessfulLogin && lastSuccessfulLogin.execution_ended != null && website.expiration_interval_minutes != null) {
       expirationDate = new Date(lastSuccessfulLogin.execution_ended)
-      expirationDate.setDate(expirationDate.getUTCDate() + website.expiration_interval?.days)
-      expirationDate.setHours(expirationDate.getUTCHours() + website.expiration_interval?.hours)
-      expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval?.minutes)
+      expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval_minutes)
     }
 
     const nextLogin = website.next_schedule ? new Date(website.next_schedule.year, website.next_schedule.month - 1, website.next_schedule.day, website.next_schedule.hour, website.next_schedule.minute) : new Date(0)
@@ -64,10 +63,17 @@ export async function getActivity(): Promise<ActivityData[]> {
       status: (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode,
       name: website.name,
       url: website.url,
+      success_url: website.success_url,
       nextLogin,
       expirationDate,
       loginHistory: loginHistoryStatuses as ActivityStatusCode[],
       screenshots: '',
     }
   }))
+}
+
+export async function getChangeWebsite(websiteId: number): Promise<ChangeWebsite> {
+  const websites = await getWebsites()
+  const website = websites.find(website => website.id === websiteId)
+  return website as ChangeWebsite
 }
