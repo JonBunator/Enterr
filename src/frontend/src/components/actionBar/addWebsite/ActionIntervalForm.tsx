@@ -16,22 +16,6 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
   const [timeSpanEnabled, setTimeSpanEnabled] = useState<boolean>(value.action_interval.date_minutes_end !== null)
   const [timeOfDayEnabled, setTimeOfDayEnabled] = useState<boolean>(value.action_interval.allowed_time_minutes_start !== null || value.action_interval.allowed_time_minutes_end !== null)
 
-  function minutesToString(minutes: number | null): string {
-    const date: Dayjs | null = minutesToDayjs(minutes)
-    const days = date?.day() ?? 0
-    const hours = date?.hour() ?? 0
-    const min = date?.minute() ?? 0
-
-    const result = []
-    if (days > 0)
-      result.push(`${days}d`)
-    if (hours > 0)
-      result.push(`${hours}h`)
-    if (min > 0)
-      result.push(`${minutes}m`)
-    return result.join(' ')
-  }
-
   function validateExecutionInterval(minutes: string): string {
     if (Number(minutes) <= 0) {
       return 'Execution interval must be greater than 0min.'

@@ -3,6 +3,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import Content from './components/Content'
+import SnackbarProvider from './components/SnackbarProvider.tsx'
 import WebSocketProvider from './components/WebSocketProvider'
 import './globalStyles.scss'
 
@@ -37,9 +38,11 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <CssBaseline />
-        <WebSocketProvider>
-          <Content />
-        </WebSocketProvider>
+        <SnackbarProvider>
+          <WebSocketProvider>
+            <Content />
+          </WebSocketProvider>
+        </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>
   )
