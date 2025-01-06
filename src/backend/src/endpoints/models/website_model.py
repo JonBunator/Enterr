@@ -32,6 +32,7 @@ class AddWebsite(BaseModel):
     username: str
     password: str
     pin: Optional[str] = None
+    take_screenshot: bool
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[AddCustomAccess] = None
     action_interval: AddActionInterval
@@ -47,6 +48,7 @@ class AddWebsite(BaseModel):
             username=self.username,
             password=self.password,
             pin=self.pin if self.pin != '' else None,
+            take_screenshot=self.take_screenshot,
             added_at=datetime.now(),
             expiration_interval=expiration_interval,
         )
@@ -64,6 +66,7 @@ class EditWebsite(BaseModel):
     username:Optional[str] = None
     password: Optional[str] = None
     pin: Optional[str] = None
+    take_screenshot: Optional[bool] = None
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[EditCustomAccess] = None
     action_interval: Optional[EditActionInterval] = None
@@ -81,6 +84,8 @@ class EditWebsite(BaseModel):
             existing_website.password = self.password
         if self.pin is not None:
             existing_website.pin = self.pin
+        if self.take_screenshot is not None:
+            existing_website.take_screenshot = self.take_screenshot
         if self.expiration_interval_minutes is not None:
             existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
         if self.custom_access is not None:
@@ -101,6 +106,7 @@ class GetWebsite(GetRequestBaseModel):
     username: str
     password: str
     pin: Optional[str] = None
+    take_screenshot: bool
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
@@ -122,6 +128,7 @@ class GetWebsite(GetRequestBaseModel):
             username=website.username,
             password=website.password,
             pin=website.pin,
+            take_screenshot=website.take_screenshot,
             expiration_interval_minutes=expiration_interval_minutes,
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,

@@ -30,6 +30,7 @@ class Website(_db.Model):
     password: Mapped[str] = mapped_column(nullable=False)
     pin: Mapped[Optional[str]] = mapped_column(nullable=True)
     added_at: Mapped[datetime] = mapped_column(nullable=False)
+    take_screenshot: Mapped[bool] = mapped_column(nullable=False)
     expiration_interval: Mapped[Optional[timedelta]] = mapped_column(nullable=True)
     next_schedule: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
@@ -81,6 +82,7 @@ class ActionHistory(_db.Model):
     execution_ended: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     execution_status: Mapped[ActionStatusCode] = mapped_column(nullable=False)
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
+    screenshot_id: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
 

@@ -36,13 +36,14 @@ class DataBase:
         return action_history.id
 
     @staticmethod
-    def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails):
+    def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails, screenshot_id: str = None):
         existing_action_history = db.session.get(ActionHistory, action_history_id)
         if existing_action_history is None:
             return
         existing_action_history.execution_ended = datetime.now()
         existing_action_history.execution_status = execution_status
         existing_action_history.failed_details = failed_details
+        existing_action_history.screenshot_id = screenshot_id
         db.session.commit()
 
     @staticmethod

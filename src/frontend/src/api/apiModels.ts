@@ -38,10 +38,19 @@ export interface Website {
 
 export type ActionStatusCode = 'SUCCESS' | 'FAILED' | 'IN_PROGRESS'
 
+export enum FailedDetails {
+  AUTOMATIC_FORM_DETECTION_FAILED = 'AUTOMATIC_FORM_DETECTION_FAILED',
+  USERNAME_FIELD_NOT_FOUND = 'USERNAME_FIELD_NOT_FOUND',
+  PASSWORD_FIELD_NOT_FOUND = 'PASSWORD_FIELD_NOT_FOUND',
+  PIN_FIELD_NOT_FOUND = 'PIN_FIELD_NOT_FOUND',
+  SUBMIT_BUTTON_NOT_FOUND = 'SUBMIT_BUTTON_NOT_FOUND',
+}
+
 export interface ActionHistory {
   id: number
   execution_started: string
   execution_ended: string | null
   execution_status: ActionStatusCode
-  failed_details: string | null
+  failed_details: FailedDetails | null
+  screenshot_id: string | null
 }

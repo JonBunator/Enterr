@@ -1,7 +1,6 @@
 import os
 from enum import Enum
 from seleniumbase import SB
-import uuid
 from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
 from .find_form_automatically import find_login_automatically, XPaths
 
@@ -14,7 +13,7 @@ class LoginStatusCode(Enum):
     SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
     FAILED = ActionStatusCode.FAILED
 
-def login(url: str, success_url: str, username: str, password: str, x_paths: XPaths = None) -> LoginStatusCode:
+def login(url: str, success_url: str, username: str, password: str, x_paths: XPaths = None, screenshot_id: str = None) -> LoginStatusCode:
     with SB(uc=True, ad_block=True, xvfb=True) as sb:
         sb.activate_cdp_mode(url)
         sb.sleep(3)
@@ -38,22 +37,19 @@ def login(url: str, success_url: str, username: str, password: str, x_paths: XPa
             return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
 
         sb.sleep(0.5)
-
-        save_screenshot(sb)
+        if screenshot_id is not None:
+            save_screenshot(sb, screenshot_id)
         if sb.cdp.get_current_url() == success_url:
             return LoginStatusCode.SUCCESS
         return LoginStatusCode.FAILED
 
 
-def save_screenshot(sb: SB) -> str:
+def save_screenshot(sb: SB, screenshot_id: str):
     dev_mode = os.getenv('FLASK_ENV') != 'production'
-    unique_id = str(uuid.uuid4())
 
     if dev_mode:
         path = f"../config/images"
     else:
         path = f"/config/images"
-    sb.cdp.save_screenshot(os.path.join(path, f"{unique_id}.png"))
-    return unique_id
-
+    sb.cdp.save_screenshot(os.path.join(path, f"{screenshot_id}.png"))
             

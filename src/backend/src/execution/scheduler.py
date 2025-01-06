@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
@@ -23,8 +24,11 @@ class Scheduler:
             self.add_task(website.id)
 
     def _login_task(self, website_id: int):
+        screenshot_id = None
         with self.app.app_context():
             website = DataAccess.get_website(website_id)
+            if website.take_screenshot:
+                screenshot_id = str(uuid.uuid4())
             start_time = datetime.now()
             url = website.url
             success_url = website.success_url
@@ -44,7 +48,7 @@ class Scheduler:
             )
             action_history_id = self.data_access.add_action_history(website_id=website.id, action_history=action_history)
         # login
-        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths)
+        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths, screenshot_id=screenshot_id)
 
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
@@ -56,7 +60,8 @@ class Scheduler:
         with self.app.app_context():
             self.data_access.action_history_finish_execution(action_history_id=action_history_id,
                                                      execution_status=ActionStatusCode(executions_status.value),
-                                                     failed_details=failed_details)
+                                                     failed_details=failed_details,
+                                                     screenshot_id=screenshot_id)
 
 
 

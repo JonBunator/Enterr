@@ -1,3 +1,4 @@
+import type { ActionHistory } from '../../api/apiModels.ts'
 import { getLoginHistory, getWebsites } from '../../api/apiRequests.ts'
 import { ActivityStatusCode } from './StatusIcon.tsx'
 
@@ -9,8 +10,7 @@ export interface ActivityData {
   success_url: string
   nextLogin: Date
   expirationDate?: Date
-  loginHistory: ActivityStatusCode[]
-  screenshots: string
+  loginHistory: ActionHistory[] | null
 }
 
 export interface CustomAccess {
@@ -45,10 +45,6 @@ export async function getActivity(): Promise<ActivityData[]> {
   return Promise.all(websites.map(async (website): Promise<ActivityData> => {
     const loginHistory = await getLoginHistory(website.id)
 
-    const loginHistoryStatuses = loginHistory.map((login) => {
-      return login.execution_status
-    })
-
     const lastSuccessfulLogin = loginHistory.find(login => login.execution_status === ActivityStatusCode.SUCCESS)
     let expirationDate: Date | undefined
 
@@ -66,8 +62,7 @@ export async function getActivity(): Promise<ActivityData[]> {
       success_url: website.success_url,
       nextLogin,
       expirationDate,
-      loginHistory: loginHistoryStatuses as ActivityStatusCode[],
-      screenshots: '',
+      loginHistory,
     }
   }))
 }

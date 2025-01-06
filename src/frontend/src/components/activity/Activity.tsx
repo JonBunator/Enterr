@@ -11,7 +11,6 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import { motion } from 'framer-motion'
@@ -20,7 +19,8 @@ import { useWebSocket } from '../WebSocketProvider.tsx'
 import ActionsPopover from './ActionsPopover.tsx'
 import { getActivity } from './activityRequests.ts'
 import ActivityStatus from './ActivityStatus.tsx'
-import StatusIcon, { ActivityStatusCode } from './StatusIcon.tsx'
+import LoginHistoryDetails from './LoginHistoryDetails.tsx'
+import { ActivityStatusCode } from './StatusIcon.tsx'
 import TimeDifference from './TimeDifference.tsx'
 import './Activity.scss'
 
@@ -141,7 +141,6 @@ export default function Activity() {
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>Login History</TableCell>
-                <TableCell>Screenshots</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
@@ -169,17 +168,17 @@ export default function Activity() {
                     />
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Show login history">
+                    {row.loginHistory !== null
+                    && (
                       <div className="login-history">
-                        {row.loginHistory.slice(0, 3).map((status, index) => (
-                          <StatusIcon key={index} activityStatus={status} />
+                        {row.loginHistory.slice(0, 3).map((lh, index) => (
+                          <LoginHistoryDetails key={index} loginHistory={lh} />
                         ))}
                         {row.loginHistory.length > 3
                         && <Typography>...</Typography>}
                       </div>
-                    </Tooltip>
+                    )}
                   </TableCell>
-                  <TableCell>{row.screenshots}</TableCell>
                   <TableCell>
                     <ActionsPopover websiteId={row.id} websiteURL={row.url} />
                   </TableCell>

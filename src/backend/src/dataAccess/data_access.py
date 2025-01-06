@@ -37,8 +37,8 @@ class DataAccess:
         self.webhook_endpoints.action_history_changed(action_history_id=action_history_id)
         return action_history_id
 
-    def action_history_finish_execution(self, action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails):
-        DataBase.action_history_finish_execution(action_history_id, execution_status, failed_details)
+    def action_history_finish_execution(self, action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails, screenshot_id: str = None):
+        DataBase.action_history_finish_execution(action_history_id, execution_status, failed_details, screenshot_id)
         self.webhook_endpoints.action_history_changed(action_history_id=action_history_id)
 
     @staticmethod

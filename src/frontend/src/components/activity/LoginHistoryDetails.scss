@@ -1,0 +1,29 @@
+.login-history-details {
+  pointer-events: none;
+
+  .MuiTypography-root {
+    font-size: 14px;
+  }
+
+  .screenshot {
+    width: 350px;
+  }
+
+  .login-history-details-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-radius: 0;
+    padding: 8px;
+    margin-top: -6px;
+    margin-left: -1px;
+    margin-right: -1px;
+    .status-icon-container {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+  .login-history-details-content {
+    padding: 8px;
+  }
+}

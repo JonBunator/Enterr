@@ -2,6 +2,9 @@
   border-radius: 4px;
   width: 1.35rem;
   height: 1.35rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &.clickable {
     cursor: pointer;
@@ -10,7 +13,6 @@
   &.success {
     background: #c4f8d6;
     color: #14532d;
-
     &.hover:hover {
       background: #84f2ab;
     }
@@ -27,9 +29,6 @@
 
   &.running {
     background: #c4f1f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 
     span {
       color: #144b53;
@@ -43,9 +42,6 @@
   &.paused {
     background: #f8f5c4;
     color: #535314;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 
     span {
       font-size: 1.2rem;
