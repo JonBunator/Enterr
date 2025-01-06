@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react'
+import type { ActivityData } from './activityRequests.ts'
 import {
   Card,
   CardContent,
@@ -23,16 +24,6 @@ import StatusIcon, { ActivityStatusCode } from './StatusIcon.tsx'
 import TimeDifference from './TimeDifference.tsx'
 import './Activity.scss'
 
-interface ActivityRow {
-  id: number
-  status: ActivityStatusCode
-  name: string
-  nextLogin: Date
-  expirationDate?: Date
-  loginHistory: ActivityStatusCode[]
-  screenshots: string
-}
-
 enum Order {
   ASC = 'asc',
   DESC = 'desc,',
@@ -42,11 +33,11 @@ type OrderType = 'asc' | 'desc'
 
 export default function Activity() {
   const [order, setOrder] = useState<Order>(Order.ASC)
-  const [orderBy, setOrderBy] = useState<keyof ActivityRow>('status')
+  const [orderBy, setOrderBy] = useState<keyof ActivityData>('status')
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
-  const [rawData, setRawData] = useState<ActivityRow[]>([])
-  const [processedData, setProcessedData] = useState<ActivityRow[]>([])
+  const [rawData, setRawData] = useState<ActivityData[]>([])
+  const [processedData, setProcessedData] = useState<ActivityData[]>([])
 
   const { on } = useWebSocket()
 
@@ -72,7 +63,7 @@ export default function Activity() {
     })
   }, [on])
 
-  const handleSortRequest = async (property: keyof ActivityRow) => {
+  const handleSortRequest = async (property: keyof ActivityData) => {
     const isAsc = orderBy === property && order === Order.ASC
     setOrder(isAsc ? Order.DESC : Order.ASC)
     setOrderBy(property)
@@ -190,7 +181,7 @@ export default function Activity() {
                   </TableCell>
                   <TableCell>{row.screenshots}</TableCell>
                   <TableCell>
-                    <ActionsPopover websiteId={row.id} />
+                    <ActionsPopover websiteId={row.id} websiteURL={row.url} />
                   </TableCell>
                 </TableRow>
               ))}

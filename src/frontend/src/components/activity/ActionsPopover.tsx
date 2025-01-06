@@ -5,20 +5,25 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
-import { IconButton, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip } from '@mui/material'
+import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { deleteWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
+import { useSnackbar } from '../SnackbarProvider.tsx'
 
 interface ActionsPopoverProps {
   websiteId: number
+  websiteURL: string
 }
 
 export default function ActionsPopover(props: ActionsPopoverProps) {
-  const { websiteId } = props
+  const { websiteId, websiteURL } = props
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [deletionApprovalDialogOpen, setDeletionApprovalDialogOpen] = useState<boolean>(false)
+  const [saveWebsiteVisitDialogOpen, setSaveWebsiteVisitDialogOpen] = useState<boolean>(false)
+
+  const { success, error, loading } = useSnackbar()
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -28,9 +33,26 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     setAnchorEl(null)
   }
 
-  function handleDelete() {
+  function handleOpenWebsite() {
+    handleClose()
+    setSaveWebsiteVisitDialogOpen(true)
+    window.open(websiteURL, '_blank')
+  }
+
+  function handleDeleteRequest() {
     handleClose()
     setDeletionApprovalDialogOpen(true)
+  }
+
+  async function handleDelete() {
+    loading('Deleting website...')
+    try {
+      await deleteWebsite(websiteId)
+      success('Website deleted successfully')
+    }
+    catch (e) {
+      error('Failed to delete website', (e as Error).message)
+    }
   }
 
   return (
@@ -43,9 +65,23 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
       <ApprovalDialog
         open={deletionApprovalDialogOpen}
         onClose={() => setDeletionApprovalDialogOpen(false)}
-        onApproval={() => void deleteWebsite(websiteId)}
+        onApproval={() => void handleDelete()}
         header="Delete website"
         description="Are you sure you want to delete this website?"
+        approvalText="Delete"
+      />
+      <ApprovalDialog
+        open={saveWebsiteVisitDialogOpen}
+        onClose={() => setSaveWebsiteVisitDialogOpen(false)}
+        onApproval={() => console.log('approved')}
+        header="Save login"
+        description={(
+          <>
+            <Typography>You manually visited the website </Typography>
+            <Link>{websiteURL}</Link>
+            <Typography>Do you want to save the potential login as a successful?</Typography>
+          </>
+        )}
       />
       <Popover
         open={Boolean(anchorEl)}
@@ -66,7 +102,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           </ListItemIcon>
           <ListItemText primary="Pause automatic login" />
         </MenuItem>
-        <MenuItem onClick={() => console.log('')}>
+        <MenuItem onClick={handleOpenWebsite}>
           <ListItemIcon>
             <GlobeAltIcon className="icon" />
           </ListItemIcon>
@@ -78,7 +114,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           </ListItemIcon>
           <ListItemText primary="Edit" />
         </MenuItem>
-        <MenuItem onClick={() => handleDelete()}>
+        <MenuItem onClick={handleDeleteRequest}>
           <ListItemIcon>
             <TrashIcon className="icon" />
           </ListItemIcon>

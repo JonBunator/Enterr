@@ -5,6 +5,7 @@ export interface ActivityData {
   id: number
   status: ActivityStatusCode
   name: string
+  url: string
   nextLogin: Date
   expirationDate?: Date
   loginHistory: ActivityStatusCode[]
@@ -62,6 +63,7 @@ export async function getActivity(): Promise<ActivityData[]> {
       id: website.id,
       status: (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode,
       name: website.name,
+      url: website.url,
       nextLogin,
       expirationDate,
       loginHistory: loginHistoryStatuses as ActivityStatusCode[],

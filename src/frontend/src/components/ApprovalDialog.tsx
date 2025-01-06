@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import type { ReactNode } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 
 interface ApprovalDialogProps {
   /**
@@ -16,20 +17,24 @@ interface ApprovalDialogProps {
   /**
    * The header text for the dialog
    */
-  header: string
+  header: ReactNode
   /**
    * The description text for the dialog
    */
-  description: string
+  description: ReactNode
+  /**
+   * Text of the approval button. "Yes" when undefined.
+   */
+  approvalText?: string
 }
 
 export default function ApprovalDialog(props: ApprovalDialogProps) {
-  const { open, onClose, onApproval, header, description } = props
+  const { open, onClose, onApproval, header, description, approvalText } = props
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{header}</DialogTitle>
       <DialogContent>
-        <p>{description}</p>
+        <Typography>{description}</Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} variant="outlined" color="primary">
@@ -43,7 +48,7 @@ export default function ApprovalDialog(props: ApprovalDialogProps) {
           color="primary"
           variant="contained"
         >
-          Approve
+          {approvalText ?? 'Yes'}
         </Button>
       </DialogActions>
     </Dialog>
