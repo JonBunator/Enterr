@@ -70,7 +70,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+      <StatusIcon hover activityStatus={loginHistory.execution_status as ActivityStatusCode} />
       <Popover
         className="login-history-details"
         open={open}

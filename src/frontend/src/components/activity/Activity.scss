@@ -5,12 +5,16 @@
 
   .activity-table {
     td {
-      padding-top: 12px;
-      padding-bottom: 12px;
+      padding-top: 10px;
+      padding-bottom: 10px;
       &:last-child {
         padding-right: 0;
       }
     }
+  }
+
+  .activity-empty-pagination-spacer {
+    height: 52px;
   }
 
   .activity-status {

@@ -31,9 +31,14 @@ enum Order {
 
 type OrderType = 'asc' | 'desc'
 
-export default function Activity() {
+interface ActivityProps {
+  searchTerm?: string
+}
+
+export default function Activity(props: ActivityProps) {
+  const { searchTerm } = props
   const [order, setOrder] = useState<Order>(Order.ASC)
-  const [orderBy, setOrderBy] = useState<keyof ActivityData>('status')
+  const [orderBy, setOrderBy] = useState<keyof ActivityData>('lastLoginAttempt')
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
   const [rawData, setRawData] = useState<ActivityData[]>([])
@@ -78,6 +83,15 @@ export default function Activity() {
     setPage(0)
   }
 
+  function orderByTime(order: Order, a?: Date, b?: Date, reverse?: boolean): number {
+    const aTime = a?.getTime() ?? 0
+    const bTime = b?.getTime() ?? 0
+    if (reverse) {
+      order = order === Order.ASC ? Order.DESC : Order.ASC
+    }
+    return order === Order.ASC ? bTime - aTime : aTime - bTime
+  }
+
   useEffect(() => {
     const sortedData = rawData.slice().sort((a, b) => {
       if (orderBy === 'status') {
@@ -89,27 +103,40 @@ export default function Activity() {
         ]
         const aIndex = statusOrder.indexOf(a.status)
         const bIndex = statusOrder.indexOf(b.status)
-        return order === Order.ASC ? aIndex - bIndex : bIndex - aIndex
+        const orderByStatus = order === Order.ASC ? aIndex - bIndex : bIndex - aIndex
+        if (orderByStatus === 0) {
+          return orderByTime(order, a.nextLogin, b.nextLogin)
+        }
+        return orderByStatus
       }
       if (orderBy === 'nextLogin') {
-        return order === Order.ASC ? a[orderBy].getTime() - b[orderBy].getTime() : b[orderBy].getTime() - a[orderBy].getTime()
+        return orderByTime(order, a[orderBy], b[orderBy], true)
+      }
+      else if (orderBy === 'lastLoginAttempt') {
+        return orderByTime(order, a[orderBy], b[orderBy])
       }
       return order === Order.ASC
         ? (a[orderBy] as string).localeCompare(b[orderBy] as string)
         : (b[orderBy] as string).localeCompare(a[orderBy] as string)
     })
 
-    const paginatedData = sortedData.slice(
+    const filteredData = searchTerm !== undefined
+      ? sortedData.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+      : sortedData
+
+    const paginatedData = filteredData.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,
     )
     setProcessedData(paginatedData)
-  }, [rawData, order, orderBy, page, rowsPerPage])
+  }, [rawData, order, orderBy, page, rowsPerPage, searchTerm])
 
   return (
     <Card className="activity" component={motion.div} layout initial={{ height: 0 }} animate={{ height: 'auto' }}>
       <CardContent className="activity-card" component={motion.div} layout>
-        <TableContainer sx={{ height: 600, width: 1100 }} component={motion.div} layout>
+        <TableContainer sx={{ height: 670, width: 1100 }} component={motion.div} layout>
           <Table stickyHeader className="activity-table" component={motion.table} layout>
             <TableHead component={motion.thead} layout>
               <TableRow component={motion.tr} layout>
@@ -137,7 +164,16 @@ export default function Activity() {
                     direction={(orderBy === 'nextLogin' ? order : Order.ASC) as OrderType}
                     onClick={() => void handleSortRequest('nextLogin')}
                   >
-                    Schedule of Next Login
+                    Next Login
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === 'lastLoginAttempt'}
+                    direction={(orderBy === 'lastLoginAttempt' ? order : Order.ASC) as OrderType}
+                    onClick={() => void handleSortRequest('lastLoginAttempt')}
+                  >
+                    Last Login Attempt
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>Login History</TableCell>
@@ -162,10 +198,13 @@ export default function Activity() {
                   <TableCell>{row.name}</TableCell>
                   <TableCell>
                     <TimeDifference
-                      prefix="Next login in "
+                      prefix=""
                       datetime={row.nextLogin}
                       negativeDifference="No login scheduled"
                     />
+                  </TableCell>
+                  <TableCell>
+                    {row.lastLoginAttempt?.toLocaleString() ?? 'No login yet'}
                   </TableCell>
                   <TableCell>
                     {row.loginHistory !== null
@@ -188,19 +227,20 @@ export default function Activity() {
           </Table>
         </TableContainer>
         {processedData.length > 0
-        && (
-          <TablePagination
-            rowsPerPageOptions={[10, 20, 50]}
-            colSpan={5}
-            component={motion.div}
-            layout
-            count={processedData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        )}
+          ? (
+              <TablePagination
+                rowsPerPageOptions={[10, 20, 50]}
+                colSpan={5}
+                component={motion.div}
+                layout
+                count={processedData.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            )
+          : <div className="activity-empty-pagination-spacer" />}
       </CardContent>
     </Card>
   )

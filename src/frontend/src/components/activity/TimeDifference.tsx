@@ -29,16 +29,16 @@ export default function TimeDifference(props: TimeDifferenceProps) {
     const remainingMinutes = diffInMinutes % 60
     const prefixString = prefix ?? ''
     if (diffInMinutes === 0 || diffInMinutes === -1) {
-      return `${prefixString}under a minute`
+      return `${prefixString}>1min`
     }
     if (diffInDays > 0) {
-      return `${prefixString}${diffInDays} day${diffInDays > 1 ? 's' : ''}`
+      return `${prefixString}${diffInDays}d}`
     }
     else if (diffInHours > 0) {
-      return `${prefixString}${diffInHours} hour${diffInHours > 1 ? 's' : ''}${remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}` : ''}`
+      return `${prefixString}${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`
     }
     else {
-      return `${prefixString}${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`
+      return `${prefixString}${diffInMinutes}m`
     }
   }, [datetime, negativeDifference, prefix])
 

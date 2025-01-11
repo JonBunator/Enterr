@@ -2,7 +2,13 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Autocomplete, InputAdornment, TextField } from '@mui/material'
 import './Search.scss'
 
-export default function Search() {
+interface SearchProps {
+  value?: string
+  onChange?: (value: string) => void
+}
+
+export default function Search(props: SearchProps) {
+  const { value, onChange } = props
   return (
     <Autocomplete
       className="search"
@@ -12,6 +18,8 @@ export default function Search() {
         <TextField
           {...params}
           placeholder="Search..."
+          value={value}
+          onChange={event => onChange?.(event.target.value)}
           slotProps={{
             input: {
               startAdornment: (

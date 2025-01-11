@@ -9,6 +9,7 @@ export interface ActivityData {
   url: string
   success_url: string
   nextLogin: Date
+  lastLoginAttempt?: Date
   expirationDate?: Date
   loginHistory: ActionHistory[] | null
 }
@@ -42,7 +43,6 @@ export interface ChangeWebsite {
 
 export async function getActivity(): Promise<ActivityData[]> {
   const websites = await getWebsites()
-
   return Promise.all(websites.map(async (website): Promise<ActivityData> => {
     const loginHistory = await getLoginHistory(website.id)
 
@@ -54,6 +54,8 @@ export async function getActivity(): Promise<ActivityData[]> {
       expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval_minutes)
     }
 
+    const lastLoginAttempt = loginHistory[0] !== undefined ? new Date(loginHistory[0]?.execution_started) : undefined
+
     const nextLogin = website.next_schedule ? new Date(website.next_schedule.year, website.next_schedule.month - 1, website.next_schedule.day, website.next_schedule.hour, website.next_schedule.minute) : new Date(0)
     return {
       id: website.id,
@@ -62,6 +64,7 @@ export async function getActivity(): Promise<ActivityData[]> {
       url: website.url,
       success_url: website.success_url,
       nextLogin,
+      lastLoginAttempt,
       expirationDate,
       loginHistory,
     }
