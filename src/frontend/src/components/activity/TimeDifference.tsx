@@ -32,7 +32,7 @@ export default function TimeDifference(props: TimeDifferenceProps) {
       return `${prefixString}<1min`
     }
     if (diffInDays > 0) {
-      return `${prefixString}${diffInDays}d}`
+      return `${prefixString}${diffInDays}d`
     }
     else if (diffInHours > 0) {
       return `${prefixString}${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`

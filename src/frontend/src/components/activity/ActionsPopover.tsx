@@ -1,5 +1,6 @@
 import type { ChangeWebsite } from './activityRequests.ts'
 import {
+  CheckCircleIcon,
   GlobeAltIcon,
   PauseCircleIcon,
   PencilSquareIcon,
@@ -7,10 +8,11 @@ import {
 } from '@heroicons/react/24/outline'
 import { EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
 import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { addManualLogin, deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
+import { useWebSocket } from '../WebSocketProvider.tsx'
 import { getChangeWebsite } from './activityRequests.ts'
 import AddEditWebsite from './AddEditWebsite.tsx'
 
@@ -31,6 +33,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const [loadingEditData, setLoadingEditData] = useState<boolean>(false)
 
   const { success, error, loading } = useSnackbar()
+  const { on } = useWebSocket()
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -63,6 +66,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   }
 
   async function handleAddManualLogin() {
+    handleClose()
     loading('Saving manual login...')
     try {
       await addManualLogin(websiteId)
@@ -73,7 +77,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
   }
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     setLoadingEditData(true)
     getChangeWebsite(websiteId)
       .then((result) => {
@@ -82,6 +86,16 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
       })
       .catch(console.error)
   }, [websiteId])
+
+  useEffect(() => {
+    on('login_data_changed', (_d) => {
+      fetchData()
+    })
+  }, [on, fetchData])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData, websiteId])
 
   async function handleOpenEditDialog() {
     handleClose()
@@ -182,6 +196,12 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
             <GlobeAltIcon className="icon" />
           </ListItemIcon>
           <ListItemText primary="Open website" />
+        </MenuItem>
+        <MenuItem onClick={() => void handleAddManualLogin()}>
+          <ListItemIcon>
+            <CheckCircleIcon className="icon" />
+          </ListItemIcon>
+          <ListItemText primary="Save successful login" />
         </MenuItem>
         <MenuItem onClick={() => void handleOpenEditDialog()}>
           <ListItemIcon>

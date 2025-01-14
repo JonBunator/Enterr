@@ -19,7 +19,7 @@ export default function ActivityStatus(props: ActivityStatusProps) {
       case ActivityStatusCode.IN_PROGRESS:
         return 'Currently running...'
       case ActivityStatusCode.PAUSED:
-        return 'Login is paused'
+        return 'Automatic login is paused'
     }
   }
 
