@@ -2,9 +2,10 @@ from typing import Optional
 from pydantic import BaseModel
 from dataAccess.database.database import ActionInterval
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
+from endpoints.decorators.post_request_validator import PostRequestBaseModel
 
 
-class AddActionInterval(BaseModel):
+class AddActionInterval(PostRequestBaseModel):
     date_minutes_start: int = 0
     date_minutes_end: Optional[int] = None
     allowed_time_minutes_start: Optional[int] = None

@@ -2,9 +2,10 @@ from typing import Optional
 from pydantic import BaseModel
 from dataAccess.database.database import CustomAccess
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
+from endpoints.decorators.post_request_validator import PostRequestBaseModel
 
 
-class AddCustomAccess(BaseModel):
+class AddCustomAccess(PostRequestBaseModel):
     username_xpath: str
     password_xpath: str
     pin_xpath: Optional[str] = None

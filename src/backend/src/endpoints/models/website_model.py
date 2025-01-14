@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from dataAccess.database.database import Website
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
+from endpoints.decorators.post_request_validator import PostRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
 from utils.utils import timedelta_to_parts
@@ -25,7 +26,7 @@ class DateTime(BaseModel):
             minute=dt.minute
         )
 
-class AddWebsite(BaseModel):
+class AddWebsite(PostRequestBaseModel):
     url: str
     success_url: str
     name: str

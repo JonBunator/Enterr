@@ -36,6 +36,14 @@ class DataBase:
         return action_history.id
 
     @staticmethod
+    def add_manual_action_history(website_id: int) -> int:
+        website = db.session.get(Website, website_id)
+        website.action_histories.append(action_history)
+        website.next_schedule = website.action_interval.get_random_action_datetime()
+        db.session.commit()
+        return action_history.id
+
+    @staticmethod
     def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails, screenshot_id: str = None):
         existing_action_history = db.session.get(ActionHistory, action_history_id)
         if existing_action_history is None:

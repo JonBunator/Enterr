@@ -42,3 +42,12 @@ export async function editWebsite(websiteId: number, website: ChangeWebsite) {
     },
   })
 }
+
+export async function addManualLogin(websiteId: number) {
+  const body = { id: websiteId }
+  await axios.post('/api/action_history/manual_add', body, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}

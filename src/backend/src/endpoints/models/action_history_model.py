@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional
-from dataAccess.database.database import ActionHistory
+from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
+from endpoints.decorators.post_request_validator import PostRequestBaseModel
 
 
 class GetActionHistory(GetRequestBaseModel):
@@ -22,3 +23,13 @@ class GetActionHistory(GetRequestBaseModel):
             failed_details=action_history.failed_details.value if action_history.failed_details else None,
             screenshot_id=action_history.screenshot_id
         )
+
+class AddManualActionHistory(PostRequestBaseModel):
+    id: int
+
+    def to_sql_model(self) -> ActionHistory:
+        return ActionHistory(
+                execution_started=datetime.now(),
+                execution_ended=datetime.now(),
+                execution_status=ActionStatusCode.SUCCESS,
+            )

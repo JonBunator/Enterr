@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from functools import wraps
 from flask import request, jsonify
 from pydantic import ValidationError
@@ -5,8 +6,14 @@ from typing import Callable, Type
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from http import HTTPStatus
+from dataAccess.database.database import _db
 from endpoints.models.api_response_model import ApiPostResponse
 
+class PostRequestBaseModel(BaseModel, ABC):
+    @staticmethod
+    @abstractmethod
+    def to_sql_model() -> _db.Model:
+        pass
 
 def validate_post_request(request_model: Type[BaseModel]):
     """

@@ -25,6 +25,9 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   function getStatusText(): string {
     switch (loginHistory.execution_status) {
       case 'SUCCESS':
+        if (loginHistory.execution_started === loginHistory.execution_ended) {
+          return 'Login was successful (Manually added)'
+        }
         return 'Login was successful'
       case 'FAILED':
         return 'Login failed'

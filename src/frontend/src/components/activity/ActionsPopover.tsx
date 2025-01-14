@@ -8,7 +8,7 @@ import {
 import { EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
 import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
+import { addManualLogin, deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
 import { getChangeWebsite } from './activityRequests.ts'
@@ -59,6 +59,17 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
     catch (e) {
       error('Failed to delete website', (e as Error).message)
+    }
+  }
+
+  async function handleAddManualLogin() {
+    loading('Saving manual login...')
+    try {
+      await addManualLogin(websiteId)
+      success('Manual login saved successfully')
+    }
+    catch (e) {
+      error('Failed to save manual login', (e as Error).message)
     }
   }
 
@@ -125,14 +136,14 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
       <ApprovalDialog
         open={saveWebsiteVisitDialogOpen}
         onClose={() => setSaveWebsiteVisitDialogOpen(false)}
-        onApproval={() => console.log('approved')}
+        onApproval={() => void handleAddManualLogin()}
         header="Save login"
         description={(
           <>
             <Typography>You manually visited the website </Typography>
             <Link>{websiteURL}</Link>
             <Typography>
-              Do you want to save the potential login as a successful?
+              Do you want to save the potential login as successful?
             </Typography>
           </>
         )}
