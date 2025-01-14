@@ -7,6 +7,11 @@ export async function getWebsites(): Promise<Website[]> {
   return data.data.data as Website[]
 }
 
+export async function getWebsite(website_id: number): Promise<Website> {
+  const data = await axios.get(`/api/websites/${website_id}`)
+  return data.data.data as Website
+}
+
 export async function getLoginHistory(website_id: number): Promise<ActionHistory[]> {
   const data = await axios.get(`/api/action_history/${website_id}`)
   return data.data.data as ActionHistory[]

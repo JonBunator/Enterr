@@ -35,6 +35,10 @@ interface AddEditWebsiteProps {
    * Value that is displayed in dialog
    */
   value?: ChangeWebsite
+  /**
+   * When true dialog is in loading state. No values can be inputted.
+   */
+  loading?: boolean
 }
 
 const emptyChangeWebsite: ChangeWebsite = {
@@ -45,6 +49,7 @@ const emptyChangeWebsite: ChangeWebsite = {
   password: '',
   pin: '',
   take_screenshot: true,
+  paused: false,
   expiration_interval_minutes: null,
   custom_access: null,
   action_interval: {
@@ -56,7 +61,7 @@ const emptyChangeWebsite: ChangeWebsite = {
 }
 
 export default function AddEditWebsite(props: AddEditWebsiteProps) {
-  const { open, onClose, add, onChange, value } = props
+  const { open, onClose, add, onChange, value, loading } = props
   const [currentValue, setCurrentValue] = useState<ChangeWebsite>(emptyChangeWebsite)
   const formRef = useRef<FormProviderRef>(null)
 
@@ -94,10 +99,10 @@ export default function AddEditWebsite(props: AddEditWebsiteProps) {
       <DialogContent>
         <FormProvider ref={formRef}>
           <div className="column">
-            <GeneralInfoForm value={currentValue} onChange={setCurrentValue} />
-            <AccessForm value={currentValue} onChange={setCurrentValue} />
-            <ActionIntervalForm value={currentValue} onChange={setCurrentValue} />
-            <ExpirationIntervalForm value={currentValue} onChange={setCurrentValue} />
+            <GeneralInfoForm value={currentValue} onChange={setCurrentValue} loading={loading} />
+            <AccessForm value={currentValue} onChange={setCurrentValue} loading={loading} />
+            <ActionIntervalForm value={currentValue} onChange={setCurrentValue} loading={loading} />
+            <ExpirationIntervalForm value={currentValue} onChange={setCurrentValue} loading={loading} />
           </div>
 
         </FormProvider>
@@ -107,6 +112,7 @@ export default function AddEditWebsite(props: AddEditWebsiteProps) {
           Cancel
         </Button>
         <Button
+          disabled={loading}
           onClick={handleSubmit}
           color="primary"
           variant="contained"

@@ -16,6 +16,10 @@ class DataAccess:
     def get_website(website_id: int) -> Website:
         return DataBase.get_website(website_id)
 
+    @staticmethod
+    def get_website(website_id: int) -> Website:
+        return DataBase.get_website(website_id)
+
     def add_website(self, request: AddWebsite):
         website = request.to_sql_model()
         DataBase.add_website(website)

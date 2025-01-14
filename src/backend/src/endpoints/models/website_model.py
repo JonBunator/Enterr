@@ -33,6 +33,7 @@ class AddWebsite(BaseModel):
     password: str
     pin: Optional[str] = None
     take_screenshot: bool
+    paused: Optional[bool] = None
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[AddCustomAccess] = None
     action_interval: AddActionInterval
@@ -49,6 +50,7 @@ class AddWebsite(BaseModel):
             password=self.password,
             pin=self.pin if self.pin != '' else None,
             take_screenshot=self.take_screenshot,
+            paused=self.paused if self.paused is not None else False,
             added_at=datetime.now(),
             expiration_interval=expiration_interval,
         )
@@ -67,6 +69,7 @@ class EditWebsite(BaseModel):
     password: Optional[str] = None
     pin: Optional[str] = None
     take_screenshot: Optional[bool] = None
+    paused: Optional[bool] = None
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[EditCustomAccess] = None
     action_interval: Optional[EditActionInterval] = None
@@ -86,6 +89,12 @@ class EditWebsite(BaseModel):
             existing_website.pin = self.pin
         if self.take_screenshot is not None:
             existing_website.take_screenshot = self.take_screenshot
+        if self.paused is not None:
+            existing_website.paused = self.paused
+            if self.paused:
+                existing_website.next_schedule = None
+            else:
+                existing_website.next_schedule = existing_website.action_interval.get_random_action_datetime()
         if self.expiration_interval_minutes is not None:
             existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
         if self.custom_access is not None:
@@ -107,6 +116,7 @@ class GetWebsite(GetRequestBaseModel):
     password: str
     pin: Optional[str] = None
     take_screenshot: bool
+    paused: bool
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
@@ -129,6 +139,7 @@ class GetWebsite(GetRequestBaseModel):
             password=website.password,
             pin=website.pin,
             take_screenshot=website.take_screenshot,
+            paused=website.paused,
             expiration_interval_minutes=expiration_interval_minutes,
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,

@@ -5,9 +5,9 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
+import { EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
 import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
@@ -28,6 +28,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
 
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
   const [editWebsiteValue, setEditWebsiteValue] = useState<ChangeWebsite | undefined>(undefined)
+  const [loadingEditData, setLoadingEditData] = useState<boolean>(false)
 
   const { success, error, loading } = useSnackbar()
 
@@ -61,10 +62,19 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
   }
 
+  useEffect(() => {
+    setLoadingEditData(true)
+    getChangeWebsite(websiteId)
+      .then((result) => {
+        setEditWebsiteValue(result)
+        setLoadingEditData(false)
+      })
+      .catch(console.error)
+  }, [websiteId])
+
   async function handleOpenEditDialog() {
     handleClose()
     setEditDialogOpen(true)
-    setEditWebsiteValue(await getChangeWebsite(websiteId))
   }
 
   async function handleEdit(value: ChangeWebsite) {
@@ -76,6 +86,24 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
     catch (e) {
       error('Failed to edit website', (e as Error).message)
+    }
+  }
+
+  async function handlePause() {
+    handleClose()
+    if (editWebsiteValue === undefined) {
+      error('Failed to change pause state of website login', 'Loading website data failed.')
+      return
+    }
+    const paused = !editWebsiteValue.paused
+    setEditWebsiteValue(prev => ({ ...prev, paused }))
+    loading(`${paused ? 'Pausing' : 'Resuming'} website login...`)
+    try {
+      await editWebsite(websiteId, { paused })
+      success(`Website login successfully ${paused ? 'paused' : 'resumed'}`)
+    }
+    catch (e) {
+      error('Failed to change pause state of website login', (e as Error).message)
     }
   }
 
@@ -103,11 +131,20 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           <>
             <Typography>You manually visited the website </Typography>
             <Link>{websiteURL}</Link>
-            <Typography>Do you want to save the potential login as a successful?</Typography>
+            <Typography>
+              Do you want to save the potential login as a successful?
+            </Typography>
           </>
         )}
       />
-      <AddEditWebsite value={editWebsiteValue} open={editDialogOpen} add={false} onClose={() => setEditDialogOpen(false)} onChange={value => void handleEdit(value)} />
+      <AddEditWebsite
+        loading={loadingEditData}
+        value={editWebsiteValue}
+        open={editDialogOpen}
+        add={false}
+        onClose={() => setEditDialogOpen(false)}
+        onChange={value => void handleEdit(value)}
+      />
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -121,11 +158,13 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={() => console.log('')}>
+        <MenuItem onClick={() => void handlePause()}>
           <ListItemIcon>
-            <PauseCircleIcon className="icon" />
+            {editWebsiteValue?.paused
+              ? <PlayCircleIcon className="icon" />
+              : <PauseCircleIcon className="icon" />}
           </ListItemIcon>
-          <ListItemText primary="Pause automatic login" />
+          <ListItemText primary={`${editWebsiteValue?.paused ? 'Resume' : 'Pause'} automatic login`} />
         </MenuItem>
         <MenuItem onClick={handleOpenWebsite}>
           <ListItemIcon>

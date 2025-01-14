@@ -13,6 +13,7 @@ interface FormGroupingProps {
   disableCheckbox?: boolean
   checked?: boolean
   onChange?: (checked: boolean) => void
+  disabled?: boolean
   children?: ReactNode
 }
 
@@ -36,7 +37,7 @@ function ResizablePanel(props: ResizablePanelProps) {
 }
 
 export default function FormGrouping(props: FormGroupingProps) {
-  const { title, subtitle, elevation, column, backgroundElevation, disableCheckbox, checked, onChange, children } = props
+  const { title, subtitle, elevation, column, backgroundElevation, disableCheckbox, checked, onChange, disabled, children } = props
   return (
     <FormGroup>
       <Paper className="form-grouping" elevation={elevation ?? 8}>
@@ -60,6 +61,7 @@ export default function FormGrouping(props: FormGroupingProps) {
                   className="form-grouping-checkbox-label"
                   control={(
                     <Checkbox
+                      disabled={disabled}
                       checked={checked}
                       onChange={event => onChange?.(event.target.checked)}
                     />

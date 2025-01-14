@@ -1,15 +1,16 @@
 import type { ChangeWebsite, CustomAccess } from '../../activity/activityRequests.ts'
-import { TextField } from '@mui/material'
 import { useState } from 'react'
+import TextFieldForm from '../../form/TextFieldForm.tsx'
 import FormGrouping from '../FormGrouping.tsx'
 
 interface CustomAccessFormProps {
   value: ChangeWebsite
   onChange?: (value: ChangeWebsite) => void
+  loading?: boolean
 }
 
 export default function CustomAccessForm(props: CustomAccessFormProps) {
-  const { value, onChange } = props
+  const { value, onChange, loading } = props
   const [customAccessEnabled, setCustomAccessEnabled] = useState<boolean>(value.custom_access !== null)
 
   function handleEnabledChange(enabled: boolean) {
@@ -38,6 +39,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
 
   return (
     <FormGrouping
+      disabled={loading}
       checked={customAccessEnabled}
       onChange={handleEnabledChange}
       elevation={16}
@@ -45,32 +47,40 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
       title="Custom Access (Optional)"
       subtitle="Allows to define custom XPath selectors for the username, password, pin fields and submit button."
     >
-      <TextField
+      <TextFieldForm
         label="Username XPath"
         variant="filled"
+        identifier="username-xpath"
+        disabled={loading}
         value={value?.custom_access?.username_xpath ?? ''}
-        onChange={event => handleCustomAccessChange(event.target.value, 'username_xpath')}
+        onChange={val => handleCustomAccessChange(val, 'username_xpath')}
         fullWidth
       />
-      <TextField
+      <TextFieldForm
         label="Password XPath"
         variant="filled"
+        identifier="password-xpath"
+        disabled={loading}
         value={value?.custom_access?.password_xpath ?? ''}
-        onChange={event => handleCustomAccessChange(event.target.value, 'password_xpath')}
+        onChange={val => handleCustomAccessChange(val, 'password_xpath')}
         fullWidth
       />
-      <TextField
+      <TextFieldForm
         label="Pin XPath"
         variant="filled"
+        identifier="pin-xpath"
+        disabled={loading}
         value={value?.custom_access?.pin_xpath ?? ''}
-        onChange={event => handleCustomAccessChange(event.target.value, 'pin_xpath')}
+        onChange={val => handleCustomAccessChange(val, 'pin_xpath')}
         fullWidth
       />
-      <TextField
+      <TextFieldForm
         label="Submit button XPath"
         variant="filled"
+        identifier="submit-button-xpath"
+        disabled={loading}
         value={value?.custom_access?.submit_button_xpath ?? ''}
-        onChange={event => handleCustomAccessChange(event.target.value, 'submit_button_xpath')}
+        onChange={val => handleCustomAccessChange(val, 'submit_button_xpath')}
         fullWidth
       />
     </FormGrouping>

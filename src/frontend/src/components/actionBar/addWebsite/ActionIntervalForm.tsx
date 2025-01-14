@@ -1,5 +1,5 @@
 import type { Dayjs } from 'dayjs'
-import type { ChangeWebsite } from '../../activity/activityRequests.ts'
+import type { ActionInterval, ChangeWebsite } from '../../activity/activityRequests.ts'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import TimeFieldForm from '../../form/TimeFieldForm.tsx'
@@ -9,12 +9,13 @@ import FormGrouping from '../FormGrouping.tsx'
 interface ActionIntervalFormProps {
   value: ChangeWebsite
   onChange?: (value: ChangeWebsite) => void
+  loading?: boolean
 }
 
 export default function ActionIntervalForm(props: ActionIntervalFormProps) {
-  const { value, onChange } = props
-  const [timeSpanEnabled, setTimeSpanEnabled] = useState<boolean>(value.action_interval.date_minutes_end !== null)
-  const [timeOfDayEnabled, setTimeOfDayEnabled] = useState<boolean>(value.action_interval.allowed_time_minutes_start !== null || value.action_interval.allowed_time_minutes_end !== null)
+  const { value, onChange, loading } = props
+  const [timeSpanEnabled, setTimeSpanEnabled] = useState<boolean>(value.action_interval?.date_minutes_end !== null)
+  const [timeOfDayEnabled, setTimeOfDayEnabled] = useState<boolean>(value.action_interval?.allowed_time_minutes_start !== null || value.action_interval.allowed_time_minutes_end !== null)
 
   function validateExecutionInterval(minutes: string): string {
     if (Number(minutes) <= 0) {
@@ -27,7 +28,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
     if (Number(minutes) <= 0) {
       return 'Timespan end values must be greater than 0min.'
     }
-    if (Number(minutes) < value.action_interval.date_minutes_start) {
+    if (Number(minutes) < (value.action_interval?.date_minutes_start ?? 0)) {
       return 'Timespan end values must be greater than execution interval.'
     }
     return ''
@@ -50,7 +51,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
           ...value.action_interval,
           allowed_time_minutes_start: null,
           allowed_time_minutes_end: null,
-        },
+        } as ActionInterval,
       })
     }
     setTimeOfDayEnabled(enabled)
@@ -63,7 +64,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
         action_interval: {
           ...value.action_interval,
           date_minutes_end: null,
-        },
+        } as ActionInterval,
       })
     }
     setTimeSpanEnabled(enabled)
@@ -79,7 +80,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
       action_interval: {
         ...value.action_interval,
         [key]: minutes,
-      },
+      } as ActionInterval,
     })
   }
 
@@ -88,7 +89,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
       return ''
     }
     const minutes = time?.hour() * 60 + time?.minute()
-    const endTime = value.action_interval.allowed_time_minutes_end
+    const endTime = value.action_interval?.allowed_time_minutes_end ?? 0
     if (endTime !== null && minutes > endTime) {
       return 'Time must be before allowed end time.'
     }
@@ -100,7 +101,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
       return ''
     }
     const minutes = time?.hour() * 60 + time?.minute()
-    const startTime = value.action_interval.allowed_time_minutes_start
+    const startTime = value.action_interval?.allowed_time_minutes_start ?? 0
     if (startTime !== null && minutes < startTime) {
       return 'Time must be after allowed start time.'
     }
@@ -109,6 +110,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
 
   return (
     <FormGrouping
+      disabled={loading}
       subtitle="Defines the interval at which the automatic login should be triggered. For example, if Days=5, an automatic login is performed every 5 days."
       disableCheckbox
       title="Execution Interval *"
@@ -120,19 +122,21 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
           hoursHelperText="Only allowed when time of day execution is disabled."
           minutesHelperText="Only allowed when time of day execution is disabled."
           disableHoursMinutes={timeOfDayEnabled}
-          value={value.action_interval.date_minutes_start}
+          loading={loading}
+          value={value.action_interval?.date_minutes_start ?? 0}
           onChange={minutes =>
             onChange?.({
               ...value,
               action_interval: {
                 ...value.action_interval,
                 date_minutes_start: minutes,
-              },
+              } as ActionInterval,
             })}
           onValidate={validateExecutionInterval}
         />
       </div>
       <FormGrouping
+        disabled={loading}
         elevation={16}
         backgroundElevation={8}
         checked={timeSpanEnabled}
@@ -145,19 +149,21 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
           hoursHelperText="Only allowed when time of day execution is disabled."
           minutesHelperText="Only allowed when time of day execution is disabled."
           disableHoursMinutes={timeOfDayEnabled}
-          value={value.action_interval.date_minutes_end ?? 0}
+          loading={loading}
+          value={value.action_interval?.date_minutes_end ?? 0}
           onChange={minutes =>
             onChange?.({
               ...value,
               action_interval: {
                 ...value.action_interval,
                 date_minutes_end: minutes,
-              },
+              } as ActionInterval,
             })}
           onValidate={validateTimespanInterval}
         />
       </FormGrouping>
       <FormGrouping
+        disabled={loading}
         elevation={16}
         backgroundElevation={8}
         checked={timeOfDayEnabled}
@@ -170,7 +176,8 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
           label="Allowed Start Time"
           variant="filled"
           fullWidth
-          value={minutesToDayjs(value.action_interval.allowed_time_minutes_start)}
+          disabled={loading}
+          value={minutesToDayjs(value.action_interval?.allowed_time_minutes_start ?? 0)}
           onChange={time => handleAllowedTimeChange(time, 'allowed_time_minutes_start')}
           onValidate={validateAllowedStartTime}
           required
@@ -181,7 +188,8 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
           label="Allowed End Time"
           variant="filled"
           fullWidth
-          value={minutesToDayjs(value.action_interval.allowed_time_minutes_end)}
+          disabled={loading}
+          value={minutesToDayjs(value.action_interval?.allowed_time_minutes_end ?? 0)}
           onChange={time => handleAllowedTimeChange(time, 'allowed_time_minutes_end')}
           onValidate={validateAllowedEndTime}
           required

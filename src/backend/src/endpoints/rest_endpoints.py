@@ -18,6 +18,11 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     def get_websites():
         return DataAccess.get_all_websites()
 
+    @app.route('/api/websites/<int:website_id>', methods=['GET'])
+    @validate_get_request(GetWebsite)
+    def get_website(website_id: int):
+        return DataAccess.get_website(website_id)
+
     @app.route('/api/websites/add', methods=['POST'])
     @validate_post_request(AddWebsite)
     def add_website(website_request: AddWebsite):

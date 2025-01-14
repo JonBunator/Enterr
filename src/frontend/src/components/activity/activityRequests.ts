@@ -1,5 +1,5 @@
 import type { ActionHistory } from '../../api/apiModels.ts'
-import { getLoginHistory, getWebsites } from '../../api/apiRequests.ts'
+import { getLoginHistory, getWebsite, getWebsites } from '../../api/apiRequests.ts'
 import { ActivityStatusCode } from './StatusIcon.tsx'
 
 export interface ActivityData {
@@ -29,16 +29,17 @@ export interface ActionInterval {
 }
 
 export interface ChangeWebsite {
-  url: string
-  success_url: string
-  name: string
-  username: string
-  password: string
-  pin: string
-  take_screenshot: boolean
-  expiration_interval_minutes: number | null
-  custom_access: CustomAccess | null
-  action_interval: ActionInterval
+  url?: string
+  success_url?: string
+  name?: string
+  username?: string
+  password?: string
+  pin?: string | null
+  take_screenshot?: boolean
+  paused?: boolean
+  expiration_interval_minutes?: number | null
+  custom_access?: CustomAccess | null
+  action_interval?: ActionInterval | null
 }
 
 export async function getActivity(): Promise<ActivityData[]> {
@@ -55,11 +56,13 @@ export async function getActivity(): Promise<ActivityData[]> {
     }
 
     const lastLoginAttempt = loginHistory[0] !== undefined ? new Date(loginHistory[0]?.execution_started) : undefined
+    let status = (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode
+    status = website.paused ? ActivityStatusCode.PAUSED : status
 
     const nextLogin = website.next_schedule ? new Date(website.next_schedule.year, website.next_schedule.month - 1, website.next_schedule.day, website.next_schedule.hour, website.next_schedule.minute) : new Date(0)
     return {
       id: website.id,
-      status: (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode,
+      status,
       name: website.name,
       url: website.url,
       success_url: website.success_url,
@@ -72,7 +75,7 @@ export async function getActivity(): Promise<ActivityData[]> {
 }
 
 export async function getChangeWebsite(websiteId: number): Promise<ChangeWebsite> {
-  const websites = await getWebsites()
-  const website = websites.find(website => website.id === websiteId)
-  return website as ChangeWebsite
+  const website = await getWebsite(websiteId)
+  const { next_schedule, id, ...rest } = website
+  return rest
 }

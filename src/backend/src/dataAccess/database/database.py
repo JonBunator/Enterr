@@ -31,6 +31,7 @@ class Website(_db.Model):
     pin: Mapped[Optional[str]] = mapped_column(nullable=True)
     added_at: Mapped[datetime] = mapped_column(nullable=False)
     take_screenshot: Mapped[bool] = mapped_column(nullable=False)
+    paused: Mapped[bool] = mapped_column(nullable=False)
     expiration_interval: Mapped[Optional[timedelta]] = mapped_column(nullable=True)
     next_schedule: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 

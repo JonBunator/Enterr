@@ -9,10 +9,11 @@ interface TimeTextfieldsProps {
   minutesHelperText?: string
   onChange?: (minutes: number) => void
   onValidate?: (minutes: string) => string
+  loading?: boolean
 }
 
 export default function TimeTextfields(props: TimeTextfieldsProps) {
-  const { identifier, disableHoursMinutes, value, hoursHelperText, minutesHelperText, onChange, onValidate } = props
+  const { identifier, disableHoursMinutes, value, hoursHelperText, minutesHelperText, onChange, onValidate, loading } = props
   const [weeks, setWeeks] = useState<number>(0)
   const [days, setDays] = useState<number>(0)
   const [hours, setHours] = useState<number>(0)
@@ -77,6 +78,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
         identifier={`${identifier}-weeks`}
         onChange={val => setWeeks(Number(val))}
         onBlur={event => handleWeeksChange(Number(event.target.value))}
+        disabled={loading}
         value={weeks}
         numberInput
         label="Weeks"
@@ -87,6 +89,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
         identifier={`${identifier}-days`}
         onChange={val => setDays(Number(val))}
         onBlur={event => handleDaysChange(Number(event.target.value))}
+        disabled={loading}
         value={days}
         numberInput
         label="Days"
@@ -100,7 +103,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
         value={hours}
         numberInput
         label="Hours"
-        disabled={disableHoursMinutes}
+        disabled={disableHoursMinutes || loading}
         variant="filled"
         fullWidth
         helperText={hoursHelperText}
@@ -112,7 +115,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
         value={minutes}
         numberInput
         label="Minutes"
-        disabled={disableHoursMinutes}
+        disabled={disableHoursMinutes || loading}
         variant="filled"
         fullWidth
         helperText={minutesHelperText}

@@ -31,6 +31,7 @@ export interface Website {
   password: string
   pin: string | null
   take_screenshot: boolean
+  paused: boolean
   expiration_interval_minutes: number | null
   custom_access: CutomAccess | null
   action_interval: ActionInterval | null

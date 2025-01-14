@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime
+
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from flask import Flask
@@ -67,15 +69,19 @@ class Scheduler:
 
     def add_task(self, website_id: int):
         website = DataAccess.get_website(website_id)
+        if website.next_schedule is None:
+            return
         self.scheduler.add_job(
             self._login_task,
             trigger=DateTrigger(run_date=website.next_schedule),
             args=[website_id],
             id=f"login_{website_id}",
             replace_existing=True,
-            coalescing=True,
+            coalesce=True,
         )
-        self.scheduler.print_jobs()
 
     def remove_task(self, website_id: int):
-        self.scheduler.remove_job(job_id=f"login_{website_id}")
+        try:
+            self.scheduler.remove_job(job_id=f"login_{website_id}")
+        except JobLookupError:
+            print(f"Error removing job with id login_{website_id}")

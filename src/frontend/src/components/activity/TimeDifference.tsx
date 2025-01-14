@@ -29,7 +29,7 @@ export default function TimeDifference(props: TimeDifferenceProps) {
     const remainingMinutes = diffInMinutes % 60
     const prefixString = prefix ?? ''
     if (diffInMinutes === 0 || diffInMinutes === -1) {
-      return `${prefixString}>1min`
+      return `${prefixString}<1min`
     }
     if (diffInDays > 0) {
       return `${prefixString}${diffInDays}d}`

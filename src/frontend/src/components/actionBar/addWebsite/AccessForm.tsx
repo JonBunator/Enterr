@@ -7,10 +7,11 @@ import CustomAccessForm from './CustomAccessForm.tsx'
 interface AccessFormProps {
   value: ChangeWebsite
   onChange?: (value: ChangeWebsite) => void
+  loading?: boolean
 }
 
 export default function AccessForm(props: AccessFormProps) {
-  const { value, onChange } = props
+  const { value, onChange, loading } = props
   return (
     <FormGrouping disableCheckbox title="Access *" column>
       <Grid2 container spacing={2}>
@@ -19,6 +20,7 @@ export default function AccessForm(props: AccessFormProps) {
             identifier="username"
             variant="filled"
             label="Username"
+            disabled={loading}
             value={value.username}
             onChange={username =>
               onChange?.({
@@ -36,6 +38,7 @@ export default function AccessForm(props: AccessFormProps) {
             identifier="password"
             variant="filled"
             label="Password"
+            disabled={loading}
             value={value.password}
             onChange={password =>
               onChange?.({
@@ -52,6 +55,7 @@ export default function AccessForm(props: AccessFormProps) {
             identifier="pin"
             variant="filled"
             label="PIN"
+            disabled={loading}
             value={value.pin}
             onChange={pin =>
               onChange?.({
@@ -63,7 +67,7 @@ export default function AccessForm(props: AccessFormProps) {
           />
         </Grid2>
         <Grid2 size={{ xs: 12 }}>
-          <CustomAccessForm value={value} onChange={onChange} />
+          <CustomAccessForm value={value} onChange={onChange} loading={loading} />
         </Grid2>
       </Grid2>
     </FormGrouping>

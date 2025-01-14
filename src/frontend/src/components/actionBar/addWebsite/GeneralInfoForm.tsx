@@ -6,10 +6,11 @@ import FormGrouping from '../FormGrouping.tsx'
 interface GeneralInfoFormProps {
   value: ChangeWebsite
   onChange?: (value: ChangeWebsite) => void
+  loading?: boolean
 }
 
 export default function GeneralInfoForm(props: GeneralInfoFormProps) {
-  const { value, onChange } = props
+  const { value, onChange, loading } = props
 
   function validateURL(url: string | undefined): string {
     const regex = /(^$|(http(s)?:\/\/)([\w-]+\.)+[\w-]+([\w- ;,./?%&=]*))/
@@ -23,6 +24,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
     <FormGrouping disableCheckbox title="General *" column>
       <TextFieldForm
         identifier="name"
+        disabled={loading}
         value={value.name}
         onChange={name =>
           onChange?.({
@@ -39,6 +41,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
         <Grid2 size={{ xs: 6 }}>
           <TextFieldForm
             identifier="url"
+            disabled={loading}
             value={value.url}
             onChange={url =>
               onChange?.({
@@ -57,6 +60,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
         <Grid2 size={{ xs: 6 }}>
           <TextFieldForm
             identifier="success_url"
+            disabled={loading}
             value={value.success_url}
             onChange={success_url =>
               onChange?.({
@@ -73,8 +77,34 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
           />
         </Grid2>
         <Grid2 size={{ xs: 12 }}>
-          <FormControlLabel control={<Checkbox checked={value.take_screenshot} onChange={event => onChange?.({ ...value, take_screenshot: event.target.checked })} />} label="Save screenshot" />
-          <FormHelperText sx={{ marginTop: 0 }}>Saves screenshot after login attempt.</FormHelperText>
+          <div className="row">
+            <div>
+              <FormControlLabel
+                control={(
+                  <Checkbox
+                    disabled={loading}
+                    checked={value.take_screenshot}
+                    onChange={event => onChange?.({ ...value, take_screenshot: event.target.checked })}
+                  />
+                )}
+                label="Save screenshot"
+              />
+              <FormHelperText sx={{ marginTop: 0 }}>Saves screenshot after login attempt.</FormHelperText>
+            </div>
+            <div>
+              <FormControlLabel
+                control={(
+                  <Checkbox
+                    disabled={loading}
+                    checked={value.paused}
+                    onChange={event => onChange?.({ ...value, paused: event.target.checked })}
+                  />
+                )}
+                label="Pause automatic login"
+              />
+              <FormHelperText sx={{ marginTop: 0 }}>Automatic login will not be triggered while in paused state.</FormHelperText>
+            </div>
+          </div>
         </Grid2>
       </Grid2>
     </FormGrouping>
