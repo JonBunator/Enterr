@@ -19,6 +19,7 @@ import { useWebSocket } from '../WebSocketProvider.tsx'
 import ActionsPopover from './ActionsPopover.tsx'
 import { getActivity } from './activityRequests.ts'
 import ActivityStatus from './ActivityStatus.tsx'
+import EmptyState from './EmptyState.tsx'
 import LoginHistoryDetails from './LoginHistoryDetails.tsx'
 import { ActivityStatusCode } from './StatusIcon.tsx'
 import TimeDifference from './TimeDifference.tsx'
@@ -181,48 +182,58 @@ export default function Activity(props: ActivityProps) {
               </TableRow>
             </TableHead>
             <TableBody component={motion.tbody} layout>
-              {processedData.map(row => (
-                <TableRow
-                  key={row.id}
-                  component={motion.tr}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  layout
-                >
-                  <TableCell>
-                    <ActivityStatus
-                      status={row.status}
-                      expirationDate={row.expirationDate}
-                    />
-                  </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>
-                    <TimeDifference
-                      prefix=""
-                      datetime={row.nextLogin}
-                      negativeDifference="No login scheduled"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {row.lastLoginAttempt?.toLocaleString() ?? 'No login yet'}
-                  </TableCell>
-                  <TableCell>
-                    {row.loginHistory !== null
-                    && (
-                      <div className="login-history">
-                        {row.loginHistory.slice(0, 3).map((lh, index) => (
-                          <LoginHistoryDetails key={index} loginHistory={lh} />
-                        ))}
-                        {row.loginHistory.length > 3
-                        && <Typography>...</Typography>}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <ActionsPopover websiteId={row.id} websiteURL={row.url} />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {processedData.length === 0
+                ? (
+                    <TableRow>
+                      <TableCell className="empty-state-cell" colSpan={6} rowSpan={10}>
+                        {searchTerm === '' && processedData.length === 0
+                          ? <EmptyState noData />
+                          : <EmptyState />}
+                      </TableCell>
+                    </TableRow>
+                  )
+                : processedData.map(row => (
+                  <TableRow
+                    key={row.id}
+                    component={motion.tr}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    layout
+                  >
+                    <TableCell>
+                      <ActivityStatus
+                        status={row.status}
+                        expirationDate={row.expirationDate}
+                      />
+                    </TableCell>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell>
+                      <TimeDifference
+                        prefix=""
+                        datetime={row.nextLogin}
+                        negativeDifference="No login scheduled"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {row.lastLoginAttempt?.toLocaleString() ?? 'No login yet'}
+                    </TableCell>
+                    <TableCell>
+                      {row.loginHistory !== null
+                      && (
+                        <div className="login-history">
+                          {row.loginHistory.slice(0, 3).map((lh, index) => (
+                            <LoginHistoryDetails key={index} loginHistory={lh} />
+                          ))}
+                          {row.loginHistory.length > 3
+                          && <Typography>...</Typography>}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <ActionsPopover websiteId={row.id} websiteURL={row.url} />
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
