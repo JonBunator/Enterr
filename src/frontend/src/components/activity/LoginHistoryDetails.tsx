@@ -3,6 +3,7 @@ import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Paper, Popover, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { FailedDetails } from '../../api/apiModels.ts'
+import Screenshot from './Screenshot.tsx'
 import StatusIcon from './StatusIcon.tsx'
 import './LoginHistoryDetails.scss'
 
@@ -90,7 +91,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
       >
         {loginHistory.screenshot_id !== null
           ? (
-              <img className="screenshot" src={`/api/screenshot/${loginHistory.screenshot_id}`} alt="Login Screenshot" />
+              <Screenshot screenshotId={loginHistory.screenshot_id} />
             )
           : (
               []
