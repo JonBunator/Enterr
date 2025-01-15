@@ -7,7 +7,17 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import { EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
-import { IconButton, Link, ListItemIcon, ListItemText, MenuItem, Popover, Tooltip, Typography } from '@mui/material'
+import {
+  Divider,
+  IconButton,
+  Link,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Popover,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
 import { addManualLogin, deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
@@ -209,6 +219,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           </ListItemIcon>
           <ListItemText primary="Edit" />
         </MenuItem>
+        <Divider />
         <MenuItem onClick={handleDeleteRequest}>
           <ListItemIcon>
             <TrashIcon className="icon" />

@@ -4,15 +4,23 @@ html, body,  #root {
   padding: 0;
 }
 
-.content {
-  z-index: 2;
-  padding: 24px;
-  position: relative;
+.content-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  display: grid;
-  grid-template-columns: repeat(16, auto);
-  grid-template-rows: auto auto;
-  gap: 24px;
+  align-items: center;
+
+  .content {
+    z-index: 1;
+    padding: 24px;
+    position: relative;
+    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(16, auto);
+    grid-template-rows: auto auto;
+    gap: 24px;
+  }
 }
 
 .search {

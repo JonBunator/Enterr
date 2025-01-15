@@ -11,10 +11,12 @@ export default function Content() {
   return (
     <>
       <Background />
-      <div className="content">
-        <Search value={searchTerm} onChange={setSearchTerm} />
-        <AddWebsite />
-        <Activity searchTerm={searchTerm} />
+      <div className="content-root">
+        <div className="content">
+          <Search value={searchTerm} onChange={setSearchTerm} />
+          <AddWebsite />
+          <Activity searchTerm={searchTerm} />
+        </div>
       </div>
     </>
   )
