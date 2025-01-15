@@ -1,5 +1,7 @@
+import type { ChangeEvent } from 'react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Autocomplete, InputAdornment, TextField } from '@mui/material'
+import { useEffect, useState } from 'react'
 import './Search.scss'
 
 interface SearchProps {
@@ -9,6 +11,30 @@ interface SearchProps {
 
 export default function Search(props: SearchProps) {
   const { value, onChange } = props
+  const [inputValue, setInputValue] = useState<string | undefined>(value)
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (value !== inputValue) {
+      setInputValue(value)
+    }
+  }, [value, inputValue])
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value
+    setInputValue(newValue)
+
+    if (timer) {
+      clearTimeout(timer)
+    }
+
+    const newTimer = setTimeout(() => {
+      onChange?.(newValue)
+    }, 200)
+
+    setTimer(newTimer)
+  }
+
   return (
     <Autocomplete
       className="search"
@@ -18,8 +44,8 @@ export default function Search(props: SearchProps) {
         <TextField
           {...params}
           placeholder="Search..."
-          value={value}
-          onChange={event => onChange?.(event.target.value)}
+          value={inputValue}
+          onChange={handleChange}
           slotProps={{
             input: {
               startAdornment: (
