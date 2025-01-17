@@ -49,7 +49,8 @@ export async function getActivity(): Promise<ActivityData[]> {
 
     const lastSuccessfulLogin = loginHistory.find(login => login.execution_status === ActivityStatusCode.SUCCESS)
     let expirationDate: Date | undefined
-
+    console.log('lastSuccessfulLogin', lastSuccessfulLogin)
+    console.log('website', website)
     if (lastSuccessfulLogin && lastSuccessfulLogin.execution_ended != null && website.expiration_interval_minutes != null) {
       expirationDate = new Date(lastSuccessfulLogin.execution_ended)
       expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval_minutes)
@@ -59,7 +60,7 @@ export async function getActivity(): Promise<ActivityData[]> {
     let status = (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode
     status = website.paused ? ActivityStatusCode.PAUSED : status
 
-    const nextLogin = website.next_schedule ? new Date(website.next_schedule.year, website.next_schedule.month - 1, website.next_schedule.day, website.next_schedule.hour, website.next_schedule.minute) : new Date(0)
+    const nextLogin = website?.next_schedule !== null ? new Date(website?.next_schedule) : new Date(0)
     return {
       id: website.id,
       status,

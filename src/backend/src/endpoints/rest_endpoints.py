@@ -1,7 +1,7 @@
 import os
 from http import HTTPStatus
 
-from flask import Flask, send_file, abort, jsonify
+from flask import Flask, send_file, jsonify
 from sqlalchemy.exc import SQLAlchemyError
 
 from dataAccess.data_access import DataAccess
@@ -46,7 +46,7 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
             raise SQLAlchemyError('Website with id does not exist.')
         return DataAccess.get_action_history(website)
 
-    @app.route('/api/action_history/manual_add',  methods=['POST'])
+    @app.route('/api/action_history/manual_add', methods=['POST'])
     @validate_post_request(AddManualActionHistory)
     def add_manual_action_history(action_history_request: AddManualActionHistory):
         data_access.add_manual_action_history(action_history_request)
@@ -70,4 +70,3 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
             # Handle general exceptions and return a 500 Internal Server Error response
             response = ApiGetResponse(success=False, message="An error occurred", error=str(e))
             return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
-

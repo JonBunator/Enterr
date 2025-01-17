@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
@@ -130,7 +130,7 @@ class ActionInterval(_db.Model):
         """
 
         random_date_delta = randint(self.date_minutes_start, self.date_minutes_end)
-        random_date = datetime.now() + timedelta(minutes=random_date_delta)
+        random_date = datetime.now(timezone.utc) + timedelta(minutes=random_date_delta)
         if self.date_minutes_start % 1440 == 0 and self.date_minutes_end % 1440 == 0:
             random_time = randint(self.allowed_time_minutes_start, self.allowed_time_minutes_end)
             random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(minutes=random_time)

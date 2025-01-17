@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -31,7 +31,7 @@ class Scheduler:
             website = DataAccess.get_website(website_id)
             if website.take_screenshot:
                 screenshot_id = str(uuid.uuid4())
-            start_time = datetime.now()
+            start_time = datetime.now(timezone.utc)
             url = website.url
             success_url = website.success_url
             username = website.username

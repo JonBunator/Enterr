@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Flask
 from dataAccess.database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
     ActionInterval
@@ -33,7 +33,7 @@ def create_website(dt: datetime) -> Website:
 def test_website_entry_creation(app):
     """Tests the creation of a website entry."""
     with app.app_context():
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         new_website = create_website(now)
 
         _db.session.add(new_website)
@@ -60,7 +60,7 @@ def test_website_entry_creation_null_values(app):
             name="Example",
             username="user123",
             password="password123",
-            added_at=datetime.now()
+            added_at=datetime.now(timezone.utc)
         )
         _db.session.add(new_website)
         _db.session.commit()
@@ -75,7 +75,7 @@ def test_website_entry_creation_null_values(app):
 def test_website_with_custom_accesses(app):
     """Test that CustomAccess objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now())
+        website = create_website(datetime.now(timezone.utc))
 
         custom_access = CustomAccess(
             username_xpath="//input[@name='username']",
@@ -99,9 +99,9 @@ def test_website_with_custom_accesses(app):
 def test_website_with_action_history(app):
     """Test that ActionHistory objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now())
+        website = create_website(datetime.now(timezone.utc))
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         action_history_1 = ActionHistory(
             execution_started=now,
@@ -110,7 +110,7 @@ def test_website_with_action_history(app):
             failed_details=None
         )
         action_history_2 = ActionHistory(
-            execution_started=datetime.now(),
+            execution_started=datetime.now(timezone.utc),
             execution_status=ActionStatusCode.FAILED,
             failed_details=ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
         )
@@ -139,7 +139,7 @@ def test_website_with_action_history(app):
 def test_website_with_action_intervals(app):
     """Test that ActionInterval objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now())
+        website = create_website(datetime.now(timezone.utc))
         random.seed(1)
         interval = ActionInterval(
             date_minutes_start=1440,

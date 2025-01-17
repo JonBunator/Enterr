@@ -6,14 +6,6 @@ export interface ActionInterval {
   allowed_time_minutes_end: number
 }
 
-export interface NextSchedule {
-  day: number
-  hour: number
-  minute: number
-  month: number
-  year: number
-}
-
 export interface CutomAccess {
   id: number
   username_xpath: string
@@ -35,7 +27,7 @@ export interface Website {
   expiration_interval_minutes: number | null
   custom_access: CutomAccess | null
   action_interval: ActionInterval | null
-  next_schedule: NextSchedule | null
+  next_schedule: string | null
 }
 
 export type ActionStatusCode = 'SUCCESS' | 'FAILED' | 'IN_PROGRESS'

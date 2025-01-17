@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from typing import Optional
 from pydantic import BaseModel
 
@@ -52,7 +52,7 @@ class AddWebsite(PostRequestBaseModel):
             pin=self.pin if self.pin != '' else None,
             take_screenshot=self.take_screenshot,
             paused=self.paused if self.paused is not None else False,
-            added_at=datetime.now(),
+            added_at=datetime.now(timezone.utc),
             expiration_interval=expiration_interval,
         )
         if self.custom_access is not None:
@@ -121,7 +121,7 @@ class GetWebsite(GetRequestBaseModel):
     expiration_interval_minutes: Optional[int] = None
     custom_access: Optional[GetCustomAccess] = None
     action_interval: Optional[GetActionInterval] = None
-    next_schedule: Optional[DateTime] = None
+    next_schedule: Optional[datetime] = None
 
     @staticmethod
     def from_sql_model(website: Website) -> "GetWebsite":
@@ -144,5 +144,5 @@ class GetWebsite(GetRequestBaseModel):
             expiration_interval_minutes=expiration_interval_minutes,
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
             action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,
-            next_schedule=DateTime.from_datetime(website.next_schedule) if website.next_schedule else None,
+            next_schedule=website.next_schedule,
         )

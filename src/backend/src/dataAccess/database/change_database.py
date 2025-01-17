@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from dataAccess.database.database import Website, _db as db, ActionHistory, ActionFailedDetails, ActionStatusCode
 
@@ -13,7 +13,7 @@ class DataBase:
 
     @staticmethod
     def add_website(website: Website):
-        website.next_schedule = datetime.now()
+        website.next_schedule = datetime.now(timezone.utc)
         db.session.add(website)
         db.session.commit()
 
@@ -36,19 +36,11 @@ class DataBase:
         return action_history.id
 
     @staticmethod
-    def add_manual_action_history(website_id: int) -> int:
-        website = db.session.get(Website, website_id)
-        website.action_histories.append(action_history)
-        website.next_schedule = website.action_interval.get_random_action_datetime()
-        db.session.commit()
-        return action_history.id
-
-    @staticmethod
     def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode, failed_details: ActionFailedDetails, screenshot_id: str = None):
         existing_action_history = db.session.get(ActionHistory, action_history_id)
         if existing_action_history is None:
             return
-        existing_action_history.execution_ended = datetime.now()
+        existing_action_history.execution_ended = datetime.now(timezone.utc)
         existing_action_history.execution_status = execution_status
         existing_action_history.failed_details = failed_details
         existing_action_history.screenshot_id = screenshot_id
