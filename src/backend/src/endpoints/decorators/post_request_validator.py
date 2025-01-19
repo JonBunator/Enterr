@@ -1,3 +1,4 @@
+import traceback
 from abc import ABC, abstractmethod
 from functools import wraps
 from flask import request, jsonify
@@ -39,14 +40,17 @@ def validate_post_request(request_model: Type[BaseModel]):
                 return jsonify(response.model_dump()), HTTPStatus.OK
 
             except ValidationError as e:
+                traceback.print_exc()
                 # In case of validation errors, return a 400 Bad Request response
                 response = ApiPostResponse(success=False, message="Invalid request data", error=str(e))
                 return jsonify(response.model_dump()), HTTPStatus.BAD_REQUEST
             except SQLAlchemyError as e:
+                traceback.print_exc()
                 # In case of sql error
                 response = ApiPostResponse(success=False, message="SQL error", error=str(e))
                 return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
-            except  Exception as e:
+            except Exception as e:
+                traceback.print_exc()
                 # Handle general exceptions and return a 500 Internal Server Error response
                 response = ApiPostResponse(success=False, message="An error occurred", error=str(e))
                 return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR

@@ -13,9 +13,10 @@ Scoring = NewType('Scoring', Dict[Element, Tuple[List[str], Score]])
 class XPaths:
     username: XPath
     password: XPath
+    pin: XPath
     submit_button: XPath
     
-def find_login_automatically(html: str) -> XPaths:
+def find_login_automatically(html: str, pin: bool) -> XPaths:
     """
     Tries to find the login form automatically and returns the xpath.
     @param html: The html that is used for parsing.
@@ -24,10 +25,14 @@ def find_login_automatically(html: str) -> XPaths:
     dom = HTML(html)
     username_xpath = _find_username_field(dom)
     password_xpath = _find_password_field(dom)
+    if pin:
+        pin_xpath = _find_pin_field(dom)
+    else:
+        pin_xpath = None
     submit_button_xpath = _find_submit_button(dom)
     if username_xpath is None or password_xpath is None or submit_button_xpath is None:
         return None
-    return XPaths(username=username_xpath, password=password_xpath, submit_button=submit_button_xpath)
+    return XPaths(username=username_xpath, password=password_xpath, pin=pin_xpath, submit_button=submit_button_xpath)
 
 def _find_username_field(dom: HTML) -> XPath:
     """
@@ -48,6 +53,17 @@ def _find_password_field(dom: etree.HTML) -> XPath:
     type_scores = [("password", Score(10)), ("text", Score(1))]
     property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
     return _find_form_field(dom, tag_types, id_aliases, type_scores, property_scores)
+
+def _find_pin_field(dom: HTML) -> XPath:
+    """
+    Tries to find xpath of pin field automatically.
+    """
+    tag_types = ["input"]
+    id_aliases = ["pin"]
+    type_scores = [("number", Score(10)), ("text", Score(1))]
+    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
+    return _find_form_field(dom, tag_types, id_aliases, type_scores, property_scores)
+
 
 def _find_submit_button(dom: HTML) -> XPath:
     """

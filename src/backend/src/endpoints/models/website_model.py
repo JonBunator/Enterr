@@ -2,7 +2,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Optional
 from pydantic import BaseModel
 
-from dataAccess.database.database import Website
+from dataAccess.database.database import Website, CustomAccess
 from endpoints.decorators.get_request_validator import GetRequestBaseModel
 from endpoints.decorators.post_request_validator import PostRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
@@ -97,7 +97,12 @@ class EditWebsite(BaseModel):
         else:
             existing_website.expiration_interval = None
         if self.custom_access is not None:
-            existing_website.custom_access = self.custom_access.edit_existing_model(existing_website.custom_access)
+            existing_website.custom_access = CustomAccess(username_xpath=self.custom_access.username_xpath,
+                                                          password_xpath=self.custom_access.password_xpath,
+                                                          pin_xpath=self.custom_access.pin_xpath,
+                                                          submit_button_xpath=self.custom_access.submit_button_xpath)
+        else:
+            existing_website.custom_access = None
         if self.action_interval is not None:
             existing_website.action_interval = self.action_interval.edit_existing_model(existing_website.action_interval)
 

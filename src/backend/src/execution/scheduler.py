@@ -45,12 +45,14 @@ class Scheduler:
             success_url = website.success_url
             username = website.username
             password = website.password
+            pin = website.pin
             x_paths = None
             if website.custom_access is not None:
                 access = website.custom_access
                 x_paths = XPaths(
                     username=XPath(access.username_xpath),
                     password=XPath(access.password_xpath),
+                    pin=XPath(access.pin_xpath),
                     submit_button=XPath(access.submit_button_xpath))
 
             action_history = ActionHistory(
@@ -60,7 +62,7 @@ class Scheduler:
             action_history_id = self.data_access.add_action_history(website_id=website.id,
                                                                     action_history=action_history)
         # login
-        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths,
+        status = login(url=url, success_url=success_url, username=username, password=password, pin=pin, x_paths=x_paths,
                        screenshot_id=screenshot_id)
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None

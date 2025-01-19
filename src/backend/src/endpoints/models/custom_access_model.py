@@ -23,32 +23,20 @@ class AddCustomAccess(PostRequestBaseModel):
                               submit_button_xpath=submit_button_xpath)
 
 class EditCustomAccess(BaseModel):
+    username_xpath: Optional[str] = None
+    password_xpath: Optional[str] = None
+    pin_xpath: Optional[str] = None
+    submit_button_xpath: Optional[str] = None
+
+class GetCustomAccess(GetRequestBaseModel):
     id: int
     username_xpath: Optional[str] = None
     password_xpath: Optional[str] = None
     pin_xpath: Optional[str] = None
     submit_button_xpath: Optional[str] = None
 
-    def edit_existing_model(self, existing_custom_access: CustomAccess) -> CustomAccess:
-        if self.username_xpath is not None:
-            existing_custom_access.username_xpath = self.username_xpath
-        if self.password_xpath is not None:
-            existing_custom_access.password_xpath = self.password_xpath
-        if self.pin_xpath is not None:
-            existing_custom_access.pin_xpath = self.pin_xpath
-        if self.submit_button_xpath is not None:
-            existing_custom_access.submit_button_xpath = self.submit_button_xpath
-        return existing_custom_access
-
-class GetCustomAccess(GetRequestBaseModel):
-    id: int
-    username_xpath: str
-    password_xpath: str
-    pin_xpath: Optional[str] = None
-    submit_button_xpath: str
-
     @staticmethod
-    def from_sql_model(custom_access: CustomAccess) -> "AddCustomAccess":
+    def from_sql_model(custom_access: CustomAccess) -> "GetCustomAccess":
         return GetCustomAccess(
             id=custom_access.id,
             username_xpath=custom_access.username_xpath,

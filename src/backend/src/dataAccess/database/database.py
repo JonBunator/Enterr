@@ -58,10 +58,10 @@ class CustomAccess(_db.Model):
     __tablename__ = "custom_access"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username_xpath: Mapped[str] = mapped_column(nullable=False)
-    password_xpath: Mapped[str] = mapped_column(nullable=False)
+    username_xpath: Mapped[str] = mapped_column(nullable=True)
+    password_xpath: Mapped[str] = mapped_column(nullable=True)
     pin_xpath: Mapped[Optional[str]] = mapped_column(nullable=True)
-    submit_button_xpath: Mapped[str] = mapped_column(nullable=False)
+    submit_button_xpath: Mapped[str] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(ForeignKey("website.id"))
 

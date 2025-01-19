@@ -15,7 +15,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
 
   function handleEnabledChange(enabled: boolean) {
     setCustomAccessEnabled(enabled)
-    if (enabled) {
+    if (!enabled) {
       onChange?.({
         ...value,
         custom_access: null,
