@@ -107,9 +107,9 @@ class ActionInterval(_db.Model):
 
     def __init__(self, date_minutes_start, date_minutes_end, allowed_time_minutes_start, allowed_time_minutes_end):
         self.date_minutes_start = date_minutes_start
-        self._date_minutes_end = date_minutes_end
-        self._allowed_time_minutes_start = allowed_time_minutes_start
-        self._allowed_time_minutes_end = allowed_time_minutes_end
+        self.date_minutes_end = date_minutes_end
+        self.allowed_time_minutes_start = allowed_time_minutes_start
+        self.allowed_time_minutes_end = allowed_time_minutes_end
 
         self._validate_date_range()
 

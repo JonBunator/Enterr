@@ -1,6 +1,8 @@
 import random
 from datetime import datetime, timedelta, timezone
 from flask import Flask
+from mouseinfo import screenshot
+
 from dataAccess.database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
     ActionInterval
 
@@ -28,13 +30,15 @@ def create_website(dt: datetime) -> Website:
         added_at=dt,
         expiration_interval=timedelta(days=1),
         next_schedule=dt,
+        take_screenshot=True,
+        paused=False
     )
 
 def test_website_entry_creation(app):
     """Tests the creation of a website entry."""
     with app.app_context():
-        now = datetime.now(timezone.utc)
-        new_website = create_website(now)
+        dt = datetime(2020, 1, 1, 2, 43)
+        new_website = create_website(dt)
 
         _db.session.add(new_website)
         _db.session.commit()
@@ -47,9 +51,11 @@ def test_website_entry_creation(app):
         assert website_in_db.username == "user123"
         assert website_in_db.password == "password123"
         assert website_in_db.pin == "1234"
-        assert website_in_db.added_at == now
-        assert website_in_db.expiration_interval_minutes == timedelta(days=1)
-        assert website_in_db.next_schedule == now
+        assert website_in_db.added_at == dt
+        assert website_in_db.expiration_interval == timedelta(days=1)
+        assert website_in_db.take_screenshot is True
+        assert website_in_db.paused is False
+        assert website_in_db.next_schedule == dt
 
 def test_website_entry_creation_null_values(app):
     """Tests website creation with no pin."""
@@ -60,7 +66,9 @@ def test_website_entry_creation_null_values(app):
             name="Example",
             username="user123",
             password="password123",
-            added_at=datetime.now(timezone.utc)
+            added_at=datetime.now(timezone.utc),
+            take_screenshot=False,
+            paused=False,
         )
         _db.session.add(new_website)
         _db.session.commit()
@@ -69,7 +77,7 @@ def test_website_entry_creation_null_values(app):
 
         assert website_in_db is not None
         assert website_in_db.pin is None
-        assert website_in_db.expiration_interval_minutes is None
+        assert website_in_db.expiration_interval is None
         assert website_in_db.next_schedule is None
 
 def test_website_with_custom_accesses(app):
@@ -101,16 +109,16 @@ def test_website_with_action_history(app):
     with app.app_context():
         website = create_website(datetime.now(timezone.utc))
 
-        now = datetime.now(timezone.utc)
+        dt = datetime(2020, 1, 1, 2, 43)
 
         action_history_1 = ActionHistory(
-            execution_started=now,
-            execution_ended=now + timedelta(minutes=1),
+            execution_started=dt,
+            execution_ended=dt + timedelta(minutes=1),
             execution_status=ActionStatusCode.SUCCESS,
             failed_details=None
         )
         action_history_2 = ActionHistory(
-            execution_started=datetime.now(timezone.utc),
+            execution_started=dt,
             execution_status=ActionStatusCode.FAILED,
             failed_details=ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
         )
@@ -125,13 +133,13 @@ def test_website_with_action_history(app):
         assert len(retrieved_website.action_histories) == 2
 
         history1 = retrieved_website.action_histories[0]
-        assert history1.execution_started == now
-        assert history1.execution_ended == now + timedelta(minutes=1)
+        assert history1.execution_started == dt
+        assert history1.execution_ended == dt + timedelta(minutes=1)
         assert history1.execution_status == ActionStatusCode.SUCCESS
         assert history1.failed_details is None
 
         history2 = retrieved_website.action_histories[1]
-        assert history2.execution_started == now
+        assert history2.execution_started == dt
         assert history2.execution_ended is None
         assert history2.execution_status == ActionStatusCode.FAILED
         assert history2.failed_details == ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
@@ -140,12 +148,11 @@ def test_website_with_action_intervals(app):
     """Test that ActionInterval objects are correctly added to a Website."""
     with app.app_context():
         website = create_website(datetime.now(timezone.utc))
-        random.seed(1)
         interval = ActionInterval(
             date_minutes_start=1440,
-            date_minutes_end=1440,
-            allowed_time_minutes_start=600,
-            allowed_time_minutes_end=660,
+            date_minutes_end=2880,
+            allowed_time_minutes_start=60,
+            allowed_time_minutes_end=80,
         )
 
         website.action_interval = interval
@@ -158,6 +165,31 @@ def test_website_with_action_intervals(app):
 
         interval = retrieved_website.action_interval
         assert interval.date_minutes_start == 1440
-        assert interval.date_minutes_end == 1440
-        assert interval.allowed_time_minutes_start == 600
-        assert interval.allowed_time_minutes_end == 660
+        assert interval.date_minutes_end == 2880
+        assert interval.allowed_time_minutes_start == 60
+        assert interval.allowed_time_minutes_end == 80
+
+def test_website_with_action_intervals_none_values(app):
+    """Test that ActionInterval objects are correctly added to a Website with none values."""
+    with app.app_context():
+        website = create_website(datetime.now(timezone.utc))
+        interval = ActionInterval(
+            date_minutes_start=5,
+            date_minutes_end=None,
+            allowed_time_minutes_start=None,
+            allowed_time_minutes_end=None,
+        )
+
+        website.action_interval = interval
+        _db.session.add(website)
+        _db.session.commit()
+
+        retrieved_website = Website.query.filter_by(name="Example").one()
+
+        assert retrieved_website is not None
+
+        interval = retrieved_website.action_interval
+        assert interval.date_minutes_start == 5
+        assert interval.date_minutes_end_not_none == 5
+        assert interval.allowed_time_minutes_start_not_none == 0
+        assert interval.allowed_time_minutes_end_not_none == 1440
