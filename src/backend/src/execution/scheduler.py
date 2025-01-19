@@ -1,6 +1,9 @@
 import uuid
 from datetime import datetime, timezone
 
+from apscheduler.events import SchedulerEvent, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, JobExecutionEvent
+from pytz import utc
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
@@ -13,13 +16,19 @@ from execution.login.login import LoginStatusCode, login
 
 class Scheduler:
     def __init__(self, app: Flask, data_access: DataAccess):
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = BackgroundScheduler(executors={'default': ThreadPoolExecutor(1)}, timezone=utc)
         self.app = app
         self.data_access = data_access
 
     def start(self):
         self._init_tasks()
+        self.scheduler.add_listener(self._scheduler_event, EVENT_JOB_ERROR)
         self.scheduler.start()
+
+    def _scheduler_event(self, event: JobExecutionEvent):
+        if event.exception:
+            with self.app.app_context():
+                self.data_access.unexpected_execution_failure(website_id=event.job_id, execution_started=event.scheduled_run_time)
 
     def _init_tasks(self):
         for website in DataAccess.get_all_websites():
@@ -48,9 +57,12 @@ class Scheduler:
                 execution_started=start_time,
                 execution_status=ActionStatusCode.IN_PROGRESS,
             )
-            action_history_id = self.data_access.add_action_history(website_id=website.id, action_history=action_history)
+            action_history_id = self.data_access.add_action_history(website_id=website.id,
+                                                                    action_history=action_history)
         # login
-        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths, screenshot_id=screenshot_id)
+        status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths,
+                       screenshot_id=screenshot_id)
+        raise Exception("adsfasdf")
 
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
@@ -61,11 +73,9 @@ class Scheduler:
 
         with self.app.app_context():
             self.data_access.action_history_finish_execution(action_history_id=action_history_id,
-                                                     execution_status=ActionStatusCode(executions_status.value),
-                                                     failed_details=failed_details,
-                                                     screenshot_id=screenshot_id)
-
-
+                                                             execution_status=ActionStatusCode(executions_status.value),
+                                                             failed_details=failed_details,
+                                                             screenshot_id=screenshot_id)
 
     def add_task(self, website_id: int):
         website = DataAccess.get_website(website_id)
@@ -75,13 +85,14 @@ class Scheduler:
             self._login_task,
             trigger=DateTrigger(run_date=website.next_schedule),
             args=[website_id],
-            id=f"login_{website_id}",
+            id=f"{website_id}",
             replace_existing=True,
             coalesce=True,
+            misfire_grace_time=3600
         )
 
     def remove_task(self, website_id: int):
         try:
-            self.scheduler.remove_job(job_id=f"login_{website_id}")
+            self.scheduler.remove_job(job_id=f"{website_id}")
         except JobLookupError:
-            print(f"Error removing job with id login_{website_id}")
+            print(f"Error removing job with id {website_id}")

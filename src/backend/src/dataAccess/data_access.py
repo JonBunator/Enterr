@@ -47,6 +47,11 @@ class DataAccess:
         DataBase.action_history_finish_execution(action_history_id, execution_status, failed_details, screenshot_id)
         self.webhook_endpoints.action_history_changed(action_history_id=action_history_id)
 
+    def unexpected_execution_failure(self, website_id: int, execution_started: datetime):
+        ids = DataBase.unexpected_execution_failure(website_id=website_id, execution_started=execution_started)
+        for action_history_id in ids:
+            self.webhook_endpoints.action_history_changed(action_history_id=action_history_id)
+
     @staticmethod
     def get_action_history(website: Website) -> List[ActionHistory]:
         return DataBase.get_action_history(website)

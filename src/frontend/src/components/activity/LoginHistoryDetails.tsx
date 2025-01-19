@@ -62,6 +62,8 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
         return 'PIN field not found. Try to define custom PIN xpath or submit a issue on GitHub.'
       case FailedDetails.SUBMIT_BUTTON_NOT_FOUND:
         return 'Submit button not found. Try to define custom submit button xpath or submit a issue on GitHub.'
+      case FailedDetails.UNKNOWN_EXECUTION_ERROR:
+        return 'An unknown error occurred while executing task.'
       case null: { throw new Error('Not implemented yet: null case') }
       default:
         return 'Unknown error'

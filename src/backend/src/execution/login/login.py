@@ -4,6 +4,7 @@ from seleniumbase import SB
 from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
 from .find_form_automatically import find_login_automatically, XPaths
 
+
 class LoginStatusCode(Enum):
     SUCCESS = ActionStatusCode.SUCCESS
     AUTOMATIC_FORM_DETECTION_FAILED = ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED
@@ -13,34 +14,39 @@ class LoginStatusCode(Enum):
     SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
     FAILED = ActionStatusCode.FAILED
 
-def login(url: str, success_url: str, username: str, password: str, x_paths: XPaths = None, screenshot_id: str = None) -> LoginStatusCode:
-    with SB(uc=True, ad_block=True, xvfb=True) as sb:
-        sb.activate_cdp_mode(url)
-        sb.sleep(3)
-        sb.uc_gui_click_captcha()
-        if x_paths is None:
-            x_paths = find_login_automatically(sb.cdp.get_element_html('html'))
+
+def login(url: str, success_url: str, username: str, password: str, x_paths: XPaths = None,
+          screenshot_id: str = None) -> LoginStatusCode:
+    try:
+        with SB(uc=True, ad_block=True, xvfb=True) as sb:
+            sb.activate_cdp_mode(url)
+            sb.sleep(3)
+            sb.uc_gui_click_captcha()
             if x_paths is None:
-                return LoginStatusCode.AUTOMATIC_FORM_DETECTION_FAILED
+                x_paths = find_login_automatically(sb.cdp.get_element_html('html'))
+                if x_paths is None:
+                    return LoginStatusCode.AUTOMATIC_FORM_DETECTION_FAILED
 
-        if sb.cdp.send_keys(x_paths.username, username) == False:
-            return LoginStatusCode.USERNAME_FIELD_NOT_FOUND
+            if sb.cdp.send_keys(x_paths.username, username) == False:
+                return LoginStatusCode.USERNAME_FIELD_NOT_FOUND
 
-        sb.sleep(0.5)
+            sb.sleep(0.5)
 
-        if sb.cdp.send_keys(x_paths.password, password) == False:
-            return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND
+            if sb.cdp.send_keys(x_paths.password, password) == False:
+                return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND
 
-        sb.sleep(0.5)
+            sb.sleep(0.5)
 
-        if sb.cdp.click(x_paths.submit_button) == False:
-            return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
+            if sb.cdp.click(x_paths.submit_button) == False:
+                return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
 
-        sb.sleep(0.5)
-        if screenshot_id is not None:
-            save_screenshot(sb, screenshot_id)
-        if sb.cdp.get_current_url() == success_url:
-            return LoginStatusCode.SUCCESS
+            sb.sleep(0.5)
+            if screenshot_id is not None:
+                save_screenshot(sb, screenshot_id)
+            if sb.cdp.get_current_url() == success_url:
+                return LoginStatusCode.SUCCESS
+            return LoginStatusCode.FAILED
+    except Exception as ex:
         return LoginStatusCode.FAILED
 
 
@@ -52,4 +58,3 @@ def save_screenshot(sb: SB, screenshot_id: str):
     else:
         path = f"/config/images"
     sb.cdp.save_screenshot(os.path.join(path, f"{screenshot_id}.png"))
-            

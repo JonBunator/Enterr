@@ -11,3 +11,4 @@ SQLAlchemy==2.0.36
 pytest==8.3.3
 pydantic==2.10.1
 APScheduler==3.11.0
+pytz==2024.2
