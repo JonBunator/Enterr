@@ -68,7 +68,7 @@ export default function TimeFieldForm(props: TimeFieldFormProps) {
       value={value}
       onChange={time => handleChange(time)}
       helperText={error === '' ? helperText : error}
-      error={error !== ''}
+      slotProps={{ textField: { error: error !== '' } }}
     />
   )
 }
