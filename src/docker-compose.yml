@@ -1,7 +1,7 @@
 services:
   enterr:
     build: .
-    image: enterr:latest
+    image: enterr:dev
     ports:
       - "8080:8080"
     volumes:
