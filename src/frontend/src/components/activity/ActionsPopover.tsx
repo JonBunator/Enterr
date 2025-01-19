@@ -18,13 +18,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { addManualLogin, deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
 import { useWebSocket } from '../WebSocketProvider.tsx'
 import { getChangeWebsite } from './activityRequests.ts'
-import AddEditWebsite from './AddEditWebsite.tsx'
+import AddEditWebsite, { type AddEditWebsiteRef } from './AddEditWebsite.tsx'
 
 interface ActionsPopoverProps {
   websiteId: number
@@ -41,6 +41,8 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
   const [editWebsiteValue, setEditWebsiteValue] = useState<ChangeWebsite | undefined>(undefined)
   const [loadingEditData, setLoadingEditData] = useState<boolean>(false)
+
+  const editWebsiteDialogRef = useRef<AddEditWebsiteRef | null>(null)
 
   const { success, error, loading } = useSnackbar()
   const { on } = useWebSocket()
@@ -142,6 +144,11 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
   }
 
+  function handleEditCloseDialog() {
+    setEditDialogOpen(false)
+    editWebsiteDialogRef.current?.resetForm()
+  }
+
   return (
     <>
       <Tooltip title="Options">
@@ -177,7 +184,8 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         value={editWebsiteValue}
         open={editDialogOpen}
         add={false}
-        onClose={() => setEditDialogOpen(false)}
+        ref={editWebsiteDialogRef}
+        onClose={() => handleEditCloseDialog()}
         onChange={value => void handleEdit(value)}
       />
       <Popover

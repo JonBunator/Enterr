@@ -29,7 +29,7 @@ export default function EmptyState(props: EmptyStateProps) {
       key={noData ? 0 : 1}
     >
       <motion.img
-        src={noData ? 'assets/images/no-data.svg' : 'assets/images/no-results.svg'}
+        src={noData ? '/images/no-data.svg' : '/images/no-results.svg'}
         alt={noData ? 'no data' : 'no result found'}
         variants={imageAnimation}
       />

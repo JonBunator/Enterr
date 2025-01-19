@@ -3,11 +3,13 @@ from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import ForeignKey
 from enum import Enum
 
 _db = SQLAlchemy()
+
 
 def init_db(app):
     with app.app_context():
@@ -18,6 +20,7 @@ def init_db(app):
             app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////config/database.db'
         _db.init_app(app)
         _db.create_all()
+
 
 class Website(_db.Model):
     __tablename__ = "website"
@@ -50,6 +53,7 @@ class Website(_db.Model):
         "ActionInterval", cascade="all, delete-orphan", backref="parent_website", uselist=False
     )
 
+
 class CustomAccess(_db.Model):
     __tablename__ = "custom_access"
 
@@ -75,6 +79,7 @@ class ActionFailedDetails(Enum):
     PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
     SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
 
+
 class ActionHistory(_db.Model):
     __tablename__ = "action_history"
 
@@ -87,40 +92,57 @@ class ActionHistory(_db.Model):
 
     website: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
 
+
 class ActionInterval(_db.Model):
     __tablename__ = "action_interval"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date_minutes_start: Mapped[int] = mapped_column(nullable=False)
-    date_minutes_end: Mapped[int] = mapped_column(nullable=False)
-    allowed_time_minutes_start: Mapped[int] = mapped_column(nullable=False)
-    allowed_time_minutes_end: Mapped[int] = mapped_column(nullable=False)
+    date_minutes_end: Mapped[int] = mapped_column(nullable=True)
+    allowed_time_minutes_start: Mapped[int] = mapped_column(nullable=True)
+    allowed_time_minutes_end: Mapped[int] = mapped_column(nullable=True)
 
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
     def __init__(self, date_minutes_start, date_minutes_end, allowed_time_minutes_start, allowed_time_minutes_end):
         self.date_minutes_start = date_minutes_start
-        self.date_minutes_end = date_minutes_end
-        self.allowed_time_minutes_start = allowed_time_minutes_start
-        self.allowed_time_minutes_end = allowed_time_minutes_end
+        self._date_minutes_end = date_minutes_end
+        self._allowed_time_minutes_start = allowed_time_minutes_start
+        self._allowed_time_minutes_end = allowed_time_minutes_end
 
         self.validate_date_range()
+
+    @hybrid_property
+    def date_minutes_end_not_none(self):
+        return self.date_minutes_end if self.date_minutes_end else self.date_minutes_start
+
+    @hybrid_property
+    def allowed_time_minutes_start_not_none(self):
+        return self.allowed_time_minutes_start if self.allowed_time_minutes_start else 0
+
+    @hybrid_property
+    def allowed_time_minutes_end_not_none(self):
+        return self.allowed_time_minutes_end if self.allowed_time_minutes_end else 1440
 
     def validate_date_range(self):
         """
         Custom validation to ensure that date_minutes_start and date_minutes_end are
         valid according to allowed_time_minutes_start and allowed_time_minutes_end.
         """
-        if self.allowed_time_minutes_start == 0 and self.allowed_time_minutes_end == 1440:
+        if self.date_minutes_start > self.date_minutes_end_not_none:
+            raise ValueError("date_minutes_end must be greater than or equal to date_minutes_start")
+        if self.allowed_time_minutes_start_not_none > self.allowed_time_minutes_end_not_none:
+            raise ValueError("allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start")
+
+        if self.allowed_time_minutes_start_not_none == 0 and self.allowed_time_minutes_end_not_none == 1440:
             # allow any value
             return
         else:
             # Otherwise, check if the value is a multiple of 1440 (i.e., a full day in minutes)
             if self.date_minutes_start % 1440 != 0:
                 raise ValueError(f"date_minutes_start must be a multiple of 1440 minutes.")
-            if self.date_minutes_end % 1440 != 0:
+            if self.date_minutes_end_not_none % 1440 != 0:
                 raise ValueError(f"date_minutes_end must be a multiple of 1440 minutes.")
-
 
     def get_random_action_datetime(self) -> datetime:
         """
@@ -129,14 +151,11 @@ class ActionInterval(_db.Model):
         @return: Random datetime.
         """
 
-        random_date_delta = randint(self.date_minutes_start, self.date_minutes_end)
+        random_date_delta = randint(self.date_minutes_start, self.date_minutes_end_not_none)
         random_date = datetime.now(timezone.utc) + timedelta(minutes=random_date_delta)
-        if self.date_minutes_start % 1440 == 0 and self.date_minutes_end % 1440 == 0:
-            random_time = randint(self.allowed_time_minutes_start, self.allowed_time_minutes_end)
+        if self.date_minutes_start % 1440 == 0 and self.date_minutes_end_not_none % 1440 == 0:
+            random_time = randint(self.allowed_time_minutes_start_not_none, self.allowed_time_minutes_end_not_none)
             random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(minutes=random_time)
         else:
             random_datetime = random_date
         return random_datetime
-
-
-

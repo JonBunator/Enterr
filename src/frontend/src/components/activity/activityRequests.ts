@@ -49,8 +49,6 @@ export async function getActivity(): Promise<ActivityData[]> {
 
     const lastSuccessfulLogin = loginHistory.find(login => login.execution_status === ActivityStatusCode.SUCCESS)
     let expirationDate: Date | undefined
-    console.log('lastSuccessfulLogin', lastSuccessfulLogin)
-    console.log('website', website)
     if (lastSuccessfulLogin && lastSuccessfulLogin.execution_ended != null && website.expiration_interval_minutes != null) {
       expirationDate = new Date(lastSuccessfulLogin.execution_ended)
       expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval_minutes)

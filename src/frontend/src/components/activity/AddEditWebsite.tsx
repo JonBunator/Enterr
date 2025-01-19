@@ -7,12 +7,31 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import AccessForm from '../actionBar/addWebsite/AccessForm.tsx'
 import ActionIntervalForm from '../actionBar/addWebsite/ActionIntervalForm.tsx'
 import ExpirationIntervalForm from '../actionBar/addWebsite/ExpirationIntervalForm.tsx'
 import GeneralInfoForm from '../actionBar/addWebsite/GeneralInfoForm.tsx'
 import { FormProvider } from '../form/FormProvider.tsx'
+
+const emptyChangeWebsite: ChangeWebsite = {
+  url: '',
+  success_url: '',
+  name: '',
+  username: '',
+  password: '',
+  pin: '',
+  take_screenshot: true,
+  paused: false,
+  expiration_interval_minutes: null,
+  custom_access: null,
+  action_interval: {
+    date_minutes_start: 0,
+    date_minutes_end: null,
+    allowed_time_minutes_start: null,
+    allowed_time_minutes_end: null,
+  },
+}
 
 interface AddEditWebsiteProps {
   /**
@@ -41,29 +60,21 @@ interface AddEditWebsiteProps {
   loading?: boolean
 }
 
-const emptyChangeWebsite: ChangeWebsite = {
-  url: '',
-  success_url: '',
-  name: '',
-  username: '',
-  password: '',
-  pin: '',
-  take_screenshot: true,
-  paused: false,
-  expiration_interval_minutes: null,
-  custom_access: null,
-  action_interval: {
-    date_minutes_start: 0,
-    date_minutes_end: null,
-    allowed_time_minutes_start: null,
-    allowed_time_minutes_end: null,
-  },
+export interface AddEditWebsiteRef {
+  resetForm: () => void
 }
 
-export default function AddEditWebsite(props: AddEditWebsiteProps) {
+const AddEditWebsite = forwardRef<AddEditWebsiteRef, AddEditWebsiteProps>((props, ref) => {
   const { open, onClose, add, onChange, value, loading } = props
+
   const [currentValue, setCurrentValue] = useState<ChangeWebsite>(emptyChangeWebsite)
   const formRef = useRef<FormProviderRef>(null)
+
+  useImperativeHandle(ref, () => ({
+    resetForm: () => {
+      setCurrentValue(value ?? emptyChangeWebsite)
+    },
+  }))
 
   useEffect(() => {
     setCurrentValue(value ?? emptyChangeWebsite)
@@ -122,4 +133,5 @@ export default function AddEditWebsite(props: AddEditWebsiteProps) {
       </DialogActions>
     </Dialog>
   )
-}
+})
+export default AddEditWebsite
