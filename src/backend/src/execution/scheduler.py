@@ -62,8 +62,6 @@ class Scheduler:
         # login
         status = login(url=url, success_url=success_url, username=username, password=password, x_paths=x_paths,
                        screenshot_id=screenshot_id)
-        raise Exception("adsfasdf")
-
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
         if status != LoginStatusCode.SUCCESS:

@@ -92,16 +92,19 @@ class EditWebsite(BaseModel):
             existing_website.take_screenshot = self.take_screenshot
         if self.paused is not None:
             existing_website.paused = self.paused
-            if self.paused:
-                existing_website.next_schedule = None
-            else:
-                existing_website.next_schedule = existing_website.action_interval.get_random_action_datetime()
         if self.expiration_interval_minutes is not None:
             existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
+        else:
+            existing_website.expiration_interval = None
         if self.custom_access is not None:
             existing_website.custom_access = self.custom_access.edit_existing_model(existing_website.custom_access)
         if self.action_interval is not None:
             existing_website.action_interval = self.action_interval.edit_existing_model(existing_website.action_interval)
+
+        if self.paused:
+            existing_website.next_schedule = None
+        else:
+            existing_website.next_schedule = existing_website.action_interval.get_random_action_datetime()
 
         return existing_website
 

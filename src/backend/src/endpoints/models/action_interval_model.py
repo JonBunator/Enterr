@@ -26,12 +26,9 @@ class EditActionInterval(BaseModel):
     def edit_existing_model(self, existing_action_interval: ActionInterval) -> ActionInterval:
         if self.date_minutes_start is not None:
             existing_action_interval.date_minutes_start = self.date_minutes_start
-        if self.date_minutes_end is not None:
-            existing_action_interval.date_minutes_end = self.date_minutes_end
-        if self.allowed_time_minutes_start is not None:
-            existing_action_interval.allowed_time_minutes_start = self.allowed_time_minutes_start
-        if self.allowed_time_minutes_end is not None:
-            existing_action_interval.allowed_time_minutes_end = self.allowed_time_minutes_end
+        existing_action_interval.date_minutes_end = self.date_minutes_end
+        existing_action_interval.allowed_time_minutes_start = self.allowed_time_minutes_start
+        existing_action_interval.allowed_time_minutes_end = self.allowed_time_minutes_end
         return existing_action_interval
 
 class GetActionInterval(GetRequestBaseModel):

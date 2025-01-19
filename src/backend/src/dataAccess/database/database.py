@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import ForeignKey
 from enum import Enum
@@ -111,7 +111,7 @@ class ActionInterval(_db.Model):
         self._allowed_time_minutes_start = allowed_time_minutes_start
         self._allowed_time_minutes_end = allowed_time_minutes_end
 
-        self.validate_date_range()
+        self._validate_date_range()
 
     @hybrid_property
     def date_minutes_end_not_none(self):
@@ -125,7 +125,7 @@ class ActionInterval(_db.Model):
     def allowed_time_minutes_end_not_none(self):
         return self.allowed_time_minutes_end if self.allowed_time_minutes_end else 1440
 
-    def validate_date_range(self):
+    def _validate_date_range(self):
         """
         Custom validation to ensure that date_minutes_start and date_minutes_end are
         valid according to allowed_time_minutes_start and allowed_time_minutes_end.
@@ -145,6 +145,7 @@ class ActionInterval(_db.Model):
             if self.date_minutes_end_not_none % 1440 != 0:
                 raise ValueError(f"date_minutes_end must be a multiple of 1440 minutes.")
 
+    @hybrid_method
     def get_random_action_datetime(self) -> datetime:
         """
         Gets random datetime between interval_minutes_start to interval_minutes_end date offset

@@ -15,7 +15,7 @@ export default function ExpirationIntervalForm(props: ExpirationIntervalFormProp
 
   function handleEnabledChange(enabled: boolean) {
     setExpirationIntervalEnabled(enabled)
-    if (enabled) {
+    if (!enabled) {
       onChange?.({
         ...value,
         expiration_interval_minutes: null,
