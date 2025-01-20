@@ -19,7 +19,7 @@ services:
     volumes:
       - ./config:/config
     ports:
-      - "8080:8080"
+      - "7653:7653"
     restart: unless-stopped
 ```
 Then start the container:

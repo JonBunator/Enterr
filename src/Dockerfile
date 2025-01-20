@@ -27,9 +27,9 @@ RUN seleniumbase get chromedriver --path
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8080
+EXPOSE 7653
 ENV FLASK_ENV=production
 VOLUME /config
 
 # Note: More than 1 worker is not supported with socketio
-CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "-w", "1", "--worker-class", "eventlet"]
+CMD ["gunicorn", "main:app", "-b", "0.0.0.0:7653", "-w", "1", "--worker-class", "eventlet"]

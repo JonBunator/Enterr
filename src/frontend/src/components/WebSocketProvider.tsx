@@ -18,7 +18,7 @@ interface WebSocketContextType {
   on: (event: string, callback: (message: any) => void) => void
 }
 
-const SOCKET_URL = 'http://localhost:8080'
+const SOCKET_URL = import.meta.env.PROD ? window.location.origin : 'http://localhost:7653'
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(
   undefined,

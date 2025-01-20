@@ -42,4 +42,4 @@ with app.app_context():
     register_database_events(scheduler=scheduler)
     scheduler.start()
     if dev_mode: 
-        socketio.run(app, debug=True, port=8080, use_reloader=False)
+        socketio.run(app, debug=True, port=7653, use_reloader=False)

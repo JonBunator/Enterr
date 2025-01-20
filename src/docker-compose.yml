@@ -3,7 +3,7 @@ services:
     build: .
     image: enterr:dev
     ports:
-      - "8080:8080"
+      - "7653:7653"
     volumes:
       - ./config:/config
     restart: always
