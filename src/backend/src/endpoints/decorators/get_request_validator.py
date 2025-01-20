@@ -30,6 +30,10 @@ def validate_get_request(response_model: Type[GetRequestBaseModel]):
                 # Call the original route function (fetch the data)
                 data = func(*args, **kwargs)
 
+                if data is None:
+                    response = ApiGetResponse(success=False, message="Element with this id was not found", error="")
+                    return jsonify(response.model_dump()), HTTPStatus.NOT_FOUND
+
                 # Ensure data is iterable (e.g., a list of models)
                 if isinstance(data, List):
                     response_data = [response_model.from_sql_model(d) for d in data]

@@ -24,10 +24,12 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
             sb.sleep(3)
             sb.uc_gui_click_captcha()
             x_paths_automatic = find_login_automatically(sb.cdp.get_element_html('html'), pin=pin != '' and pin is not None)
-            username_xpath = x_paths_automatic.username
-            password_xpath = x_paths_automatic.password
-            pin_xpath = x_paths_automatic.pin
-            submit_button_xpath = x_paths_automatic.submit_button
+
+            if x_paths_automatic is not None:
+                username_xpath = x_paths_automatic.username
+                password_xpath = x_paths_automatic.password
+                pin_xpath = x_paths_automatic.pin
+                submit_button_xpath = x_paths_automatic.submit_button
 
             if x_paths is None:
                 if x_paths_automatic is None:

@@ -6,10 +6,10 @@ from endpoints.decorators.post_request_validator import PostRequestBaseModel
 
 
 class AddCustomAccess(PostRequestBaseModel):
-    username_xpath: str
-    password_xpath: str
+    username_xpath: Optional[str] = None
+    password_xpath: Optional[str] = None
     pin_xpath: Optional[str] = None
-    submit_button_xpath: str
+    submit_button_xpath: Optional[str] = None
 
     def to_sql_model(self) -> CustomAccess:
         username_xpath = self.username_xpath if self.username_xpath != '' else None
