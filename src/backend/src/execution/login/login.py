@@ -15,13 +15,13 @@ class LoginStatusCode(Enum):
     SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
     FAILED = ActionStatusCode.FAILED
 
+TIMEOUT = 30
 
 def login(url: str, success_url: str, username: str, password: str, pin: str, x_paths: XPaths = None,
           screenshot_id: str = None) -> LoginStatusCode:
     try:
         with SB(uc=True, ad_block=True, xvfb=True) as sb:
             sb.activate_cdp_mode(url)
-            sb.sleep(3)
             sb.uc_gui_click_captcha()
             x_paths_automatic = find_login_automatically(sb.cdp.get_element_html('html'), pin=pin != '' and pin is not None)
 
@@ -63,7 +63,11 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
             if sb.cdp.click(submit_button_xpath) == False:
                 return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
 
-            sb.sleep(0.5)
+            # Wait for expected url
+            for i in range(TIMEOUT):
+                sb.sleep(1)
+                if sb.cdp.get_current_url() == success_url:
+                    break
             if screenshot_id is not None:
                 save_screenshot(sb, screenshot_id)
             if sb.cdp.get_current_url() == success_url:
