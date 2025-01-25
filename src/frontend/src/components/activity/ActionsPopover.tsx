@@ -6,7 +6,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline'
-import { EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
+import { ArrowPathIcon, EllipsisVerticalIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
 import {
   Divider,
   IconButton,
@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { addManualLogin, deleteWebsite, editWebsite } from '../../api/apiRequests.ts'
+import { addManualLogin, deleteWebsite, editWebsite, login } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../SnackbarProvider.tsx'
 import { useWebSocket } from '../WebSocketProvider.tsx'
@@ -144,6 +144,19 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     }
   }
 
+  async function triggerLogin() {
+    handleClose()
+
+    loading(`Triggering login...`)
+    try {
+      await login(websiteId)
+      success(`Website login successfully started`)
+    }
+    catch (e) {
+      error('Failed to trigger website login', (e as Error).message)
+    }
+  }
+
   function handleEditCloseDialog() {
     setEditDialogOpen(false)
     editWebsiteDialogRef.current?.resetForm()
@@ -208,6 +221,12 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
               : <PauseCircleIcon className="icon" />}
           </ListItemIcon>
           <ListItemText primary={`${editWebsiteValue?.paused ? 'Resume' : 'Pause'} automatic login`} />
+        </MenuItem>
+        <MenuItem onClick={() => void triggerLogin()}>
+          <ListItemIcon>
+            <ArrowPathIcon className="icon" />
+          </ListItemIcon>
+          <ListItemText primary="Trigger automatic login" />
         </MenuItem>
         <MenuItem onClick={handleOpenWebsite}>
           <ListItemIcon>

@@ -9,6 +9,7 @@ from endpoints.decorators.get_request_validator import validate_get_request
 from endpoints.decorators.post_request_validator import validate_post_request
 from endpoints.models.action_history_model import GetActionHistory, AddManualActionHistory
 from endpoints.models.api_response_model import ApiGetResponse
+from endpoints.models.other_model import TriggerLogin
 from endpoints.models.website_model import GetWebsite, AddWebsite, EditWebsite, DeleteWebsite
 
 
@@ -50,6 +51,11 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     @validate_post_request(AddManualActionHistory)
     def add_manual_action_history(action_history_request: AddManualActionHistory):
         data_access.add_manual_action_history(action_history_request)
+
+    @app.route('/api/trigger_login', methods=['POST'])
+    @validate_post_request(TriggerLogin)
+    def trigger_login(login_request: TriggerLogin):
+        DataAccess.trigger_login(login_request.id)
 
     @app.route('/api/screenshot/<string:screenshot_id>', methods=['GET'])
     def get_screenshot(screenshot_id: str):

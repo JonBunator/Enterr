@@ -51,3 +51,12 @@ export async function addManualLogin(websiteId: number) {
     },
   })
 }
+
+export async function login(websiteId: number) {
+  const body = { id: websiteId }
+  await axios.post('/api/trigger_login', body, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}

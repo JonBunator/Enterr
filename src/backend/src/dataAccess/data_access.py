@@ -53,5 +53,9 @@ class DataAccess:
             self.webhook_endpoints.action_history_changed(action_history_id=action_history_id)
 
     @staticmethod
+    def trigger_login(website_id):
+        DataBase.trigger_login(website_id=website_id)
+
+    @staticmethod
     def get_action_history(website: Website) -> List[ActionHistory]:
         return DataBase.get_action_history(website)

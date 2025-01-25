@@ -76,5 +76,11 @@ class DataBase:
         return action_history_ids
 
     @staticmethod
+    def trigger_login(website_id: int):
+        website = db.session.get(Website, website_id)
+        website.next_schedule = datetime.now(timezone.utc)
+        db.session.commit()
+
+    @staticmethod
     def get_action_history(website: Website) -> List[ActionHistory]:
         return sorted(website.action_histories, key=lambda ah: ah.execution_started, reverse=True)

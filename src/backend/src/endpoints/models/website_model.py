@@ -9,6 +9,7 @@ from endpoints.models.action_interval_model import AddActionInterval, GetActionI
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
 from utils.utils import timedelta_to_parts
 
+
 class DateTime(BaseModel):
     day: Optional[int] = None
     month: Optional[int] = None
@@ -25,6 +26,7 @@ class DateTime(BaseModel):
             hour=dt.hour,
             minute=dt.minute
         )
+
 
 class AddWebsite(PostRequestBaseModel):
     url: str
@@ -61,12 +63,13 @@ class AddWebsite(PostRequestBaseModel):
         website.action_interval = self.action_interval.to_sql_model()
         return website
 
+
 class EditWebsite(BaseModel):
     id: int
     url: Optional[str] = None
     success_url: Optional[str] = None
     name: Optional[str] = None
-    username:Optional[str] = None
+    username: Optional[str] = None
     password: Optional[str] = None
     pin: Optional[str] = None
     take_screenshot: Optional[bool] = None
@@ -104,7 +107,8 @@ class EditWebsite(BaseModel):
         else:
             existing_website.custom_access = None
         if self.action_interval is not None:
-            existing_website.action_interval = self.action_interval.edit_existing_model(existing_website.action_interval)
+            existing_website.action_interval = self.action_interval.edit_existing_model(
+                existing_website.action_interval)
 
         if self.paused:
             existing_website.next_schedule = None
@@ -113,8 +117,10 @@ class EditWebsite(BaseModel):
 
         return existing_website
 
+
 class DeleteWebsite(BaseModel):
     id: int
+
 
 class GetWebsite(GetRequestBaseModel):
     id: int
@@ -151,6 +157,7 @@ class GetWebsite(GetRequestBaseModel):
             paused=website.paused,
             expiration_interval_minutes=expiration_interval_minutes,
             custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
-            action_interval=GetActionInterval.from_sql_model(website.action_interval) if website.action_interval else None,
+            action_interval=GetActionInterval.from_sql_model(
+                website.action_interval) if website.action_interval else None,
             next_schedule=website.next_schedule,
         )
