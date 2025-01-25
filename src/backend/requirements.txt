@@ -4,7 +4,7 @@ Flask-SQLAlchemy==3.1.1
 python-dotenv==1.0.1
 gunicorn==23.0.0
 eventlet==0.38.2
-seleniumbase==4.33.15
+seleniumbase==4.34.2
 lxml==5.3.0
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.37
