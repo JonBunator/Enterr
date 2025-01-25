@@ -1,4 +1,6 @@
+import { Tooltip } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
+import './TimeDifference.scss'
 
 interface TimeDifferenceProps {
   datetime: Date
@@ -10,18 +12,29 @@ interface TimeDifferenceProps {
    * String that is returned when the time difference is negative.
    */
   negativeDifference?: string
+  /**
+   * Display tooltip with exact time.
+   */
+  tooltip?: boolean
 }
 
 export default function TimeDifference(props: TimeDifferenceProps) {
-  const { datetime, prefix, negativeDifference } = props
+  const { datetime, prefix, negativeDifference, tooltip } = props
 
   const getFormatedTime = useCallback((): string => {
     const now = new Date()
     const diffInMs = datetime.getTime() - now.getTime()
 
-    const diffInMinutes = Math.ceil(diffInMs / (1000 * 60))
-    if (diffInMinutes < -1) {
-      return negativeDifference ?? 'Time difference is negative'
+    let diffInMinutes = Math.ceil(diffInMs / (1000 * 60))
+    let suffix = ''
+
+    if (diffInMinutes < -1 && negativeDifference !== undefined) {
+      return negativeDifference
+    }
+
+    if (diffInMs < 0) {
+      suffix = ' ago'
+      diffInMinutes = Math.abs(diffInMinutes)
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60)
@@ -29,16 +42,16 @@ export default function TimeDifference(props: TimeDifferenceProps) {
     const remainingMinutes = diffInMinutes % 60
     const prefixString = prefix ?? ''
     if (diffInMinutes === 0 || diffInMinutes === -1) {
-      return `${prefixString}<1min`
+      return `${prefixString}<1min${suffix}`
     }
     if (diffInDays > 0) {
-      return `${prefixString}${diffInDays}d`
+      return `${prefixString}${diffInDays}d${suffix}`
     }
     else if (diffInHours > 0) {
-      return `${prefixString}${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`
+      return `${prefixString}${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}${suffix}`
     }
     else {
-      return `${prefixString}${diffInMinutes}m`
+      return `${prefixString}${diffInMinutes}m${suffix}`
     }
   }, [datetime, negativeDifference, prefix])
 
@@ -57,8 +70,18 @@ export default function TimeDifference(props: TimeDifferenceProps) {
   }, [datetime, getFormatedTime])
 
   return (
-    <>
-      {formattedTime}
-    </>
+    tooltip && formattedTime !== negativeDifference
+      ? (
+          <Tooltip title={datetime.toLocaleString()}>
+            <div className="time-diff">
+              {formattedTime}
+            </div>
+          </Tooltip>
+        )
+      : (
+          <div>
+            {formattedTime}
+          </div>
+        )
   )
 }

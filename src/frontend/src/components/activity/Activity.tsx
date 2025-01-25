@@ -39,7 +39,8 @@ interface ActivityProps {
 export default function Activity(props: ActivityProps) {
   const { searchTerm } = props
   const [order, setOrder] = useState<Order>(Order.ASC)
-  const [orderBy, setOrderBy] = useState<keyof ActivityData>('lastLoginAttempt')
+  const [orderBy, setOrderBy]
+    = useState<keyof ActivityData>('lastLoginAttempt')
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
   const [rawData, setRawData] = useState<ActivityData[]>([])
@@ -49,7 +50,9 @@ export default function Activity(props: ActivityProps) {
 
   function fetchData() {
     getActivity()
-      .then((data) => { setRawData(data) })
+      .then((data) => {
+        setRawData(data)
+      })
       .catch(console.error)
   }
 
@@ -75,7 +78,10 @@ export default function Activity(props: ActivityProps) {
     setOrderBy(property)
   }
 
-  const handleChangePage = (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handleChangePage = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number,
+  ) => {
     setPage(newPage)
   }
 
@@ -84,7 +90,12 @@ export default function Activity(props: ActivityProps) {
     setPage(0)
   }
 
-  function orderByTime(order: Order, a?: Date, b?: Date, reverse?: boolean): number {
+  function orderByTime(
+    order: Order,
+    a?: Date,
+    b?: Date,
+    reverse?: boolean,
+  ): number {
     const aTime = a?.getTime() ?? 0
     const bTime = b?.getTime() ?? 0
     if (reverse) {
@@ -104,7 +115,8 @@ export default function Activity(props: ActivityProps) {
         ]
         const aIndex = statusOrder.indexOf(a.status)
         const bIndex = statusOrder.indexOf(b.status)
-        const orderByStatus = order === Order.ASC ? aIndex - bIndex : bIndex - aIndex
+        const orderByStatus
+          = order === Order.ASC ? aIndex - bIndex : bIndex - aIndex
         if (orderByStatus === 0) {
           return orderByTime(order, a.nextLogin, b.nextLogin)
         }
@@ -121,11 +133,12 @@ export default function Activity(props: ActivityProps) {
         : (b[orderBy] as string).localeCompare(a[orderBy] as string)
     })
 
-    const filteredData = searchTerm !== undefined
-      ? sortedData.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-      : sortedData
+    const filteredData
+      = searchTerm !== undefined
+        ? sortedData.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          )
+        : sortedData
 
     const paginatedData = filteredData.slice(
       page * rowsPerPage,
@@ -135,16 +148,33 @@ export default function Activity(props: ActivityProps) {
   }, [rawData, order, orderBy, page, rowsPerPage, searchTerm])
 
   return (
-    <Card className="activity" component={motion.div} layout initial={{ height: 0 }} animate={{ height: 'auto' }}>
+    <Card
+      className="activity"
+      component={motion.div}
+      layout
+      initial={{ height: 0 }}
+      animate={{ height: 'auto' }}
+    >
       <CardContent className="activity-card" component={motion.div} layout>
-        <TableContainer sx={{ height: 670, width: 1100 }} component={motion.div} layout>
-          <Table stickyHeader className="activity-table" component={motion.table} layout>
+        <TableContainer
+          sx={{ height: 670, width: 1100 }}
+          component={motion.div}
+          layout
+        >
+          <Table
+            stickyHeader
+            className="activity-table"
+            component={motion.table}
+            layout
+          >
             <TableHead component={motion.thead} layout>
               <TableRow component={motion.tr} layout>
                 <TableCell>
                   <TableSortLabel
                     active={orderBy === 'status'}
-                    direction={(orderBy === 'status' ? order : Order.ASC) as OrderType}
+                    direction={
+                      (orderBy === 'status' ? order : Order.ASC) as OrderType
+                    }
                     onClick={() => void handleSortRequest('status')}
                   >
                     Status
@@ -153,7 +183,9 @@ export default function Activity(props: ActivityProps) {
                 <TableCell>
                   <TableSortLabel
                     active={orderBy === 'name'}
-                    direction={(orderBy === 'name' ? order : Order.ASC) as OrderType}
+                    direction={
+                      (orderBy === 'name' ? order : Order.ASC) as OrderType
+                    }
                     onClick={() => void handleSortRequest('name')}
                   >
                     Name
@@ -162,7 +194,9 @@ export default function Activity(props: ActivityProps) {
                 <TableCell>
                   <TableSortLabel
                     active={orderBy === 'nextLogin'}
-                    direction={(orderBy === 'nextLogin' ? order : Order.ASC) as OrderType}
+                    direction={
+                      (orderBy === 'nextLogin' ? order : Order.ASC) as OrderType
+                    }
                     onClick={() => void handleSortRequest('nextLogin')}
                   >
                     Next Login
@@ -171,7 +205,11 @@ export default function Activity(props: ActivityProps) {
                 <TableCell>
                   <TableSortLabel
                     active={orderBy === 'lastLoginAttempt'}
-                    direction={(orderBy === 'lastLoginAttempt' ? order : Order.ASC) as OrderType}
+                    direction={
+                      (orderBy === 'lastLoginAttempt'
+                        ? order
+                        : Order.ASC) as OrderType
+                    }
                     onClick={() => void handleSortRequest('lastLoginAttempt')}
                   >
                     Last Login Attempt
@@ -185,55 +223,77 @@ export default function Activity(props: ActivityProps) {
               {processedData.length === 0
                 ? (
                     <TableRow>
-                      <TableCell className="empty-state-cell" colSpan={6} rowSpan={10}>
+                      <TableCell
+                        className="empty-state-cell"
+                        colSpan={6}
+                        rowSpan={10}
+                      >
                         {searchTerm === '' && processedData.length === 0
-                          ? <EmptyState noData />
-                          : <EmptyState />}
+                          ? (
+                              <EmptyState noData />
+                            )
+                          : (
+                              <EmptyState />
+                            )}
                       </TableCell>
                     </TableRow>
                   )
-                : processedData.map(row => (
-                  <TableRow
-                    key={row.id}
-                    component={motion.tr}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    layout
-                  >
-                    <TableCell>
-                      <ActivityStatus
-                        status={row.status}
-                        expirationDate={row.expirationDate}
-                      />
-                    </TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>
-                      <TimeDifference
-                        prefix=""
-                        datetime={row.nextLogin}
-                        negativeDifference="No login scheduled"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {row.lastLoginAttempt?.toLocaleString() ?? 'No login yet'}
-                    </TableCell>
-                    <TableCell>
-                      {row.loginHistory !== null
-                      && (
-                        <div className="login-history">
-                          {row.loginHistory.slice(0, 3).map((lh, index) => (
-                            <LoginHistoryDetails key={index} loginHistory={lh} />
-                          ))}
-                          {row.loginHistory.length > 3
-                          && <Typography>...</Typography>}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <ActionsPopover websiteId={row.id} websiteURL={row.url} />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                : (
+                    processedData.map(row => (
+                      <TableRow
+                        key={row.id}
+                        component={motion.tr}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        layout
+                      >
+                        <TableCell>
+                          <ActivityStatus
+                            status={row.status}
+                            expirationDate={row.expirationDate}
+                          />
+                        </TableCell>
+                        <TableCell>{row.name}</TableCell>
+                        <TableCell>
+                          <TimeDifference
+                            prefix=""
+                            datetime={row.nextLogin}
+                            tooltip
+                            negativeDifference="No login scheduled"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {row.lastLoginAttempt !== undefined
+                            ? (
+                                <TimeDifference
+                                  prefix=""
+                                  tooltip
+                                  datetime={row.lastLoginAttempt}
+                                />
+                              )
+                            : 'No login yet'}
+                        </TableCell>
+                        <TableCell>
+                          {row.loginHistory !== null && (
+                            <div className="login-history">
+                              {row.loginHistory.slice(0, 3).map((lh, index) => (
+                                <LoginHistoryDetails
+                                  key={index}
+                                  loginHistory={lh}
+                                />
+                              ))}
+                              {row.loginHistory.length > 3 && (
+                                <Typography>...</Typography>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <ActionsPopover websiteId={row.id} websiteURL={row.url} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -251,7 +311,9 @@ export default function Activity(props: ActivityProps) {
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
             )
-          : <div className="activity-empty-pagination-spacer" />}
+          : (
+              <div className="activity-empty-pagination-spacer" />
+            )}
       </CardContent>
     </Card>
   )

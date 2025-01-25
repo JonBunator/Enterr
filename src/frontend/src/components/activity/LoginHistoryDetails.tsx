@@ -106,11 +106,11 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
           <div className="login-history-details-content">
             <Typography>
               <b>Start time: </b>
-              {loginHistory.execution_started}
+              {new Date(loginHistory.execution_started).toLocaleString()}
             </Typography>
             <Typography>
               <b>End time: </b>
-              {loginHistory.execution_ended !== null ? loginHistory.execution_ended : 'Not finished yet'}
+              {loginHistory.execution_ended !== null ? new Date(loginHistory.execution_ended).toLocaleString() : 'Not finished yet'}
             </Typography>
             <Typography>
               <b>Execution time: </b>
