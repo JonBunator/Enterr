@@ -81,9 +81,14 @@ class Scheduler:
         website = DataAccess.get_website(website_id)
         if website.next_schedule is None:
             return
+
+        if website.next_schedule.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+            run_date = datetime.now(timezone.utc)
+        else:
+            run_date = website.next_schedule
         self.scheduler.add_job(
             self._login_task,
-            trigger=DateTrigger(run_date=website.next_schedule),
+            trigger=DateTrigger(run_date=run_date),
             args=[website_id],
             id=f"{website_id}",
             replace_existing=True,
