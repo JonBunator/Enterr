@@ -1,0 +1,22 @@
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  .login-card {
+    width: 500px;
+    height: 309px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 48px;
+    align-items: center;
+    border-radius: 32px;
+
+    .forgot-password {
+      align-self: end;
+      margin-top: -8px;
+    }
+  }
+}

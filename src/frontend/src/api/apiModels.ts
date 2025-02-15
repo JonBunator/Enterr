@@ -49,3 +49,8 @@ export interface ActionHistory {
   failed_details: FailedDetails | null
   screenshot_id: string | null
 }
+
+export interface UserData {
+  username: string
+  logged_in: boolean
+}

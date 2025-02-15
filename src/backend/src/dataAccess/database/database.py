@@ -2,24 +2,56 @@ import os
 from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
+
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from enum import Enum
+from flask_login import UserMixin, LoginManager
+from werkzeug.security import generate_password_hash, check_password_hash
 
 _db = SQLAlchemy()
+login_manager = LoginManager()
 
 
 def init_db(app):
     with app.app_context():
-        dev_mode = os.getenv('FLASK_ENV') != 'production'
+        dev_mode = os.getenv("FLASK_ENV") != "production"
         if dev_mode:
-            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         else:
-            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////config/database.db'
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////config/database.db"
         _db.init_app(app)
         _db.create_all()
+        login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return _db.session.get(User, int(user_id))
+
+
+class User(UserMixin, _db.Model):
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(nullable=False)
+    # Relationship to Website
+    websites: Mapped[List["Website"]] = relationship(
+        "Website", cascade="all, delete-orphan", backref="parent_user"
+    )
+
+    def __init__(self, username, password):
+        self.username = username
+        self.set_password(password)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class Website(_db.Model):
@@ -38,9 +70,14 @@ class Website(_db.Model):
     expiration_interval: Mapped[Optional[timedelta]] = mapped_column(nullable=True)
     next_schedule: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
+    user: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
     # Relationship to CustomAccess
     custom_access: Mapped[Optional["CustomAccess"]] = relationship(
-        "CustomAccess", cascade="all, delete-orphan", backref="parent_website", uselist=False
+        "CustomAccess",
+        cascade="all, delete-orphan",
+        backref="parent_website",
+        uselist=False,
     )
 
     # Relationship to ActionHistory
@@ -50,7 +87,10 @@ class Website(_db.Model):
 
     # Relationship to ActionInterval
     action_interval: Mapped["ActionInterval"] = relationship(
-        "ActionInterval", cascade="all, delete-orphan", backref="parent_website", uselist=False
+        "ActionInterval",
+        cascade="all, delete-orphan",
+        backref="parent_website",
+        uselist=False,
     )
 
 
@@ -105,7 +145,13 @@ class ActionInterval(_db.Model):
 
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
-    def __init__(self, date_minutes_start, date_minutes_end, allowed_time_minutes_start, allowed_time_minutes_end):
+    def __init__(
+        self,
+        date_minutes_start,
+        date_minutes_end,
+        allowed_time_minutes_start,
+        allowed_time_minutes_end,
+    ):
         self.date_minutes_start = date_minutes_start
         self.date_minutes_end = date_minutes_end
         self.allowed_time_minutes_start = allowed_time_minutes_start
@@ -115,7 +161,9 @@ class ActionInterval(_db.Model):
 
     @hybrid_property
     def date_minutes_end_not_none(self):
-        return self.date_minutes_end if self.date_minutes_end else self.date_minutes_start
+        return (
+            self.date_minutes_end if self.date_minutes_end else self.date_minutes_start
+        )
 
     @hybrid_property
     def allowed_time_minutes_start_not_none(self):
@@ -131,19 +179,33 @@ class ActionInterval(_db.Model):
         valid according to allowed_time_minutes_start and allowed_time_minutes_end.
         """
         if self.date_minutes_start > self.date_minutes_end_not_none:
-            raise ValueError("date_minutes_end must be greater than or equal to date_minutes_start")
-        if self.allowed_time_minutes_start_not_none > self.allowed_time_minutes_end_not_none:
-            raise ValueError("allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start")
+            raise ValueError(
+                "date_minutes_end must be greater than or equal to date_minutes_start"
+            )
+        if (
+            self.allowed_time_minutes_start_not_none
+            > self.allowed_time_minutes_end_not_none
+        ):
+            raise ValueError(
+                "allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start"
+            )
 
-        if self.allowed_time_minutes_start_not_none == 0 and self.allowed_time_minutes_end_not_none == 1440:
+        if (
+            self.allowed_time_minutes_start_not_none == 0
+            and self.allowed_time_minutes_end_not_none == 1440
+        ):
             # allow any value
             return
         else:
             # Otherwise, check if the value is a multiple of 1440 (i.e., a full day in minutes)
             if self.date_minutes_start % 1440 != 0:
-                raise ValueError(f"date_minutes_start must be a multiple of 1440 minutes.")
+                raise ValueError(
+                    f"date_minutes_start must be a multiple of 1440 minutes."
+                )
             if self.date_minutes_end_not_none % 1440 != 0:
-                raise ValueError(f"date_minutes_end must be a multiple of 1440 minutes.")
+                raise ValueError(
+                    f"date_minutes_end must be a multiple of 1440 minutes."
+                )
 
     @hybrid_method
     def get_random_action_datetime(self) -> datetime:
@@ -153,11 +215,21 @@ class ActionInterval(_db.Model):
         @return: Random datetime.
         """
 
-        random_date_delta = randint(self.date_minutes_start, self.date_minutes_end_not_none)
+        random_date_delta = randint(
+            self.date_minutes_start, self.date_minutes_end_not_none
+        )
         random_date = datetime.now(timezone.utc) + timedelta(minutes=random_date_delta)
-        if self.date_minutes_start % 1440 == 0 and self.date_minutes_end_not_none % 1440 == 0:
-            random_time = randint(self.allowed_time_minutes_start_not_none, self.allowed_time_minutes_end_not_none)
-            random_datetime = datetime.combine(random_date, datetime.min.time()) + timedelta(minutes=random_time)
+        if (
+            self.date_minutes_start % 1440 == 0
+            and self.date_minutes_end_not_none % 1440 == 0
+        ):
+            random_time = randint(
+                self.allowed_time_minutes_start_not_none,
+                self.allowed_time_minutes_end_not_none,
+            )
+            random_datetime = datetime.combine(
+                random_date, datetime.min.time()
+            ) + timedelta(minutes=random_time)
         else:
             random_datetime = random_date
         return random_datetime

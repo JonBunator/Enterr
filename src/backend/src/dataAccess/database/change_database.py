@@ -1,44 +1,127 @@
 from datetime import datetime, timezone
 from typing import List
 
-from dataAccess.database.database import Website, _db as db, ActionHistory, ActionFailedDetails, ActionStatusCode
+import flask_login
+
+from dataAccess.database.database import (
+    Website,
+    User,
+    _db as db,
+    ActionHistory,
+    ActionFailedDetails,
+    ActionStatusCode,
+)
 
 
 class DataBase:
+    """--------------------------- USER ACCESS ---------------------------"""
+
     @staticmethod
-    def get_all_websites() -> List[Website]:
-        return db.session.scalars(db.select(Website)).all()
+    def get_current_user() -> User:
+        return flask_login.current_user
+
+    @staticmethod
+    def get_websites() -> List[Website]:
+        user = DataBase.get_current_user()
+        return user.websites
 
     @staticmethod
     def get_website(website_id: int) -> Website:
-        return db.session.get(Website, website_id)
+        current_user = DataBase.get_current_user()
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website_id, user=current_user.id)
+            .first()
+        )
+        if website:
+            return website
+        raise Exception(f"Website {website_id} not found")
 
     @staticmethod
     def add_website(website: Website):
+        current_user = DataBase.get_current_user()
+        print(current_user.id)
+        website.user = current_user.id
         website.next_schedule = datetime.now(timezone.utc)
         db.session.add(website)
         db.session.commit()
 
     @staticmethod
     def edit_website(website: Website):
-        db.session.merge(website)
-        db.session.commit()
+        current_user = DataBase.get_current_user()
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website.id, user=current_user.id)
+            .first()
+        )
+        if website:
+            db.session.merge(website)
+            db.session.commit()
+        else:
+            raise Exception(f"Website {website.id} not found")
 
     @staticmethod
     def delete_website(website: Website):
-        db.session.delete(website)
-        db.session.commit()
+        current_user = DataBase.get_current_user()
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website.id, user=current_user.id)
+            .first()
+        )
+        if website:
+            db.session.delete(website)
+            db.session.commit()
+        else:
+            raise Exception(f"Website {website.id} not found")
 
     @staticmethod
-    def add_action_history(website_id: int, action_history: ActionHistory) -> int:
-        website = db.session.get(Website, website_id)
-        website.action_histories.append(action_history)
-        if website.paused:
-            website.next_schedule = None  # In order to prevent race conditions
+    def trigger_login(website_id: int):
+        current_user = DataBase.get_current_user()
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website_id, user=current_user.id)
+            .first()
+        )
+        if website:
+            website.next_schedule = datetime.now(timezone.utc)
+            db.session.commit()
         else:
-            website.next_schedule = website.action_interval.get_random_action_datetime()
-        db.session.commit()
-        return action_history.id
+            raise Exception(f"Website {website.id} not found")
+
+    @staticmethod
+    def get_action_history(website_id: int) -> List[ActionHistory]:
+        current_user = DataBase.get_current_user()
+        website = db.session.get(Website, website_id)
+        if website is None or website.user != current_user.id:
+            raise Exception(f"Website {website_id} not found")
+        return sorted(
+            website.action_histories,
+            key=lambda ah: ah.execution_started,
+            reverse=True,
+        )
+
+    @staticmethod
+    def add_manual_action_history(website_id: int, action_history: ActionHistory):
+        current_user = DataBase.get_current_user()
+        website = db.session.get(Website, website_id)
+        if website is None or website.user != current_user.id:
+            raise Exception("Website not found")
+        else:
+            DataBase.add_action_history(website_id, action_history)
+
+    """--------------------------- INTERNAL ACCESS ---------------------------"""
+
+    @staticmethod
+    def get_user(username: str):
+        return db.session.query(User).filter_by(username=username).first()
+
+    @staticmethod
+    def get_websites_all_users() -> List[Website]:
+        return db.session.scalars(db.select(Website)).all()
+
+    @staticmethod
+    def get_website_all_users(website_id: int) -> Website:
+        return db.session.get(Website, website_id)
 
     @staticmethod
     def action_history_finish_execution(action_history_id: int, execution_status: ActionStatusCode,
@@ -76,11 +159,13 @@ class DataBase:
         return action_history_ids
 
     @staticmethod
-    def trigger_login(website_id: int):
+    def add_action_history(website_id: int, action_history: ActionHistory) -> int:
         website = db.session.get(Website, website_id)
-        website.next_schedule = datetime.now(timezone.utc)
+        website.action_histories.append(action_history)
+        if website.paused:
+            website.next_schedule = None  # In order to prevent race conditions
+        else:
+            website.next_schedule = website.action_interval.get_random_action_datetime()
         db.session.commit()
+        return action_history.id
 
-    @staticmethod
-    def get_action_history(website: Website) -> List[ActionHistory]:
-        return sorted(website.action_histories, key=lambda ah: ah.execution_started, reverse=True)

@@ -1,24 +1,24 @@
 import uuid
 from datetime import datetime, timezone
 
-from apscheduler.events import SchedulerEvent, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, JobExecutionEvent
+from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from pytz import utc
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from flask import Flask
-from dataAccess.data_access import DataAccess
+from dataAccess.data_access_internal import DataAccessInternal
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from execution.login.find_form_automatically import XPaths, XPath
 from execution.login.login import LoginStatusCode, login
 
 
 class Scheduler:
-    def __init__(self, app: Flask, data_access: DataAccess):
+    def __init__(self, app: Flask, data_access_internal: DataAccessInternal):
         self.scheduler = BackgroundScheduler(executors={'default': ThreadPoolExecutor(1)}, timezone=utc)
         self.app = app
-        self.data_access = data_access
+        self.data_access = data_access_internal
 
     def start(self):
         self._init_tasks()
@@ -31,13 +31,13 @@ class Scheduler:
                 self.data_access.unexpected_execution_failure(website_id=event.job_id, execution_started=event.scheduled_run_time)
 
     def _init_tasks(self):
-        for website in DataAccess.get_all_websites():
+        for website in DataAccessInternal.get_websites_all_users():
             self.add_task(website.id)
 
     def _login_task(self, website_id: int):
         screenshot_id = None
         with self.app.app_context():
-            website = DataAccess.get_website(website_id)
+            website = DataAccessInternal.get_website_all_users(website_id)
             if website.take_screenshot:
                 screenshot_id = str(uuid.uuid4())
             start_time = datetime.now(timezone.utc)
@@ -78,7 +78,7 @@ class Scheduler:
                                                              screenshot_id=screenshot_id)
 
     def add_task(self, website_id: int):
-        website = DataAccess.get_website(website_id)
+        website = DataAccessInternal.get_website_all_users(website_id)
         if website.next_schedule is None:
             return
 

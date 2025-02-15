@@ -2,9 +2,11 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import Content from './components/Content'
-import SnackbarProvider from './components/SnackbarProvider.tsx'
-import WebSocketProvider from './components/WebSocketProvider'
+import { BrowserRouter, Route, Routes } from 'react-router'
+import LoginPage from './components/pages/LoginPage.tsx'
+import MainPage from './components/pages/MainPage.tsx'
+import SnackbarProvider from './components/provider/SnackbarProvider.tsx'
+import WebSocketProvider from './components/provider/WebSocketProvider.tsx'
 import './globalStyles.scss'
 
 const darkTheme = createTheme({
@@ -40,7 +42,12 @@ export default function App() {
         <CssBaseline />
         <SnackbarProvider>
           <WebSocketProvider>
-            <Content />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/" element={<MainPage />} />
+              </Routes>
+            </BrowserRouter>
           </WebSocketProvider>
         </SnackbarProvider>
       </LocalizationProvider>

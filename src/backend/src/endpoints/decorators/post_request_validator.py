@@ -10,11 +10,17 @@ from http import HTTPStatus
 from dataAccess.database.database import _db
 from endpoints.models.api_response_model import ApiPostResponse
 
+
 class PostRequestBaseModel(BaseModel, ABC):
     @staticmethod
     @abstractmethod
     def to_sql_model() -> _db.Model:
         pass
+
+
+class CustomValidationError(Exception):
+    pass
+
 
 def validate_post_request(request_model: Type[BaseModel]):
     """
@@ -38,7 +44,9 @@ def validate_post_request(request_model: Type[BaseModel]):
                 # Return a 200 OK status code
                 response = ApiPostResponse(success=True, message="Operation successful")
                 return jsonify(response.model_dump()), HTTPStatus.OK
-
+            except CustomValidationError as e:
+                response = ApiPostResponse(success=False, message="Invalid request data", error=str(e))
+                return jsonify(response.model_dump()), HTTPStatus.BAD_REQUEST
             except ValidationError as e:
                 traceback.print_exc()
                 # In case of validation errors, return a 400 Bad Request response

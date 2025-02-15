@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 
-class TriggerLogin(BaseModel):
+
+class TriggerAutomaticLogin(BaseModel):
     id: int

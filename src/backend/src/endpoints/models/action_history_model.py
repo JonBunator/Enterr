@@ -24,12 +24,13 @@ class GetActionHistory(GetRequestBaseModel):
             screenshot_id=action_history.screenshot_id
         )
 
+
 class AddManualActionHistory(PostRequestBaseModel):
     id: int
 
     def to_sql_model(self) -> ActionHistory:
         return ActionHistory(
-                execution_started=datetime.now(timezone.utc),
-                execution_ended=datetime.now(timezone.utc),
-                execution_status=ActionStatusCode.SUCCESS,
-            )
+            execution_started=datetime.now(timezone.utc),
+            execution_ended=datetime.now(timezone.utc),
+            execution_status=ActionStatusCode.SUCCESS,
+        )
