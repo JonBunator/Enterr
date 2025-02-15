@@ -31,7 +31,8 @@ def create_website(dt: datetime) -> Website:
         expiration_interval=timedelta(days=1),
         next_schedule=dt,
         take_screenshot=True,
-        paused=False
+        paused=False,
+        user=1,
     )
 
 def test_website_entry_creation(app):
@@ -56,6 +57,7 @@ def test_website_entry_creation(app):
         assert website_in_db.take_screenshot is True
         assert website_in_db.paused is False
         assert website_in_db.next_schedule == dt
+        assert website_in_db.user == 1
 
 def test_website_entry_creation_null_values(app):
     """Tests website creation with no pin."""
@@ -69,6 +71,7 @@ def test_website_entry_creation_null_values(app):
             added_at=datetime.now(timezone.utc),
             take_screenshot=False,
             paused=False,
+            user=1,
         )
         _db.session.add(new_website)
         _db.session.commit()

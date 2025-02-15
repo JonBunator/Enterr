@@ -20,7 +20,7 @@ def test_find_login_automatically(filename):
 
     with open(filepath, 'r') as file:
         content = file.read()
-        xpaths = find_login_automatically(content)
+        xpaths = find_login_automatically(content, False)
         assert xpaths is not None, f"Found no xpath for login {filename}"
 
         dom = HTML(content)
