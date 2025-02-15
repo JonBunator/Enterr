@@ -18,12 +18,13 @@ dev_mode = os.getenv("FLASK_ENV") != "production"
 
 if dev_mode:
     app = Flask(__name__)
+    app.secret_key = "DEBUG_SECRET_KEY"
     socketio = SocketIO(
         app, cors_allowed_origins=f"http://localhost:5173", async_mode="eventlet"
     )
-    app.secret_key = "DEBUG_SECRET_KEY"
 else:
     app = Flask(__name__, static_folder="../../frontend/dist")
+    app.secret_key = os.environ.get("SECRET_KEY")
     socketio = SocketIO(app)
 
 

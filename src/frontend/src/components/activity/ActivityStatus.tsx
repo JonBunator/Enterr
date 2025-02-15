@@ -13,13 +13,13 @@ export default function ActivityStatus(props: ActivityStatusProps) {
   function getInfoText(): string {
     switch (status) {
       case ActivityStatusCode.SUCCESS:
-        return 'Last pages was successful'
+        return 'Last login was successful'
       case ActivityStatusCode.FAILED:
-        return 'Last pages failed'
+        return 'Last login failed'
       case ActivityStatusCode.IN_PROGRESS:
         return 'Currently running...'
       case ActivityStatusCode.PAUSED:
-        return 'Automatic pages is paused'
+        return 'Automatic login is paused'
     }
   }
 

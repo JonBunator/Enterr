@@ -23,14 +23,13 @@ def create_user(
         print("User created successfully.")
 
 
-def set_password(username: str, new_password: str, app: Flask = None):
-    if app is None:
-        app = Flask(__name__)
+def set_password(username: str, new_password: str):
+    app = Flask(__name__)
     with app.app_context():
         init_db(app)
         user = db.session.query(User).filter_by(username=username).first()
         if user:
-            user.password = new_password
+            user.set_password(new_password)
             db.session.commit()
             print("Password updated successfully.")
         else:
@@ -38,9 +37,8 @@ def set_password(username: str, new_password: str, app: Flask = None):
             sys.exit(1)
 
 
-def delete_user(username: str, app: Flask = None):
-    if app is None:
-        app = Flask(__name__)
+def delete_user(username: str):
+    app = Flask(__name__)
     with app.app_context():
         init_db(app)
         user = db.session.query(User).filter_by(username=username).first()
@@ -57,7 +55,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="User management script.")
     subparsers = parser.add_subparsers(dest="command")
 
-    create_parser = subparsers.add_parser("create", help="Create a new user.")
+    create_parser = subparsers.add_parser("create_user", help="Create a new user.")
     create_parser.add_argument(
         "username", type=str, help="The username for the new user."
     )
@@ -75,16 +73,18 @@ if __name__ == "__main__":
         "password", type=str, help="The new password for the user."
     )
 
-    delete_parser = subparsers.add_parser("delete", help="Delete an existing user.")
+    delete_parser = subparsers.add_parser(
+        "delete_user", help="Delete an existing user."
+    )
     delete_parser.add_argument(
         "username", type=str, help="The username of the user to delete."
     )
 
     args = parser.parse_args()
 
-    if args.command == "create":
+    if args.command == "create_user":
         create_user(args.username, args.password)
     elif args.command == "set_password":
-        set_password(args.username, args.new_password)
-    elif args.command == "delete":
+        set_password(args.username, args.password)
+    elif args.command == "delete_user":
         delete_user(args.username)
