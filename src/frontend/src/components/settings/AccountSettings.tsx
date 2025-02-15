@@ -11,7 +11,7 @@ export default function AccountSettings() {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const navigate = useNavigate()
-  const { success, error, loading } = useSnackbar()
+  const { clear, error, loading } = useSnackbar()
 
   useEffect(() => {
     getUserData()
@@ -32,7 +32,7 @@ export default function AccountSettings() {
     loading('Logging out...')
     try {
       await logoutUser()
-      success('Logged out successfully')
+      clear()
       await navigate('/login')
     }
     catch (e) {

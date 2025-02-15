@@ -21,9 +21,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [usernameError, setUsernameError] = useState(false)
+  const [passwordError, setPasswordError] = useState(false)
 
   const navigate = useNavigate()
-  const { error } = useSnackbar()
+  const { loading, error, clear } = useSnackbar()
 
   const handleClickShowPassword = () => setShowPassword(show => !show)
 
@@ -35,15 +38,43 @@ export default function LoginPage() {
     event.preventDefault()
   }
 
+  const validateFields = () => {
+    let valid = true
+    if (username === '') {
+      setUsernameError(true)
+      valid = false
+    }
+    else {
+      setUsernameError(false)
+    }
+    if (password === '') {
+      setPasswordError(true)
+      valid = false
+    }
+    else {
+      setPasswordError(false)
+    }
+    return valid
+  }
+
   async function login() {
+    if (!validateFields()) {
+      return
+    }
+    loading('Logging in...')
     try {
+      setLoggingIn(true)
       const successful = await loginUser(username, password)
       if (successful) {
         await navigate('/')
       }
+      clear()
     }
     catch {
       error('Invalid username or password')
+    }
+    finally {
+      setLoggingIn(false)
     }
   }
 
@@ -53,8 +84,19 @@ export default function LoginPage() {
         <div className="login">
           <Typography variant="h3" component="h2">Enterr</Typography>
           <Paper className="login-card">
-            <TextField label="Username" variant="filled" fullWidth required value={username} onChange={event => setUsername(event.target.value)} />
             <TextField
+              disabled={loggingIn}
+              label="Username"
+              variant="filled"
+              fullWidth
+              required
+              value={username}
+              onChange={event => setUsername(event.target.value)}
+              error={usernameError}
+              helperText={usernameError ? 'Username is required' : ''}
+            />
+            <TextField
+              disabled={loggingIn}
               required
               value={password}
               variant="filled"
@@ -82,9 +124,12 @@ export default function LoginPage() {
                 },
               }}
               label="Password"
+              error={passwordError}
+              helperText={passwordError ? 'Password is required' : ''}
             />
             <Button
               variant="contained"
+              disabled={loggingIn}
               fullWidth
               onClick={() => void login()}
             >
@@ -97,6 +142,5 @@ export default function LoginPage() {
         </div>
       </Content>
     </ProtectedPage>
-
   )
 }
