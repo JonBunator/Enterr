@@ -10,7 +10,7 @@ Some websites delete your account after a period of inactivity. This tool helps 
 <img alt="enterr logo" src=".github/images/screenshot.png"/>
 
 ## Docker compose
-Create a `docker-compose.yml` and add the following. You can change the port if you want. Replace the `SECRET_KEY` with a random secret.
+Create a `docker-compose.yml` and add the following. You can change the port if you want. Replace `MY_RANDOM_SECRET` with a random secret.
 ```yml
 services:
   enterr:
