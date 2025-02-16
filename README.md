@@ -31,7 +31,7 @@ docker compose up -d
 You can access the ui via `http://localhost:7653`
 
 ## User Management
-# Create a user
+### Create a user
 ```bash
 docker compose run enterr create_user <USERNAME> <PASSWORD>
 ```
@@ -39,7 +39,7 @@ docker compose run enterr create_user <USERNAME> <PASSWORD>
 docker compose run enterr create_user my_username 123456
 ```
 
-# Delete a user
+### Delete a user
 ```bash
 docker compose run enterr delete_user <USERNAME>
 ```
@@ -47,7 +47,7 @@ docker compose run enterr delete_user <USERNAME>
 docker compose run enterr delete_user my_username
 ```
 
-# Set a different password
+### Set a different password
 ```bash
 docker compose run enterr set_password <USERNAME> <NEW_PASSWORD>
 ```
