@@ -1,5 +1,6 @@
 import eventlet
 eventlet.monkey_patch(thread=True, time=True)
+from utils.security import get_flask_secret_key
 from dataAccess.data_access_internal import DataAccessInternal
 from user_management import create_user
 from dataAccess.data_access import DataAccess
@@ -18,13 +19,13 @@ dev_mode = os.getenv("FLASK_ENV") != "production"
 
 if dev_mode:
     app = Flask(__name__)
-    app.secret_key = "DEBUG_SECRET_KEY"
+    app.secret_key = get_flask_secret_key()
     socketio = SocketIO(
         app, cors_allowed_origins=f"http://localhost:5173", async_mode="eventlet"
     )
 else:
     app = Flask(__name__, static_folder="../../frontend/dist")
-    app.secret_key = os.environ.get("SECRET_KEY")
+    app.secret_key = get_flask_secret_key()
     socketio = SocketIO(app)
 
 

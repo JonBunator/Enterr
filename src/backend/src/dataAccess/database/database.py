@@ -1,3 +1,4 @@
+import hashlib
 import os
 from datetime import datetime, timedelta, timezone
 from random import randint
@@ -11,6 +12,13 @@ from enum import Enum
 from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from utils.security import get_database_key, get_database_pepper
+
+try:
+    import sqlcipher3
+except ImportError:
+    sqlcipher3 = None
+
 _db = SQLAlchemy()
 login_manager = LoginManager()
 
@@ -21,10 +29,18 @@ def init_db(app):
         if dev_mode:
             app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         else:
-            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////config/database.db"
+            _setup_encrypted_database(app)
         _db.init_app(app)
         _db.create_all()
         login_manager.init_app(app)
+
+
+def _setup_encrypted_database(app):
+    db_key = get_database_key()
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
+    )
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"module": sqlcipher3}
 
 
 @login_manager.user_loader
@@ -48,10 +64,12 @@ class User(UserMixin, _db.Model):
         self.set_password(password)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        pepper = get_database_pepper()
+        self.password_hash = generate_password_hash(password + pepper)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        pepper = get_database_pepper()
+        return check_password_hash(self.password_hash, password + pepper)
 
 
 class Website(_db.Model):
