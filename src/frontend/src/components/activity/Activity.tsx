@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
-import { useWebSocket } from '../WebSocketProvider.tsx'
+import { useWebSocket } from '../provider/WebSocketProvider.tsx'
 import ActionsPopover from './ActionsPopover.tsx'
 import { getActivity } from './activityRequests.ts'
 import ActivityStatus from './ActivityStatus.tsx'
@@ -271,7 +271,7 @@ export default function Activity(props: ActivityProps) {
                                   datetime={row.lastLoginAttempt}
                                 />
                               )
-                            : 'No login yet'}
+                            : 'No pages yet'}
                         </TableCell>
                         <TableCell>
                           {row.loginHistory !== null && (

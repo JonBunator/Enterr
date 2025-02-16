@@ -5,7 +5,7 @@ import { Button } from '@mui/material'
 import { useRef, useState } from 'react'
 import { addWebsite } from '../../../api/apiRequests.ts'
 import AddEditWebsite from '../../activity/AddEditWebsite.tsx'
-import { useSnackbar } from '../../SnackbarProvider.tsx'
+import { useSnackbar } from '../../provider/SnackbarProvider.tsx'
 import './AddWebsite.scss'
 
 export default function AddWebsite() {

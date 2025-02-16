@@ -2,6 +2,8 @@ services:
   enterr:
     build: .
     image: enterr:dev
+    environment:
+      - SECRET_KEY=DEBUG_SECRET_KEY
     ports:
       - "7653:7653"
     volumes:

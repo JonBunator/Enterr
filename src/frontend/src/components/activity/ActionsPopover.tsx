@@ -19,10 +19,10 @@ import {
   Typography,
 } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { addManualLogin, deleteWebsite, editWebsite, login } from '../../api/apiRequests.ts'
+import { addManualLogin, deleteWebsite, editWebsite, triggerAutomaticLogin } from '../../api/apiRequests.ts'
 import ApprovalDialog from '../ApprovalDialog.tsx'
-import { useSnackbar } from '../SnackbarProvider.tsx'
-import { useWebSocket } from '../WebSocketProvider.tsx'
+import { useSnackbar } from '../provider/SnackbarProvider.tsx'
+import { useWebSocket } from '../provider/WebSocketProvider.tsx'
 import { getChangeWebsite } from './activityRequests.ts'
 import AddEditWebsite, { type AddEditWebsiteRef } from './AddEditWebsite.tsx'
 
@@ -79,13 +79,13 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
 
   async function handleAddManualLogin() {
     handleClose()
-    loading('Saving manual login...')
+    loading('Saving manual pages...')
     try {
       await addManualLogin(websiteId)
-      success('Manual login saved successfully')
+      success('Manual pages saved successfully')
     }
     catch (e) {
-      error('Failed to save manual login', (e as Error).message)
+      error('Failed to save manual pages', (e as Error).message)
     }
   }
 
@@ -129,7 +129,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   async function handlePause() {
     handleClose()
     if (editWebsiteValue === undefined) {
-      error('Failed to change pause state of website login', 'Loading website data failed.')
+      error('Failed to change pause state of website pages', 'Loading website data failed.')
       return
     }
     const paused = !editWebsiteValue.paused
@@ -140,7 +140,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
       success(`Website login successfully ${paused ? 'paused' : 'resumed'}`)
     }
     catch (e) {
-      error('Failed to change pause state of website login', (e as Error).message)
+      error('Failed to change pause state of website pages', (e as Error).message)
     }
   }
 
@@ -149,11 +149,11 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
 
     loading(`Triggering login...`)
     try {
-      await login(websiteId)
+      await triggerAutomaticLogin(websiteId)
       success(`Website login successfully started`)
     }
     catch (e) {
-      error('Failed to trigger website login', (e as Error).message)
+      error('Failed to trigger website pages', (e as Error).message)
     }
   }
 

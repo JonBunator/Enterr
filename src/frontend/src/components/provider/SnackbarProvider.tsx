@@ -6,6 +6,7 @@ interface SnackbarContextType {
   success: (title: string, message?: string) => void
   error: (title: string, message?: string) => void
   loading: (title: string, message?: string) => void
+  clear: () => void
 }
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined)
@@ -41,25 +42,30 @@ export default function SnackbarProvider({ children }: SnackbarProviderProps) {
     setSnackbar({ title, message: message ?? '', severity: 'info', open: true })
   }, [])
 
+  const clear = useCallback(() => {
+    setSnackbar(prev => ({ ...prev, open: false }))
+  }, [])
+
   const value = useMemo(
     () => ({
       success,
       error,
       loading,
+      clear,
     }),
-    [success, error, loading],
+    [success, error, loading, clear],
   )
 
   return (
-    <SnackbarContext.Provider value={value}>
+    <SnackbarContext value={value}>
       {children}
-      <Snackbar open={snackbar.open} autoHideDuration={10000} TransitionComponent={SlideTransition} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+      <Snackbar open={snackbar.open} autoHideDuration={5000} TransitionComponent={SlideTransition} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleClose} severity={snackbar.severity} variant="filled" sx={{ width: '400px' }} icon={snackbar.severity === 'info' ? <CircularProgress size={18} color="inherit" /> : undefined}>
           {snackbar.message !== '' && <AlertTitle>{snackbar.title}</AlertTitle>}
           {snackbar.message === '' ? snackbar.title : snackbar.message}
         </Alert>
       </Snackbar>
-    </SnackbarContext.Provider>
+    </SnackbarContext>
   )
 }
 

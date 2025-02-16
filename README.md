@@ -10,12 +10,14 @@ Some websites delete your account after a period of inactivity. This tool helps 
 <img alt="enterr logo" src=".github/images/screenshot.png"/>
 
 ## Docker compose
-Create a `docker-compose.yml` and add the following. You can change the port if you want.
+Create a `docker-compose.yml` and add the following. You can change the port if you want. Replace `MY_RANDOM_SECRET` with a random secret.
 ```yml
 services:
   enterr:
     container_name: enterr
     image: ghcr.io/jonbunator/enterr:latest
+    environment:
+      - SECRET_KEY=MY_RANDOM_SECRET
     volumes:
       - ./config:/config
     ports:
@@ -25,4 +27,30 @@ services:
 Then start the container:
 ```bash
 docker compose up -d
+```
+You can access the ui via `http://localhost:7653`
+
+## User Management
+# Create a user
+```bash
+docker compose run enterr create_user <USERNAME> <PASSWORD>
+```
+```bash
+docker compose run enterr create_user my_username 123456
+```
+
+# Delete a user
+```bash
+docker compose run enterr delete_user <USERNAME>
+```
+```bash
+docker compose run enterr delete_user my_username
+```
+
+# Set a different password
+```bash
+docker compose run enterr set_password <USERNAME> <NEW_PASSWORD>
+```
+```bash
+docker compose run enterr delete_user my_username 456789
 ```
