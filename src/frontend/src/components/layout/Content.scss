@@ -13,29 +13,6 @@ html, body,  #root {
 
   .content {
     z-index: 1;
-    padding: 24px;
-    position: relative;
-    justify-content: center;
-    display: grid;
-    grid-template-columns: repeat(16, auto);
-    grid-template-rows: auto auto;
-    gap: 24px;
   }
-}
-
-.search {
-  grid-column: span 15;
-}
-
-.add-website {
-  grid-column: span 1;
-}
-
-.activity {
-  grid-column: span 16;
-}
-
-.login {
-  grid-column: span 16;
 }
 

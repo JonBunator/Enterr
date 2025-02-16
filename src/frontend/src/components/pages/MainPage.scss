@@ -1,0 +1,14 @@
+.main-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  .main-page-header {
+    display: flex;
+    gap: 16px;
+
+    .search {
+      flex-grow: 1;
+    }
+  }
+}
