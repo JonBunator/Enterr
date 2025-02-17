@@ -33,24 +33,24 @@ You can access the ui via `http://localhost:7653`
 ## User Management
 ### Create a user
 ```bash
-docker compose run enterr create_user <USERNAME> <PASSWORD>
+docker compose run --rm enterr create_user <USERNAME> <PASSWORD>
 ```
 ```bash
-docker compose run enterr create_user my_username 123456
+docker compose run --rm enterr create_user my_username 123456
 ```
 
 ### Delete a user
 ```bash
-docker compose run enterr delete_user <USERNAME>
+docker compose run --rm enterr delete_user <USERNAME>
 ```
 ```bash
-docker compose run enterr delete_user my_username
+docker compose run --rm enterr delete_user my_username
 ```
 
 ### Set a different password
 ```bash
-docker compose run enterr set_password <USERNAME> <NEW_PASSWORD>
+docker compose run --rm enterr set_password <USERNAME> <NEW_PASSWORD>
 ```
 ```bash
-docker compose run enterr delete_user my_username 456789
+docker compose run --rm enterr delete_user my_username 456789
 ```
