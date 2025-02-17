@@ -15,8 +15,8 @@ class XPaths:
     password: XPath
     pin: XPath
     submit_button: XPath
-    
-def find_login_automatically(html: str, pin: bool) -> XPaths:
+
+def find_login_automatically(html: str, pin_used: bool) -> XPaths | None:
     """
     Tries to find the login form automatically and returns the xpath.
     @param html: The html that is used for parsing.
@@ -25,12 +25,12 @@ def find_login_automatically(html: str, pin: bool) -> XPaths:
     dom = HTML(html)
     username_xpath = _find_username_field(dom)
     password_xpath = _find_password_field(dom)
-    if pin:
+    if pin_used:
         pin_xpath = _find_pin_field(dom)
     else:
         pin_xpath = None
     submit_button_xpath = _find_submit_button(dom)
-    if username_xpath is None or password_xpath is None or submit_button_xpath is None:
+    if username_xpath is None and password_xpath and None and submit_button_xpath is None:
         return None
     return XPaths(username=username_xpath, password=password_xpath, pin=pin_xpath, submit_button=submit_button_xpath)
 

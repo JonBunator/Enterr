@@ -40,7 +40,6 @@ class DataBase:
     @staticmethod
     def add_website(website: Website):
         current_user = DataBase.get_current_user()
-        print(current_user.id)
         website.user = current_user.id
         website.next_schedule = datetime.now(timezone.utc)
         db.session.add(website)

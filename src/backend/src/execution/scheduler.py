@@ -68,8 +68,7 @@ class Scheduler:
         failed_details = None
         if status != LoginStatusCode.SUCCESS:
             executions_status = LoginStatusCode.FAILED
-            if executions_status != LoginStatusCode.FAILED:
-                failed_details = executions_status.value
+            failed_details = status.value
 
         with self.app.app_context():
             self.data_access.action_history_finish_execution(action_history_id=action_history_id,

@@ -51,6 +51,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         label="Username XPath"
         variant="filled"
         identifier="username-xpath"
+        placeholder="//input[@name='username']"
         disabled={loading}
         value={value?.custom_access?.username_xpath ?? ''}
         onChange={val => handleCustomAccessChange(val, 'username_xpath')}
@@ -60,6 +61,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         label="Password XPath"
         variant="filled"
         identifier="password-xpath"
+        placeholder="//input[@type='password']"
         disabled={loading}
         value={value?.custom_access?.password_xpath ?? ''}
         onChange={val => handleCustomAccessChange(val, 'password_xpath')}
@@ -69,6 +71,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         label="Pin XPath"
         variant="filled"
         identifier="pin-xpath"
+        placeholder="//input[@name='pin']"
         disabled={loading}
         value={value?.custom_access?.pin_xpath ?? ''}
         onChange={val => handleCustomAccessChange(val, 'pin_xpath')}
@@ -78,6 +81,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         label="Submit button XPath"
         variant="filled"
         identifier="submit-button-xpath"
+        placeholder="//input[@type='submit']"
         disabled={loading}
         value={value?.custom_access?.submit_button_xpath ?? ''}
         onChange={val => handleCustomAccessChange(val, 'submit_button_xpath')}
