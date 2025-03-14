@@ -5,11 +5,10 @@ Flask-Login==0.6.3
 python-dotenv==1.0.1
 gunicorn==23.0.0
 eventlet==0.38.2
-seleniumbase==4.34.15
+seleniumbase==4.34.2
 lxml==5.3.0
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.37
-pytest==8.3.4
 pydantic==2.10.5
 APScheduler==3.11.0
 pytz==2024.2
