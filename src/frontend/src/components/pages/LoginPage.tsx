@@ -9,7 +9,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { loginUser } from '../../api/apiRequests'
 import Content from '../layout/Content.tsx'
@@ -78,6 +78,12 @@ export default function LoginPage() {
     }
   }
 
+  async function handlePasswordFieldKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Enter') {
+      await login()
+    }
+  }
+
   return (
     <ProtectedPage loginPage>
       <Content>
@@ -126,6 +132,7 @@ export default function LoginPage() {
               label="Password"
               error={passwordError}
               helperText={passwordError ? 'Password is required' : ''}
+              onKeyDown={event => void handlePasswordFieldKeyDown(event)}
             />
             <Button
               variant="contained"
