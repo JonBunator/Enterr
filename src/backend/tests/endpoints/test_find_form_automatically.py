@@ -3,6 +3,12 @@ import pytest
 from lxml.etree import HTML
 
 from execution.login.find_form_automatically import find_login_automatically
+from execution.login.selenium_adapter import SeleniumDriver
+
+
+class SeleniumTestDriverElementsAlwaysVisible(SeleniumDriver):
+    def is_element_visible(self, xpath: str) -> bool:
+        return True
 
 
 # Gather the file names to pass as parameters
@@ -20,11 +26,15 @@ def test_find_login_automatically(filename):
 
     with open(filepath, 'r') as file:
         content = file.read()
-        xpaths = find_login_automatically(content, False)
+        selenium_driver = SeleniumTestDriverElementsAlwaysVisible()
+        xpaths = find_login_automatically(selenium_driver, content, False)
         assert xpaths is not None, f"Found no xpath for login {filename}"
 
         dom = HTML(content)
+        print(content)
         username_element = dom.xpath(xpaths.username)
+        print(xpaths.username[0])
+        print(username_element)
         assert len(username_element) == 1, f"Found no username element for login {filename}"
         assert username_element[0].get("test-id") == "username", f"Found wrong username element for login {filename}"
 

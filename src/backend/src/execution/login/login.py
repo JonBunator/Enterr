@@ -1,10 +1,10 @@
 import os
 import traceback
-from collections import namedtuple
 from enum import Enum
 from seleniumbase import SB
 from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
 from .find_form_automatically import find_login_automatically, XPaths
+from .selenium_adapter import SeleniumDriver, SeleniumbaseDriver
 
 
 class LoginStatusCode(Enum):
@@ -83,7 +83,8 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
 
 def find_elements(sb: SB, x_paths: XPaths, pin: str) -> tuple[XPaths | None, LoginStatusCode | None] :
     pin_used = pin != '' and pin is not None
-    x_paths_automatic = find_login_automatically(sb.cdp.get_element_html('html'), pin_used=pin_used)
+    selenium_driver = SeleniumbaseDriver(sb)
+    x_paths_automatic = find_login_automatically(selenium_driver, sb.cdp.get_element_html('html'), pin_used=pin_used)
     username_xpath = None
     password_xpath = None
     pin_xpath = None
