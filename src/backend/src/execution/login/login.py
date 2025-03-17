@@ -9,7 +9,9 @@ from .selenium_adapter import SeleniumDriver, SeleniumbaseDriver
 
 class LoginStatusCode(Enum):
     SUCCESS = ActionStatusCode.SUCCESS
-    AUTOMATIC_FORM_DETECTION_FAILED = ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED
+    AUTOMATIC_FORM_DETECTION_FAILED = (
+        ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED
+    )
     USERNAME_FIELD_NOT_FOUND = ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
     PASSWORD_FIELD_NOT_FOUND = ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND
     PIN_FIELD_NOT_FOUND = ActionFailedDetails.PIN_FIELD_NOT_FOUND
@@ -18,18 +20,26 @@ class LoginStatusCode(Enum):
     UNKNOWN_EXECUTION_ERROR = ActionFailedDetails.UNKNOWN_EXECUTION_ERROR
     FAILED = ActionStatusCode.FAILED
 
+
 TIMEOUT = 30
 
 
-def login(url: str, success_url: str, username: str, password: str, pin: str, x_paths: XPaths = None,
-          screenshot_id: str = None) -> LoginStatusCode:
+def login(
+    url: str,
+    success_url: str,
+    username: str,
+    password: str,
+    pin: str,
+    x_paths: XPaths = None,
+    screenshot_id: str = None,
+) -> LoginStatusCode:
     try:
-        with SB(uc=True, ad_block=True, xvfb=True) as sb:
+        with SB(uc=True, ad_block=True, headed=True) as sb:
             sb.activate_cdp_mode(url)
-            sb.uc_gui_click_captcha()
 
             # Wait until paths are found
             for i in range(0, TIMEOUT, 5):
+                sb.uc_gui_click_captcha()
                 elements, error = find_elements(sb=sb, x_paths=x_paths, pin=pin)
                 if elements is not None:
                     break
@@ -43,7 +53,6 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
             pin_xpath = elements.pin
             submit_button_xpath = elements.submit_button
 
-
             if sb.cdp.send_keys(username_xpath, username) == False:
                 save_screenshot(sb, screenshot_id)
                 return LoginStatusCode.USERNAME_FIELD_NOT_FOUND
@@ -54,12 +63,11 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
                 save_screenshot(sb, screenshot_id)
                 return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND
 
-            if pin != '' and pin is not None:
+            if pin != "" and pin is not None:
                 sb.sleep(0.5)
                 if sb.cdp.send_keys(pin_xpath, pin) == False:
                     save_screenshot(sb, screenshot_id)
                     return LoginStatusCode.PIN_FIELD_NOT_FOUND
-
 
             sb.sleep(0.5)
 
@@ -69,6 +77,7 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
 
             # Wait for expected url
             for i in range(TIMEOUT):
+                sb.uc_gui_click_captcha()
                 sb.sleep(1)
                 if sb.cdp.get_current_url() == success_url:
                     save_screenshot(sb, screenshot_id)
@@ -81,10 +90,14 @@ def login(url: str, success_url: str, username: str, password: str, pin: str, x_
         return LoginStatusCode.UNKNOWN_EXECUTION_ERROR
 
 
-def find_elements(sb: SB, x_paths: XPaths, pin: str) -> tuple[XPaths | None, LoginStatusCode | None] :
-    pin_used = pin != '' and pin is not None
+def find_elements(
+    sb: SB, x_paths: XPaths, pin: str
+) -> tuple[XPaths | None, LoginStatusCode | None]:
+    pin_used = pin != "" and pin is not None
     selenium_driver = SeleniumbaseDriver(sb)
-    x_paths_automatic = find_login_automatically(selenium_driver, sb.cdp.get_element_html('html'), pin_used=pin_used)
+    x_paths_automatic = find_login_automatically(
+        selenium_driver, sb.cdp.get_element_html("html"), pin_used=pin_used
+    )
     username_xpath = None
     password_xpath = None
     pin_xpath = None
@@ -125,7 +138,7 @@ def find_elements(sb: SB, x_paths: XPaths, pin: str) -> tuple[XPaths | None, Log
 def save_screenshot(sb: SB, screenshot_id: str):
     if screenshot_id is None:
         return
-    dev_mode = os.getenv('FLASK_ENV') != 'production'
+    dev_mode = os.getenv("FLASK_ENV") != "production"
 
     if dev_mode:
         path = f"../config/images"
