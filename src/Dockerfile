@@ -12,9 +12,10 @@ COPY --from=frontend /app/frontend/dist /app/frontend/dist
 
 ENV PYTHONPATH=/app/backend/src:$PYTHONPATH
 ENV DISPLAY=:99
-WORKDIR /app/backend
-COPY backend/ .
+ENV PYTHONDONTWRITEBYTECODE=1
 
+WORKDIR /app/backend
+COPY backend/src /app/backend/src
 COPY backend/src/user_management.py /app/backend/src/user_management.py
 COPY entrypoint.sh /app/entrypoint.sh
 COPY start.sh /app/start.sh
@@ -23,10 +24,10 @@ USER root
 RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/start.sh
 
-
 RUN apt-get update && apt-get install -y python3-venv python3-dev python3-tk
 RUN python3 -m venv venv
 ENV PATH="/app/backend/venv/bin:$PATH"
+COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Setup seleniumbase with chromedriver
