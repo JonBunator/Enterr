@@ -7,7 +7,7 @@
 
   .screenshot {
     width: 350px;
-    aspect-ratio: 16 / 9;
+    max-height: 197px;
     object-fit: cover;
     object-position: top;
   }

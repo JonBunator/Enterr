@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { CircularProgress } from '@mui/material'
+import React, { useEffect, useState } from 'react'
 
-import { useEffect, useState } from 'react'
 import './StatusIcon.scss'
 
 export enum ActivityStatusCode {
@@ -12,13 +12,13 @@ export enum ActivityStatusCode {
   SUCCESS = 'SUCCESS',
 }
 
-interface StatusIconProps {
+interface StatusIconProps extends React.HTMLAttributes<HTMLDivElement> {
   activityStatus: ActivityStatusCode
   hover?: boolean
 }
 
 export default function StatusIcon(props: StatusIconProps) {
-  const { activityStatus, hover } = props
+  const { activityStatus, hover, onClick, ...other } = props
   const [type, setType] = useState<string>('')
   const [icon, setIcon] = useState<ReactNode | null>(null)
 
@@ -51,6 +51,6 @@ export default function StatusIcon(props: StatusIconProps) {
   }, [activityStatus])
 
   return (
-    <div className={`status-icon-container ${hover === true ? 'hover' : hover} ${type}`}>{icon}</div>
+    <div {...other} onClick={onClick} className={`status-icon-container ${hover === true ? 'hover' : ''} ${onClick !== undefined ? 'clickable' : ''}  ${type}`}>{icon}</div>
   )
 }

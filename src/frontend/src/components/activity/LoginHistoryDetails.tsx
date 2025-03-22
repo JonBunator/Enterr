@@ -3,6 +3,7 @@ import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Paper, Popover, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { FailedDetails } from '../../api/apiModels.ts'
+import ImageDialog from './ImageDialog.tsx'
 import Screenshot from './Screenshot.tsx'
 import StatusIcon from './StatusIcon.tsx'
 import './LoginHistoryDetails.scss'
@@ -14,6 +15,7 @@ interface LoginHistoryDetailsProps {
 export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   const { loginHistory } = props
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -73,62 +75,71 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   }
   const open = Boolean(anchorEl)
 
-  return (
-    <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <StatusIcon hover activityStatus={loginHistory.execution_status as ActivityStatusCode} />
-      <Popover
-        className="login-history-details"
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleMouseLeave}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-      >
-        {loginHistory.screenshot_id !== null
-          ? (
-              <Screenshot screenshotId={loginHistory.screenshot_id} />
-            )
-          : (
-              []
-            )}
-        <div>
-          <Paper className="login-history-details-header">
-            <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />
-            <Typography>{getStatusText()}</Typography>
-          </Paper>
-          <div className="login-history-details-content">
-            <Typography>
-              <b>Start time: </b>
-              {new Date(loginHistory.execution_started).toLocaleString()}
-            </Typography>
-            <Typography>
-              <b>End time: </b>
-              {loginHistory.execution_ended !== null ? new Date(loginHistory.execution_ended).toLocaleString() : 'Not finished yet'}
-            </Typography>
-            <Typography>
-              <b>Execution time: </b>
-              {getExecutionTime()}
-            </Typography>
-            {loginHistory.failed_details !== null
-            && (
-              <Typography>
-                <b>Failed details: </b>
-                {getFailedDetails()}
-              </Typography>
-            )}
-          </div>
+  function openImageDialog() {
+    setImageDialogOpen(true)
+    setAnchorEl(null)
+  }
 
-        </div>
-      </Popover>
-    </div>
+  return (
+    <>
+      <ImageDialog screenshotId={loginHistory.screenshot_id} open={imageDialogOpen} onClose={() => setImageDialogOpen(false)} />
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <StatusIcon hover onClick={loginHistory.screenshot_id !== null ? openImageDialog : undefined} activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+        <Popover
+          className="login-history-details"
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleMouseLeave}
+          anchorOrigin={{
+            vertical: 28,
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          {loginHistory.screenshot_id !== null
+            ? (
+                <Screenshot screenshotId={loginHistory.screenshot_id} />
+              )
+            : (
+                []
+              )}
+          <div>
+            <Paper className="login-history-details-header">
+              <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+              <Typography>{getStatusText()}</Typography>
+            </Paper>
+            <div className="login-history-details-content">
+              <Typography>
+                <b>Start time: </b>
+                {new Date(loginHistory.execution_started).toLocaleString()}
+              </Typography>
+              <Typography>
+                <b>End time: </b>
+                {loginHistory.execution_ended !== null ? new Date(loginHistory.execution_ended).toLocaleString() : 'Not finished yet'}
+              </Typography>
+              <Typography>
+                <b>Execution time: </b>
+                {getExecutionTime()}
+              </Typography>
+              {loginHistory.failed_details !== null
+                && (
+                  <Typography>
+                    <b>Failed details: </b>
+                    {getFailedDetails()}
+                  </Typography>
+                )}
+            </div>
+
+          </div>
+        </Popover>
+      </div>
+    </>
+
   )
 }
