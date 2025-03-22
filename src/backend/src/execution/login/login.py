@@ -144,4 +144,4 @@ def save_screenshot(sb: SB, screenshot_id: str):
         path = f"../config/images"
     else:
         path = f"/config/images"
-    sb.cdp.save_screenshot(os.path.join(path, f"{screenshot_id}.png"))
+    sb.cdp.save_screenshot(os.path.join(path, f"{screenshot_id}.png"), selector="body")
