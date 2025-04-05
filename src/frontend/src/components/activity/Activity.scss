@@ -1,6 +1,14 @@
 .activity {
-  .activity-card.MuiCardContent-root {
-    padding: 0;
+  flex: 1 1 auto;
+  .activity-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+
+    &.MuiCardContent-root {
+      padding: 0;
+    }
   }
 
   .activity-table {

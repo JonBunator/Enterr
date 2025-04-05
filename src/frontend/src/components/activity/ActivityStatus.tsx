@@ -30,7 +30,7 @@ export default function ActivityStatus(props: ActivityStatusProps) {
         <Typography className="next-run" sx={{ fontSize: 14 }}>
           {getInfoText()}
         </Typography>
-        <Typography className="expiration" sx={{ color: 'text.secondary', fontSize: 12 }}>
+        <Typography component="div" className="expiration" sx={{ color: 'text.secondary', fontSize: 12 }}>
           {expirationDate !== undefined
             ? <TimeDifference prefix="Account expires in " datetime={expirationDate} negativeDifference="Account might be expired" />
             : 'Account expires at unknown date'}

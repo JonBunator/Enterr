@@ -156,11 +156,7 @@ export default function Activity(props: ActivityProps) {
       animate={{ height: 'auto' }}
     >
       <CardContent className="activity-card" component={motion.div} layout>
-        <TableContainer
-          sx={{ height: 670, width: 1100 }}
-          component={motion.div}
-          layout
-        >
+        <TableContainer component={motion.div} layout>
           <Table
             stickyHeader
             className="activity-table"
@@ -304,7 +300,7 @@ export default function Activity(props: ActivityProps) {
                 colSpan={5}
                 component={motion.div}
                 layout
-                count={processedData.length}
+                count={rawData.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
