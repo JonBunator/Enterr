@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Website login is not working (anonymous report)
+    url: https://forms.gle/Rnsx79iy2pXmjUHs6
+    about: Automatic logins to specific websites are not working
