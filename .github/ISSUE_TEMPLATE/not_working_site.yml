@@ -1,0 +1,62 @@
+name: Website login is not working
+description: An automatic login to specific websites is not working.
+labels: [website-login]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this login issue report for [Enterr](https://github.com/JonBunator/Enterr). Note: this template is only for login issue reports. Please use [Github Discussions](https://github.com/JonBunator/Enterr/discussions) for any questions.
+  - type: textarea
+    id: websites
+    attributes:
+      label: Is the login failing?
+      description: Please list the links to websites that are not working. You don't have to share login credentials.
+      placeholder: https://example.com
+  - type: textarea
+    id: websites-captchas
+    attributes:
+      label: Is the login failing due to captchas?
+      description: Please list the links to websites that are not working due to invalid captcha solving. You don't have to share login credentials. Please note that more complex image captchas are not supported.
+      placeholder: https://example.com
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted.
+      render: shell
+  - type: input
+    id: bug-version
+    attributes:
+      label: Version (bug)
+      description: With which version are you experiencing the issue?
+      placeholder: v2.x.x
+    validations:
+      required: true
+  - type: input
+    id: working-version
+    attributes:
+      label: Version (working)
+      description: Did it work on a previous version? If so, which version?
+      placeholder: v2.x.x
+  - type: dropdown
+    id: os
+    attributes:
+      label: On which host systems are you experiencing the issue?
+      description: You don't have to test it on every system.
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Synology NAS
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/JonBunator/Enterr/blob/main/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

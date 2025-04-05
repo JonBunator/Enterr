@@ -1,0 +1,37 @@
+name: Feature Request
+description: Suggest an idea for this project
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request for [Enterr](https://github.com/JonBunator/Enterr). Note: this template is only for feature requests. Please use [Github Discussions](https://github.com/JonBunator/Enterr/discussions) for any questions.
+  - type: textarea
+    id: related-problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Please provide a clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+      placeholder: Describe your problem!
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Describe the solution you'd like
+      description: Please provide a clear and concise description of what you want to happen.
+      placeholder: Describe your request!
+    validations:
+      required: true
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Pull Request
+      description: If you want to see this feature soon, consider submitting a Pull Request! I appreciate all contributions and will review them as soon as possible!
+      options:
+        - label: I would like to do a Pull Request
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/JonBunator/Enterr/blob/main/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
