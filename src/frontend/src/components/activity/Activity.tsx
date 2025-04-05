@@ -271,7 +271,7 @@ export default function Activity(props: ActivityProps) {
                                   datetime={row.lastLoginAttempt}
                                 />
                               )
-                            : 'No pages yet'}
+                            : 'No logins yet'}
                         </TableCell>
                         <TableCell>
                           {row.loginHistory !== null && (
