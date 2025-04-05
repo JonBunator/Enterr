@@ -31,6 +31,8 @@ docker compose up -d
 You can access the ui via `http://localhost:7653`
 
 ## User Management
+The following commands are intended for use with Docker Compose. If you are not using Docker Compose, or are managing containers through tools like [Portainer](https://portainer.io) or [Unraid](https://unraid.net), please follow this guide instead: [User Management without Docker Compose](https://github.com/JonBunator/Enterr/wiki/User-Management-without-Docker-Compose)
+
 ### Create a user
 ```bash
 docker compose run --rm enterr create_user <USERNAME> <PASSWORD>
@@ -52,5 +54,5 @@ docker compose run --rm enterr delete_user my_username
 docker compose run --rm enterr set_password <USERNAME> <NEW_PASSWORD>
 ```
 ```bash
-docker compose run --rm enterr delete_user my_username 456789
+docker compose run --rm enterr set_password my_username 456789
 ```
