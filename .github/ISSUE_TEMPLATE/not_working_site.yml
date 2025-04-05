@@ -1,5 +1,5 @@
 name: Website login is not working
-description: An automatic login to specific websites is not working
+description: Automatic logins to specific websites are not working
 labels: [website-login]
 body:
   - type: markdown
