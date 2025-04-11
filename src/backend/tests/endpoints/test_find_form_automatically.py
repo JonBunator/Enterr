@@ -24,17 +24,15 @@ def test_find_login_automatically(filename):
     examples_dir = os.path.join(current_dir, "login_html_examples")
     filepath = os.path.join(examples_dir, filename)
 
-    with open(filepath, 'r') as file:
+    with open(filepath, 'r', encoding="utf-8") as file:
         content = file.read()
         selenium_driver = SeleniumTestDriverElementsAlwaysVisible()
         xpaths = find_login_automatically(selenium_driver, content, False)
         assert xpaths is not None, f"Found no xpath for login {filename}"
 
         dom = HTML(content)
-        print(content)
         username_element = dom.xpath(xpaths.username)
-        print(xpaths.username[0])
-        print(username_element)
+
         assert len(username_element) == 1, f"Found no username element for login {filename}"
         assert username_element[0].get("test-id") == "username", f"Found wrong username element for login {filename}"
 
