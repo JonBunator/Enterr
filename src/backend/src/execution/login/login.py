@@ -78,7 +78,7 @@ def login(
 
             # Wait for expected url
             for i in range(TIMEOUT):
-                sb.uc_gui_handle_captcha()  
+                sb.uc_gui_handle_captcha()
                 sb.uc_gui_click_captcha()
                 sb.sleep(1)
                 if sb.cdp.get_current_url() == success_url:
