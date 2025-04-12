@@ -39,6 +39,7 @@ def login(
 
             # Wait until paths are found
             for i in range(0, TIMEOUT, 5):
+                sb.uc_gui_handle_captcha()
                 sb.uc_gui_click_captcha()
                 elements, error = find_elements(sb=sb, x_paths=x_paths, pin=pin)
                 if elements is not None:
@@ -77,6 +78,7 @@ def login(
 
             # Wait for expected url
             for i in range(TIMEOUT):
+                sb.uc_gui_handle_captcha()
                 sb.uc_gui_click_captcha()
                 sb.sleep(1)
                 if sb.cdp.get_current_url() == success_url:

@@ -24,6 +24,7 @@ def find_login_automatically(sd: SeleniumDriver, html: str, pin_used: bool) -> X
     @param html: The html that is used for parsing.
     @return: XPaths object. None if no form is found.
     """
+
     dom = HTML(html)
     username_xpath = _find_username_field(sd, dom)
     password_xpath = _find_password_field(sd, dom)
@@ -41,47 +42,47 @@ def _find_username_field(sd: SeleniumDriver, dom: HTML) -> XPath | None:
     """
     Tries to find xpath of username field automatically.
     """
-    tag_types = ["input"]
+    tag_scores = [("input", Score(8))]
     id_aliases = ["email", "e-mail", "username", "user", "uid"]
     type_scores = [("email", Score(10)), ("text", Score(1))]
-    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
-    return _find_form_field(sd, dom, tag_types, id_aliases, type_scores, property_scores)
+    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
+    return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 
 
 def _find_password_field(sd: SeleniumDriver, dom: etree.HTML) -> XPath | None:
     """
     Tries to find xpath of password field automatically.
     """
-    tag_types = ["input"]
+    tag_scores = [("input", Score(8))]
     id_aliases = ["password", "pwd"]
     type_scores = [("password", Score(10)), ("text", Score(1))]
-    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
-    return _find_form_field(sd, dom, tag_types, id_aliases, type_scores, property_scores)
+    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
+    return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 
 
 def _find_pin_field(sd: SeleniumDriver, dom: HTML) -> XPath | None:
     """
     Tries to find xpath of pin field automatically.
     """
-    tag_types = ["input"]
+    tag_scores = [("input", Score(8))]
     id_aliases = ["pin"]
     type_scores = [("number", Score(10)), ("text", Score(1))]
-    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
-    return _find_form_field(sd, dom, tag_types, id_aliases, type_scores, property_scores)
+    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
+    return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 
 
 def _find_submit_button(sd: SeleniumDriver, dom: HTML) -> XPath | None:
     """
     Tries to find xpath of submit button automatically.
     """
-    tag_types = ["button", "input", "div"]
+    tag_scores = [("button", Score(8)), ("input", Score(8)), ("div", Score(1))]
     id_aliases = ["login", "log in", "log-in", "signin", "sign in", "sign-in", "submit"]
     type_scores = [("submit", Score(10)), ("button", Score(10))]
-    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(10)), ("@value", Score(3)), ("text()", Score(10))]
-    return _find_form_field(sd, dom, tag_types, id_aliases, type_scores, property_scores)
+    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@value", Score(3)), ("text()", Score(10))]
+    return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 
 
-def _find_form_field(sd: SeleniumDriver, dom: HTML, tag_types: List[str], id_aliases: List[str], type_scores: List[Tuple[str, Score]], property_scores: List[Tuple[str, Score]]) -> XPath | None:
+def _find_form_field(sd: SeleniumDriver, dom: HTML, id_aliases: List[str], tag_scores: List[Tuple[str, Score]], type_scores: List[Tuple[str, Score]], property_scores: List[Tuple[str, Score]]) -> XPath | None:
     """
     Tries to find xpath of form field automatically.
     @param dom: The lxml dom that is used for parsing.
@@ -92,13 +93,14 @@ def _find_form_field(sd: SeleniumDriver, dom: HTML, tag_types: List[str], id_ali
     @return: XPaths object. None if no element is found.
     """
     selector_scoring = {}
-    for i, tag_type in enumerate(tag_types):
+    selector_scoring = _find_by_tag(dom, selector_scoring, tag_scores)
+    for i, (tag_type, tag_score) in enumerate(tag_scores):
         selector_scoring = _find_by_type(dom, selector_scoring, tag_type, type_scores)
         selector_scoring = _find_by_property(dom, selector_scoring, tag_type, id_aliases, property_scores)
         selector_scoring = _find_by_dom_text(dom, selector_scoring, tag_type, id_aliases)
 
     selector_scoring = _remove_if_hidden(selector_scoring)
-
+    selector_scoring = _find_by_form_child(selector_scoring)
     # Get element with the highest score
     return _find_best_element(sd, selector_scoring)
 
@@ -117,6 +119,15 @@ def _find_best_element(sd: SeleniumDriver, scoring: Scoring) -> XPath | None:
     # Best element is not visible -> remove from scoring
     del scoring[best_element]
     return _find_best_element(sd, scoring)
+
+
+def _find_by_tag(dom: etree.HTML, scoring: Scoring, tag_scores: List[Tuple[str, Score]]) -> Scoring:
+    """
+    Finds element by tag and adds it to the scoring dictionary.
+    """
+    for tag_type, score in tag_scores:
+        scoring = _find_element(dom, scoring, XPath(f"//{tag_type}"), score)
+    return scoring
 
 
 def _find_by_type(dom: etree.HTML, scoring: Scoring, tag_type: str, type_scores: List[Tuple[str, Score]]) -> Scoring:
@@ -181,20 +192,39 @@ def _find_by_dom_text(dom: HTML, scoring: Scoring, tag_type: str, id_aliases: Li
     return scoring
 
 
+def _find_by_form_child(scoring: Scoring):
+    """
+    Logins are often inside a form. Score high when child of form element.
+    """
+    for element in scoring:
+        xpath = element.getroottree().getpath(element)
+        if "form" in xpath:
+            scoring = _add_score_to_element(element, scoring, xpath, Score(100))
+    return scoring
+
+
 def _find_element(dom: HTML, scoring: Scoring, xpath: XPath, score: Score) -> Scoring:
     """
     Finds element in dom using xpath and adds a score.
     """
     elements = dom.xpath(xpath)
     for element in elements:
-        if element in scoring:
-            xpaths = scoring[element][0]
-            if xpath in xpaths:
-                continue
-            xpaths.append(xpath)
-            scoring[element] = (xpaths, scoring[element][1] + score)
-        else:
-            scoring[element] = ([xpath], score)
+        _add_score_to_element(element, scoring, xpath, score)
+    return scoring
+
+
+def _add_score_to_element(element: Element, scoring: Scoring, xpath: str, score: int):
+    """
+    Adds a score to an element.
+    """
+    if element in scoring:
+        xpaths = scoring[element][0]
+        if xpath in xpaths:
+            return
+        xpaths.append(xpath)
+        scoring[element] = (xpaths, scoring[element][1] + score)
+    else:
+        scoring[element] = ([xpath], score)
     return scoring
 
 
