@@ -1,5 +1,5 @@
 import type { ChangeWebsite } from '../../activity/activityRequests.ts'
-import { Grid2 } from '@mui/material'
+import { Grid } from '@mui/material'
 import TextFieldForm from '../../form/TextFieldForm.tsx'
 import FormGrouping from '../FormGrouping.tsx'
 import CustomAccessForm from './CustomAccessForm.tsx'
@@ -14,8 +14,8 @@ export default function AccessForm(props: AccessFormProps) {
   const { value, onChange, loading } = props
   return (
     <FormGrouping disableCheckbox title="Access *" column>
-      <Grid2 container spacing={2}>
-        <Grid2 size={{ xs: 4 }}>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 4 }}>
           <TextFieldForm
             identifier="username"
             variant="filled"
@@ -31,9 +31,9 @@ export default function AccessForm(props: AccessFormProps) {
             fullWidth
             helperText="The username that should be used to login."
           />
-        </Grid2>
+        </Grid>
 
-        <Grid2 size={{ xs: 4 }}>
+        <Grid size={{ xs: 4 }}>
           <TextFieldForm
             identifier="password"
             variant="filled"
@@ -49,8 +49,8 @@ export default function AccessForm(props: AccessFormProps) {
             fullWidth
             helperText="The password that should be used to login."
           />
-        </Grid2>
-        <Grid2 size={{ xs: 4 }}>
+        </Grid>
+        <Grid size={{ xs: 4 }}>
           <TextFieldForm
             identifier="pin"
             variant="filled"
@@ -65,11 +65,11 @@ export default function AccessForm(props: AccessFormProps) {
             fullWidth
             helperText="Some websites require an additional pin to login. This is not a 2FA pin that is receiced by SMS, email etc."
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12 }}>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
           <CustomAccessForm value={value} onChange={onChange} loading={loading} />
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
     </FormGrouping>
 
   )

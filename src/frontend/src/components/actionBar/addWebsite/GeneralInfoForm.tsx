@@ -1,5 +1,5 @@
 import type { ChangeWebsite } from '../../activity/activityRequests.ts'
-import { Checkbox, FormControlLabel, FormHelperText, Grid2 } from '@mui/material'
+import { Checkbox, FormControlLabel, FormHelperText, Grid } from '@mui/material'
 import TextFieldForm from '../../form/TextFieldForm.tsx'
 import FormGrouping from '../FormGrouping.tsx'
 
@@ -37,8 +37,8 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
         fullWidth
         helperText="The name to identify the login task. Does not have to be unique."
       />
-      <Grid2 container spacing={2}>
-        <Grid2 size={{ xs: 6 }}>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 6 }}>
           <TextFieldForm
             identifier="url"
             disabled={loading}
@@ -56,8 +56,8 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             placeholder="https://www.example.com"
             onValidate={validateURL}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 6 }}>
+        </Grid>
+        <Grid size={{ xs: 6 }}>
           <TextFieldForm
             identifier="success_url"
             disabled={loading}
@@ -75,8 +75,8 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             helperText="The url that is displayed after a successful login. This is used to check if the login was successful."
             onValidate={validateURL}
           />
-        </Grid2>
-        <Grid2 size={{ xs: 12 }}>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
           <div className="row">
             <div>
               <FormControlLabel
@@ -105,8 +105,8 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
               <FormHelperText sx={{ marginTop: 0 }}>Automatic login will not be triggered while in paused state.</FormHelperText>
             </div>
           </div>
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
     </FormGrouping>
 
   )

@@ -1,5 +1,4 @@
-import type { TextFieldProps } from '@mui/material'
-import type { InputBaseComponentProps } from '@mui/material/InputBase/InputBase'
+import type { InputBaseComponentProps, TextFieldProps } from "@mui/material";
 import type { ElementType } from 'react'
 import { Input, TextField } from '@mui/material'
 import { forwardRef, useCallback, useEffect, useState } from 'react'
