@@ -77,7 +77,7 @@ def _find_submit_button(sd: SeleniumDriver, dom: HTML) -> XPath | None:
     """
     tag_scores = [("button", Score(8)), ("input", Score(8)), ("div", Score(1))]
     id_aliases = ["login", "log in", "log-in", "signin", "sign in", "sign-in", "submit"]
-    type_scores = [("submit", Score(10)), ("button", Score(10))]
+    type_scores = [("submit", Score(30)), ("button", Score(10))]
     property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@value", Score(3)), ("text()", Score(10))]
     return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 
