@@ -1,9 +1,9 @@
-import hashlib
 import os
 from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 
+from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -21,6 +21,7 @@ except ImportError:
 
 _db = SQLAlchemy()
 login_manager = LoginManager()
+migrate = Migrate()
 
 
 def init_db(app):
@@ -31,8 +32,9 @@ def init_db(app):
         else:
             _setup_encrypted_database(app)
         _db.init_app(app)
-        _db.create_all()
+        migrate.init_app(app, db=_db)
         login_manager.init_app(app)
+        upgrade()
 
 
 def _setup_encrypted_database(app):
@@ -54,6 +56,11 @@ class User(UserMixin, _db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(nullable=False)
+    # Relationship to Notifications
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification", cascade="all, delete-orphan", backref="parent_user"
+    )
+
     # Relationship to Website
     websites: Mapped[List["Website"]] = relationship(
         "Website", cascade="all, delete-orphan", backref="parent_user"
@@ -71,6 +78,14 @@ class User(UserMixin, _db.Model):
         pepper = get_database_pepper()
         return check_password_hash(self.password_hash, password + pepper)
 
+
+class Notification(_db.Model):
+    __tablename__ = "notification"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    apprise_token: Mapped[str] = mapped_column(nullable=False)
+
+    user: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
 class Website(_db.Model):
     __tablename__ = "website"
