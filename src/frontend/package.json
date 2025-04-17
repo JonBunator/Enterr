@@ -15,7 +15,7 @@
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^7.0.2",
-    "@mui/x-date-pickers": "^7.28.3",
+    "@mui/x-date-pickers": "^8.0.0",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",
     "framer-motion": "^12.6.5",
