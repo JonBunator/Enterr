@@ -1,31 +1,141 @@
-from datetime import datetime, timezone
-
 import apprise
+from flask import Flask
+from enum import Enum
 
-from dataAccess.database.database import ActionHistory
+from dataAccess.data_access_internal import DataAccessInternal
+from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails
+
+
+class NotificationVariable(Enum):
+    STATUS = "STATUS"
+    STATUS_MESSAGE = "STATUS_MESSAGE"
+    EXECUTION_STARTED_DATETIME = "EXECUTION_STARTED_DATETIME"
+    EXECUTION_ENDED_DATETIME = "EXECUTION_ENDED_DATETIME"
+    EXECUTION_STARTED_DATE_MESSAGE = "EXECUTION_STARTED_DATE_MESSAGE"
+    EXECUTION_STARTED_TIME_MESSAGE = "EXECUTION_STARTED_TIME_MESSAGE"
+    EXECUTION_ENDED_DATE_MESSAGE = "EXECUTION_ENDED_DATE_MESSAGE"
+    EXECUTION_ENDED_TIME_MESSAGE = "EXECUTION_ENDED_TIME_MESSAGE"
+    FAILED_DETAILS = "FAILED_DETAILS"
+    FAILED_DETAILS_MESSAGE = "FAILED_DETAILS_MESSAGE"
+    SCREENSHOT_ID = "SCREENSHOT_ID"
+    WEBSITE_NAME = "WEBSITE_NAME"
+    WEBSITE_URL = "WEBSITE_URL"
 
 
 class NotificationManager:
-    def __init__(self):
+    def __init__(self, app: Flask, data_access: DataAccessInternal):
+        self.app = app
         self.notifier = apprise.Apprise()
-        self.database_access = None
+        self.data_access = data_access
+        self._init_notifications()
 
-    def add_notification(self, notifier: str, title: str, body: str):
-        notification_id = str(datetime.now(timezone.utc))
-        self.database_access.add_notification(notification_id, notifier, title, body)
-        self.notifier.add(notifier, tag=notification_id)
+    def _init_notifications(self):
+        for notification in self.data_access.get_notifications_all_users():
+            self.add_notification(notification)
 
-    def notify(self, action_history_id: str):
-        for notification in self.database_access.get_notifications():
-            action_history = self.database_access.get_action_history(action_history_id)
-            title = NotificationManager._replace_variables(notification.title, action_history)
-            body = NotificationManager._replace_variables(notification.body, action_history)
-            self.notifier.notify(
-                title=title,
-                body=body,
-                tag=notification.notification_id
-            )
+    def add_notification(self, notification: Notification):
+        self.notifier.add(notification.apprise_token, tag=str(notification.id))
+
+    def updated_notifications(self):
+        self.notifier.clear()
+        self._init_notifications()
+
+    def notify(self, action_history: ActionHistory):
+        with self.app.app_context():
+            for notification in self.data_access.get_notifications_for_user(action_history):
+                title = NotificationManager._replace_variables(notification.title, action_history)
+                body = NotificationManager._replace_variables(notification.body, action_history)
+                self.notifier.notify(
+                    title=title,
+                    body=body,
+                    tag=str(notification.id),
+                )
+
+    @staticmethod
+    def _get_status_message(action_history: ActionHistory) -> str:
+        if action_history.execution_status == ActionStatusCode.SUCCESS:
+            return "Login successful"
+        elif action_history.execution_status == ActionStatusCode.FAILED:
+            return "Login failed"
+        elif action_history.execution_status == ActionStatusCode.IN_PROGRESS:
+            return "In Progress"
+        else:
+            return "Unknown"
+
+    @staticmethod
+    def _get_failed_details_message(action_history: ActionHistory) -> str:
+
+        if action_history.failed_details is None:
+            return "No error details available"
+
+        failed_details_messages = {
+            ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED:
+                "Automatic form detection failed",
+            ActionFailedDetails.USERNAME_FIELD_NOT_FOUND:
+                "Username field not found",
+            ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND:
+                "Password field not found",
+            ActionFailedDetails.PIN_FIELD_NOT_FOUND:
+                "PIN field not found",
+            ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND:
+                "Submit button not found",
+            ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH:
+                "The success url did not match after login attempt",
+            ActionFailedDetails.UNKNOWN_EXECUTION_ERROR:
+                "An unknown error occurred while executing task"
+        }
+
+        return failed_details_messages.get(action_history.failed_details, "Unknown error")
+
+    @staticmethod
+    def _get_variable(variable: NotificationVariable) -> str:
+        return "{" + str(variable.value) + "}"
 
     @staticmethod
     def _replace_variables(value: str, action_history: ActionHistory) -> str:
+        print(str(action_history.execution_status.value))
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS),
+                              action_history.execution_status.value)
+        print("var", NotificationManager._get_variable(NotificationVariable.STATUS))
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
+                              NotificationManager._get_status_message(action_history))
+
+        # Execution time replacements
+        # Datetimes
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATETIME),
+                              str(action_history.execution_started))
+
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATETIME),
+                              str(action_history.execution_ended) if action_history.execution_ended else "null")
+
+        # Started
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATE_MESSAGE),
+                              action_history.execution_started.strftime("%Y-%m-%d"))
+
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE),
+                              action_history.execution_started.strftime("%H:%M:%S"))
+
+        # Ended
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATE_MESSAGE),
+                              action_history.execution_ended.strftime(
+                                  "%Y-%m-%d") if action_history.execution_ended else "Not ended yet")
+
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE),
+                              action_history.execution_ended.strftime(
+                                  "%H:%M:%S") if action_history.execution_ended else "Not ended yet")
+
+        # Failed details replacements
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
+                              str(action_history.failed_details) if action_history.failed_details else "null")
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS_MESSAGE),
+                              NotificationManager._get_failed_details_message(action_history))
+
+        # Screenshot replacement
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID),
+                              str(action_history.screenshot_id) if action_history.screenshot_id else "null")
+
+        # Website info replacements
+        website = DataAccessInternal.get_website_by_id(action_history.website)
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), website.name)
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), website.url)
         return value

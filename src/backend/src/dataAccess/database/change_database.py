@@ -9,7 +9,7 @@ from dataAccess.database.database import (
     _db as db,
     ActionHistory,
     ActionFailedDetails,
-    ActionStatusCode,
+    ActionStatusCode, Notification,
 )
 
 
@@ -108,11 +108,50 @@ class DataBase:
         else:
             DataBase.add_action_history(website_id, action_history)
 
+    @staticmethod
+    def add_notification(notification: Notification):
+        current_user = DataBase.get_current_user()
+        notification.user = current_user.id
+        db.session.add(notification)
+        db.session.commit()
+
+    @staticmethod
+    def get_notifications() -> List[Notification]:
+        current_user = DataBase.get_current_user()
+        notifications = (
+            db.session.query(Notification)
+            .filter_by(user=current_user.id)
+            .all()
+        )
+        return notifications
+
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 
     @staticmethod
     def get_user(username: str):
         return db.session.query(User).filter_by(username=username).first()
+
+    @staticmethod
+    def get_website_by_id(website_id: int) -> Website:
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website_id)
+            .first()
+        )
+        if website:
+            return website
+        raise Exception(f"Website {website_id} not found")
+
+    @staticmethod
+    def get_notifications_all_users() -> List[Notification]:
+        return db.session.query(Notification).all()
+
+    @staticmethod
+    def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
+        user_id = db.session.query(Website).filter_by(id=action_history.website).first().user
+        return (db.session.query(Notification)
+                .filter_by(trigger=action_history.execution_status, user=user_id)
+                .all())
 
     @staticmethod
     def get_websites_all_users() -> List[Website]:

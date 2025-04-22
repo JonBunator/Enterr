@@ -20,7 +20,10 @@ def upgrade():
     op.create_table('notification',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('apprise_token', sa.String(), nullable=False),
-    sa.Column('user_id', sa.Integer(), sa.ForeignKey('user.id'), nullable=False),
+    sa.Column('title', sa.String(), nullable=False),
+    sa.Column('body', sa.String(), nullable=False),
+    sa.Column('trigger', sa.String(), nullable=False),
+    sa.Column('user', sa.Integer(), sa.ForeignKey('user.id'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
 

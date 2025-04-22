@@ -3,9 +3,10 @@ from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import (
     Website,
     ActionHistory,
-    User,
+    User, Notification, ActionStatusCode,
 )
 from endpoints.models.action_history_model import AddManualActionHistory
+from endpoints.models.notification_model import AddNotification
 from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite
 from endpoints.webhook_endpoints import WebhookEndpoints
 
@@ -60,3 +61,12 @@ class DataAccess:
     @staticmethod
     def get_user(username: str):
         return DataBase.get_user(username)
+
+    @staticmethod
+    def add_notification(request: AddNotification):
+        notification = request.to_sql_model()
+        DataBase.add_notification(notification)
+
+    @staticmethod
+    def get_notifications() -> List[Notification]:
+        return DataBase.get_notifications()

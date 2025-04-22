@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import (
-    Website, ActionHistory, ActionStatusCode, ActionFailedDetails,
+    Website, ActionHistory, ActionStatusCode, ActionFailedDetails, Notification,
 )
 from endpoints.webhook_endpoints import WebhookEndpoints
 
@@ -13,6 +13,10 @@ class DataAccessInternal:
     """
     def __init__(self, webhook_endpoints: WebhookEndpoints):
         self.webhook_endpoints = webhook_endpoints
+
+    @staticmethod
+    def get_website_by_id(website_id: int) -> Website:
+        return DataBase.get_website_by_id(website_id)
 
     @staticmethod
     def get_websites_all_users() -> List[Website]:
@@ -54,3 +58,10 @@ class DataAccessInternal:
             action_history_id=action_history_id
         )
 
+    @staticmethod
+    def get_notifications_all_users() -> List[Notification]:
+        return DataBase.get_notifications_all_users()
+
+    @staticmethod
+    def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
+        return DataBase.get_notifications_for_user(action_history)

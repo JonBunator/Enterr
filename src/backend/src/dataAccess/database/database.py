@@ -28,7 +28,8 @@ def init_db(app):
     with app.app_context():
         dev_mode = os.getenv("FLASK_ENV") != "production"
         if dev_mode:
-            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///databasev2.1.1.db"
+            # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         else:
             _setup_encrypted_database(app)
         _db.init_app(app)
@@ -49,6 +50,21 @@ def _setup_encrypted_database(app):
 def load_user(user_id):
     return _db.session.get(User, int(user_id))
 
+
+class ActionStatusCode(Enum):
+    IN_PROGRESS = "IN_PROGRESS"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+
+
+class ActionFailedDetails(Enum):
+    AUTOMATIC_FORM_DETECTION_FAILED = "AUTOMATIC_FORM_DETECTION_FAILED"
+    USERNAME_FIELD_NOT_FOUND = "USERNAME_FIELD_NOT_FOUND"
+    PASSWORD_FIELD_NOT_FOUND = "PASSWORD_FIELD_NOT_FOUND"
+    PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
+    SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
+    SUCCESS_URL_DID_NOT_MATCH = "SUCCESS_URL_DID_NOT_MATCH"
+    UNKNOWN_EXECUTION_ERROR = "UNKNOWN_EXECUTION_ERROR"
 
 class User(UserMixin, _db.Model):
     __tablename__ = "user"
@@ -84,6 +100,9 @@ class Notification(_db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     apprise_token: Mapped[str] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(nullable=False)
+    body: Mapped[str] = mapped_column(nullable=False)
+    trigger: Mapped[ActionStatusCode] = mapped_column(nullable=False)
 
     user: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
@@ -137,22 +156,6 @@ class CustomAccess(_db.Model):
     submit_button_xpath: Mapped[str] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(ForeignKey("website.id"))
-
-
-class ActionStatusCode(Enum):
-    IN_PROGRESS = "IN_PROGRESS"
-    SUCCESS = "SUCCESS"
-    FAILED = "FAILED"
-
-
-class ActionFailedDetails(Enum):
-    AUTOMATIC_FORM_DETECTION_FAILED = "AUTOMATIC_FORM_DETECTION_FAILED"
-    USERNAME_FIELD_NOT_FOUND = "USERNAME_FIELD_NOT_FOUND"
-    PASSWORD_FIELD_NOT_FOUND = "PASSWORD_FIELD_NOT_FOUND"
-    PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
-    SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
-    SUCCESS_URL_DID_NOT_MATCH = "SUCCESS_URL_DID_NOT_MATCH"
-    UNKNOWN_EXECUTION_ERROR = "UNKNOWN_EXECUTION_ERROR"
 
 
 class ActionHistory(_db.Model):

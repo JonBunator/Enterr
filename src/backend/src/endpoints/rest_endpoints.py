@@ -13,6 +13,7 @@ from endpoints.models.action_history_model import (
     AddManualActionHistory,
 )
 from endpoints.models.api_response_model import ApiGetResponse, ApiPostResponse
+from endpoints.models.notification_model import AddNotification
 from endpoints.models.other_model import TriggerAutomaticLogin
 from endpoints.models.user_login_model import UserLogin, GetUserData
 from endpoints.models.website_model import (
@@ -80,6 +81,12 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
             login_user(user)
         else:
             raise CustomValidationError("Invalid username or password")
+
+    @app.route("/api/notifications/add", methods=["POST"])
+    @login_required
+    @validate_post_request(AddNotification)
+    def add_notification(notification_request: AddNotification):
+        data_access.add_notification(notification_request)
 
     @app.route("/api/user/logout", methods=["POST"])
     @login_required
