@@ -150,7 +150,8 @@ class DataBase:
     def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
         user_id = db.session.query(Website).filter_by(id=action_history.website).first().user
         return (db.session.query(Notification)
-                .filter_by(trigger=action_history.execution_status, user=user_id)
+                .filter_by(user=user_id)
+                .filter(Notification._triggers.like(f"%{action_history.execution_status.value}%"))
                 .all())
 
     @staticmethod

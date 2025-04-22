@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('apprise_token', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('body', sa.String(), nullable=False),
-    sa.Column('trigger', sa.String(), nullable=False),
+    sa.Column('_triggers', sa.String(), nullable=False),
     sa.Column('user', sa.Integer(), sa.ForeignKey('user.id'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )

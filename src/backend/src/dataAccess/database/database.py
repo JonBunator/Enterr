@@ -102,9 +102,22 @@ class Notification(_db.Model):
     apprise_token: Mapped[str] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
     body: Mapped[str] = mapped_column(nullable=False)
-    trigger: Mapped[ActionStatusCode] = mapped_column(nullable=False)
+    _triggers: Mapped[str] = mapped_column(nullable=False)
 
     user: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    @property
+    def triggers(self) -> List[ActionStatusCode]:
+        return [
+            ActionStatusCode(val)
+            for val in self._triggers.split(";")
+            if val
+        ]
+
+    @triggers.setter
+    def triggers(self, value: List[ActionStatusCode]):
+        self._triggers = ";".join(v.value for v in value)
+
 
 class Website(_db.Model):
     __tablename__ = "website"

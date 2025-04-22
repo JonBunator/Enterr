@@ -93,10 +93,8 @@ class NotificationManager:
 
     @staticmethod
     def _replace_variables(value: str, action_history: ActionHistory) -> str:
-        print(str(action_history.execution_status.value))
         value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS),
                               action_history.execution_status.value)
-        print("var", NotificationManager._get_variable(NotificationVariable.STATUS))
         value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
                               NotificationManager._get_status_message(action_history))
 
