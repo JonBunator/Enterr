@@ -13,7 +13,7 @@ from endpoints.models.action_history_model import (
     AddManualActionHistory,
 )
 from endpoints.models.api_response_model import ApiGetResponse, ApiPostResponse
-from endpoints.models.notification_model import AddNotification
+from endpoints.models.notification_model import AddNotification, GetNotification
 from endpoints.models.other_model import TriggerAutomaticLogin
 from endpoints.models.user_login_model import UserLogin, GetUserData
 from endpoints.models.website_model import (
@@ -87,6 +87,12 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     @validate_post_request(AddNotification)
     def add_notification(notification_request: AddNotification):
         data_access.add_notification(notification_request)
+
+    @app.route("/api/notifications", methods=["GET"])
+    @login_required
+    @validate_get_request(GetNotification)
+    def get_notifications():
+        return DataAccess.get_notifications()
 
     @app.route("/api/user/logout", methods=["POST"])
     @login_required
