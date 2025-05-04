@@ -6,7 +6,7 @@ from dataAccess.database.database import (
     User, Notification, ActionStatusCode,
 )
 from endpoints.models.action_history_model import AddManualActionHistory
-from endpoints.models.notification_model import AddNotification
+from endpoints.models.notification_model import AddNotification, EditNotification, DeleteNotification
 from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite
 from endpoints.webhook_endpoints import WebhookEndpoints
 
@@ -50,6 +50,22 @@ class DataAccess:
             action_history_id=action_history.id
         )
 
+    def add_notification(self, request: AddNotification):
+        notification = request.to_sql_model()
+        DataBase.add_notification(notification)
+        self.webhook_endpoints.notifications_changed()
+
+    def edit_notification(self, request: EditNotification):
+        existing_notification = DataBase.get_notification(request.id)
+        notification = request.edit_existing_model(existing_notification)
+        DataBase.edit_notification(notification)
+        self.webhook_endpoints.notifications_changed()
+
+    def delete_notification(self, request: DeleteNotification):
+        notification = DataBase.get_notification(request.id)
+        DataBase.delete_notification(notification)
+        self.webhook_endpoints.notifications_changed()
+
     @staticmethod
     def trigger_login(website_id):
         DataBase.trigger_login(website_id=website_id)
@@ -61,11 +77,6 @@ class DataAccess:
     @staticmethod
     def get_user(username: str):
         return DataBase.get_user(username)
-
-    @staticmethod
-    def add_notification(request: AddNotification):
-        notification = request.to_sql_model()
-        DataBase.add_notification(notification)
 
     @staticmethod
     def get_notifications() -> List[Notification]:

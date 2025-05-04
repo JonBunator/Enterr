@@ -13,7 +13,7 @@ from endpoints.models.action_history_model import (
     AddManualActionHistory,
 )
 from endpoints.models.api_response_model import ApiGetResponse, ApiPostResponse
-from endpoints.models.notification_model import AddNotification, GetNotification
+from endpoints.models.notification_model import AddNotification, GetNotification, DeleteNotification, EditNotification
 from endpoints.models.other_model import TriggerAutomaticLogin
 from endpoints.models.user_login_model import UserLogin, GetUserData
 from endpoints.models.website_model import (
@@ -88,6 +88,18 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     def add_notification(notification_request: AddNotification):
         data_access.add_notification(notification_request)
 
+    @app.route("/api/notifications/edit", methods=["POST"])
+    @login_required
+    @validate_post_request(EditNotification)
+    def edit_notification(notification_request: EditNotification):
+        data_access.edit_notification(notification_request)
+
+    @app.route("/api/notifications/delete", methods=["POST"])
+    @login_required
+    @validate_post_request(DeleteNotification)
+    def delete_notification(notification_request: DeleteNotification):
+        data_access.delete_notification(notification_request)
+
     @app.route("/api/notifications", methods=["GET"])
     @login_required
     @validate_get_request(GetNotification)
@@ -130,4 +142,3 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
                 success=False, message="An error occurred", error=str(e)
             )
             return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
-

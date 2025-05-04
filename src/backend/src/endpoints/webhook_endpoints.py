@@ -4,6 +4,7 @@ from flask_socketio import SocketIO
 class Topic(Enum):
     LOGIN_DATA_CHANGED = "login_data_changed"
     ACTION_HISTORY_CHANGED = "action_history_changed"
+    NOTIFICATIONS_CHANGED = "notifications_changed"
 
 class WebhookEndpoints:
     def __init__(self, socketio: SocketIO):
@@ -18,4 +19,6 @@ class WebhookEndpoints:
     def action_history_changed(self, action_history_id: int):
         self._send_webhook_message(Topic.ACTION_HISTORY_CHANGED.value, {"id": action_history_id})
 
+    def notifications_changed(self):
+        self._send_webhook_message(Topic.NOTIFICATIONS_CHANGED.value, {})
 

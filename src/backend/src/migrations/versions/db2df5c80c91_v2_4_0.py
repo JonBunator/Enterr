@@ -19,6 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table('notification',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
     sa.Column('apprise_token', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('body', sa.String(), nullable=False),

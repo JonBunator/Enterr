@@ -30,8 +30,9 @@ class NotificationManager:
         self._init_notifications()
 
     def _init_notifications(self):
-        for notification in self.data_access.get_notifications_all_users():
-            self.add_notification(notification)
+        with self.app.app_context():
+            for notification in self.data_access.get_notifications_all_users():
+                self.add_notification(notification)
 
     def add_notification(self, notification: Notification):
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
