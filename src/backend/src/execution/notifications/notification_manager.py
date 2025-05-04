@@ -1,3 +1,5 @@
+from datetime import timezone, datetime, timedelta
+
 import apprise
 from flask import Flask
 from enum import Enum
@@ -11,10 +13,9 @@ class NotificationVariable(Enum):
     STATUS_MESSAGE = "STATUS_MESSAGE"
     EXECUTION_STARTED_DATETIME = "EXECUTION_STARTED_DATETIME"
     EXECUTION_ENDED_DATETIME = "EXECUTION_ENDED_DATETIME"
-    EXECUTION_STARTED_DATE_MESSAGE = "EXECUTION_STARTED_DATE_MESSAGE"
     EXECUTION_STARTED_TIME_MESSAGE = "EXECUTION_STARTED_TIME_MESSAGE"
-    EXECUTION_ENDED_DATE_MESSAGE = "EXECUTION_ENDED_DATE_MESSAGE"
     EXECUTION_ENDED_TIME_MESSAGE = "EXECUTION_ENDED_TIME_MESSAGE"
+    EXECUTION_DATE_MESSAGE = "EXECUTION_DATE_MESSAGE"
     FAILED_DETAILS = "FAILED_DETAILS"
     FAILED_DETAILS_MESSAGE = "FAILED_DETAILS_MESSAGE"
     SCREENSHOT_ID = "SCREENSHOT_ID"
@@ -36,6 +37,15 @@ class NotificationManager:
 
     def add_notification(self, notification: Notification):
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
+
+    def test_notification(self, notification: Notification):
+        self.notifier.add(notification.apprise_token, tag=str(notification.id))
+        title = NotificationManager._replace_fake_variables(notification.title)
+        body = NotificationManager._replace_fake_variables(notification.body)
+        self.notifier.notify(title=title,
+                             body=body,
+                             tag=str(notification.id))
+        self.updated_notifications()
 
     def updated_notifications(self):
         self.notifier.clear()
@@ -108,24 +118,22 @@ class NotificationManager:
                               str(action_history.execution_ended) if action_history.execution_ended else "null")
 
         # Started
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATE_MESSAGE),
-                              action_history.execution_started.strftime("%Y-%m-%d"))
 
         value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE),
                               action_history.execution_started.strftime("%H:%M:%S"))
 
         # Ended
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATE_MESSAGE),
-                              action_history.execution_ended.strftime(
-                                  "%Y-%m-%d") if action_history.execution_ended else "Not ended yet")
-
         value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE),
                               action_history.execution_ended.strftime(
                                   "%H:%M:%S") if action_history.execution_ended else "Not ended yet")
 
+        # Date
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_DATE_MESSAGE),
+                              action_history.execution_started.strftime("%Y-%m-%d"))
+
         # Failed details replacements
         value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
-                              str(action_history.failed_details) if action_history.failed_details else "null")
+                              str(action_history.failed_details.value) if action_history.failed_details else "null")
         value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS_MESSAGE),
                               NotificationManager._get_failed_details_message(action_history))
 
@@ -137,4 +145,48 @@ class NotificationManager:
         website = DataAccessInternal.get_website_by_id(action_history.website)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), website.name)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), website.url)
+        return value
+
+    @staticmethod
+    def _replace_fake_variables(value: str) -> str:
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS),
+                              "FAILED")
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
+                              "Login failed")
+
+        # Execution time replacements
+        start_time = datetime.now(timezone.utc)
+        end_time = start_time + timedelta(seconds=30)
+
+        # Datetimes
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATETIME),
+                              str(start_time))
+
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATETIME),
+                              str(end_time))
+
+        # Started
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE),
+                              start_time.strftime("%H:%M:%S"))
+
+        # Ended
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE),
+                              end_time.strftime("%H:%M:%S"))
+
+        # Date
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_DATE_MESSAGE),
+                              start_time.strftime("%Y-%m-%d"))
+
+        # Failed details replacements
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
+                              "PASSWORD_FIELD_NOT_FOUND")
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS_MESSAGE),
+                              "Password field not found")
+
+        # Screenshot replacement
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID), "17d0b186-790a-4f4a-93d5-80524d05019a")
+
+        # Website info replacements
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), "My awesome website")
+        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), "https://www.example.com/login")
         return value

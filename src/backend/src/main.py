@@ -52,9 +52,9 @@ with app.app_context():
     webhook_endpoints = WebhookEndpoints(socketio=socketio)
     data_access = DataAccess(webhook_endpoints=webhook_endpoints)
     data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
-    register_rest_endpoints(app=app, data_access=data_access)
-    scheduler = Scheduler(app=app, data_access_internal=data_access_internal)
     notification_manager = NotificationManager(app=app, data_access=data_access_internal)
+    register_rest_endpoints(app=app, data_access=data_access, notification_manager=notification_manager)
+    scheduler = Scheduler(app=app, data_access_internal=data_access_internal)
     register_database_events(scheduler=scheduler, notification_manager=notification_manager)
     scheduler.start()
     if dev_mode:

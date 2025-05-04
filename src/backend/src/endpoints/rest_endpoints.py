@@ -22,9 +22,10 @@ from endpoints.models.website_model import (
     EditWebsite,
     DeleteWebsite,
 )
+from execution.notifications.notification_manager import NotificationManager
 
 
-def register_rest_endpoints(app: Flask, data_access: DataAccess):
+def register_rest_endpoints(app: Flask, data_access: DataAccess, notification_manager: NotificationManager,):
     @app.route("/api/websites", methods=["GET"])
     @login_required
     @validate_get_request(GetWebsite)
@@ -87,6 +88,12 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
     @validate_post_request(AddNotification)
     def add_notification(notification_request: AddNotification):
         data_access.add_notification(notification_request)
+
+    @app.route("/api/notifications/test", methods=["POST"])
+    @login_required
+    @validate_post_request(AddNotification)
+    def test_notification(notification_request: AddNotification):
+        notification_manager.test_notification(notification_request.to_sql_model())
 
     @app.route("/api/notifications/edit", methods=["POST"])
     @login_required
