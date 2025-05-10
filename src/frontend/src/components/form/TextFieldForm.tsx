@@ -1,20 +1,15 @@
 import type { InputBaseComponentProps, TextFieldProps } from "@mui/material";
 import type { ElementType } from 'react'
-import { Input, TextField } from '@mui/material'
+import { TextField } from '@mui/material'
 import { forwardRef, useCallback, useEffect, useState } from 'react'
 import { IMaskInput } from 'react-imask'
 import { useForm } from './FormProvider.tsx'
 
-export type TextFieldFormProps = Omit<TextFieldProps, 'onChange' | 'error' | 'required'> & {
+export type TextFieldFormProps = Omit<TextFieldProps, 'error'> & {
   /**
    * Is used to identify the textfield for form validation. Must be unique.
    */
   identifier: string
-  /**
-   * Is called when value changes.
-   * @param value The changed value.
-   */
-  onChange?: (value: string) => void
   /**
    * The value that should be validated. When undefined the value of the textfield will be validated.
    */
@@ -24,10 +19,6 @@ export type TextFieldFormProps = Omit<TextFieldProps, 'onChange' | 'error' | 're
    * @param value The value that will be validated.
    */
   onValidate?: (value: string) => string
-  /**
-   * True when the textfield should be required.
-   */
-  required?: boolean
   /**
    * When true the input becomes a number input.
    */
@@ -57,24 +48,26 @@ const NumberMask = forwardRef<HTMLInputElement, MaskComponentProps>(
 )
 
 export default function TextFieldForm(props: TextFieldFormProps) {
-  const { identifier, onChange, onValidate, validationValue, numberInput, value, required, helperText, ...otherProps } = props
+  const { identifier, onChange, onValidate, validationValue, slotProps, numberInput, value, required, helperText, ...otherProps } = props
   const [errorMessage, setErrorMessage] = useState<string>('')
 
   const { subscribe, unsubscribe } = useForm()
 
-  function handleChange(newValue: string) {
+  function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     if (errorMessage !== '') {
       setErrorMessage('')
     }
-    onChange?.(newValue)
+    onChange?.(event)
   }
 
   const validate = useCallback((): boolean => {
     let error = ''
+    const valueToValidate = validationValue ?? (value as string);
     if (onValidate) {
-      error = onValidate(validationValue ?? (value as string))
+      error = onValidate(valueToValidate)
     }
-    if (required && value === '') {
+    if (required && (valueToValidate === '' || valueToValidate === undefined || valueToValidate === null)) {
+      console.log(valueToValidate)
       error = 'This field is required'
     }
     setErrorMessage(error)
@@ -92,14 +85,14 @@ export default function TextFieldForm(props: TextFieldFormProps) {
     <TextField
       {...otherProps}
       required={required}
-      value={value?.toString() ?? ''}
-      slotProps={{
+      value={value}
+      slotProps={numberInput ? {
         input: {
-          inputComponent: (numberInput ? NumberMask : Input) as any as ElementType<InputBaseComponentProps>,
-          onChange: (event) => { handleChange(event.target.value) },
+          inputComponent: NumberMask as any as ElementType<InputBaseComponentProps>,
+          onChange: (event) => { handleChange(event) },
         },
-      }}
-      onChange={event => handleChange(event.target.value)}
+      } : {...slotProps}}
+      onChange={event => handleChange(event)}
       helperText={errorMessage === '' ? helperText : errorMessage}
       error={errorMessage !== ''}
     />

@@ -15,7 +15,10 @@ def create_user(
 
         if db.session.query(User).filter_by(username=username).first():
             print("User already exists.")
-            sys.exit(1)
+            if create_db:
+                sys.exit(1)
+            else:
+                return
 
         user = User(username=username, password=password)
         db.session.add(user)

@@ -22,10 +22,10 @@ export default function AccessForm(props: AccessFormProps) {
             label="Username"
             disabled={loading}
             value={value.username}
-            onChange={username =>
+            onChange={event =>
               onChange?.({
                 ...value,
-                username,
+                username: event.target.value,
               })}
             required
             fullWidth
@@ -40,10 +40,10 @@ export default function AccessForm(props: AccessFormProps) {
             label="Password"
             disabled={loading}
             value={value.password}
-            onChange={password =>
+            onChange={event =>
               onChange?.({
                 ...value,
-                password,
+                password: event.target.value,
               })}
             required
             fullWidth
@@ -57,10 +57,10 @@ export default function AccessForm(props: AccessFormProps) {
             label="PIN"
             disabled={loading}
             value={value.pin}
-            onChange={pin =>
+            onChange={event =>
               onChange?.({
                 ...value,
-                pin,
+                pin: event.target.value,
               })}
             fullWidth
             helperText="Some websites require an additional pin to login. This is not a 2FA pin that is receiced by SMS, email etc."

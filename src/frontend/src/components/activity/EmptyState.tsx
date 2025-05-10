@@ -4,10 +4,11 @@ import './EmptyState.scss'
 
 interface EmptyStateProps {
   noData?: boolean
+  noDataHelperText?: string
 }
 
 export default function EmptyState(props: EmptyStateProps) {
-  const { noData } = props
+  const { noData, noDataHelperText = '' } = props
 
   const containerAnimation = {
     hidden: { opacity: 0 },
@@ -37,7 +38,7 @@ export default function EmptyState(props: EmptyStateProps) {
         {noData ? 'No data yet!' : 'No results found!'}
       </Typography>
       <Typography sx={{ color: 'text.secondary' }}>
-        {noData ? 'Add a website to get started' : 'Try a different search term'}
+        {noData ? noDataHelperText : 'Try a different search term'}
       </Typography>
     </motion.div>
   )

@@ -16,6 +16,7 @@ import Content from '../layout/Content.tsx'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
 import ProtectedPage from './ProtectedPage.tsx'
 import './LoginPage.scss'
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -143,7 +144,7 @@ export default function LoginPage() {
               login
             </Button>
             <Tooltip title="You can reset your password via the terminal. See GitHub for more information.">
-              <Link className="forgot-password" target="_blank" rel="noopener" href="https://github.com/JonBunator/Enterr" sx={{ fontSize: 14 }}>Forgot password?</Link>
+              <Link className="forgot-password" target="_blank" rel="noopener" href="https://github.com/JonBunator/Enterr" sx={{ fontSize: 14 }}>Forgot password?<ArrowTopRightOnSquareIcon className="icon-small"/></Link>
             </Tooltip>
           </Paper>
         </div>

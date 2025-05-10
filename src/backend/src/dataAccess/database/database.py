@@ -1,9 +1,9 @@
-import hashlib
 import os
 from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 
+from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -21,6 +21,7 @@ except ImportError:
 
 _db = SQLAlchemy()
 login_manager = LoginManager()
+migrate = Migrate()
 
 
 def init_db(app):
@@ -31,8 +32,12 @@ def init_db(app):
         else:
             _setup_encrypted_database(app)
         _db.init_app(app)
-        _db.create_all()
+        migrate.init_app(app, db=_db)
         login_manager.init_app(app)
+        if dev_mode:
+            _db.create_all()
+        else:
+            upgrade()
 
 
 def _setup_encrypted_database(app):
@@ -48,12 +53,32 @@ def load_user(user_id):
     return _db.session.get(User, int(user_id))
 
 
+class ActionStatusCode(Enum):
+    IN_PROGRESS = "IN_PROGRESS"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+
+
+class ActionFailedDetails(Enum):
+    AUTOMATIC_FORM_DETECTION_FAILED = "AUTOMATIC_FORM_DETECTION_FAILED"
+    USERNAME_FIELD_NOT_FOUND = "USERNAME_FIELD_NOT_FOUND"
+    PASSWORD_FIELD_NOT_FOUND = "PASSWORD_FIELD_NOT_FOUND"
+    PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
+    SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
+    SUCCESS_URL_DID_NOT_MATCH = "SUCCESS_URL_DID_NOT_MATCH"
+    UNKNOWN_EXECUTION_ERROR = "UNKNOWN_EXECUTION_ERROR"
+
 class User(UserMixin, _db.Model):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(nullable=False)
+    # Relationship to Notifications
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification", cascade="all, delete-orphan", backref="parent_user"
+    )
+
     # Relationship to Website
     websites: Mapped[List["Website"]] = relationship(
         "Website", cascade="all, delete-orphan", backref="parent_user"
@@ -70,6 +95,31 @@ class User(UserMixin, _db.Model):
     def check_password(self, password):
         pepper = get_database_pepper()
         return check_password_hash(self.password_hash, password + pepper)
+
+
+class Notification(_db.Model):
+    __tablename__ = "notification"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    apprise_token: Mapped[str] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(nullable=False)
+    body: Mapped[str] = mapped_column(nullable=False)
+    _triggers: Mapped[str] = mapped_column(nullable=False)
+
+    user: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    @property
+    def triggers(self) -> List[ActionStatusCode]:
+        return [
+            ActionStatusCode(val)
+            for val in self._triggers.split(";")
+            if val
+        ]
+
+    @triggers.setter
+    def triggers(self, value: List[ActionStatusCode]):
+        self._triggers = ";".join(v.value for v in value)
 
 
 class Website(_db.Model):
@@ -122,22 +172,6 @@ class CustomAccess(_db.Model):
     submit_button_xpath: Mapped[str] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(ForeignKey("website.id"))
-
-
-class ActionStatusCode(Enum):
-    IN_PROGRESS = "IN_PROGRESS"
-    SUCCESS = "SUCCESS"
-    FAILED = "FAILED"
-
-
-class ActionFailedDetails(Enum):
-    AUTOMATIC_FORM_DETECTION_FAILED = "AUTOMATIC_FORM_DETECTION_FAILED"
-    USERNAME_FIELD_NOT_FOUND = "USERNAME_FIELD_NOT_FOUND"
-    PASSWORD_FIELD_NOT_FOUND = "PASSWORD_FIELD_NOT_FOUND"
-    PIN_FIELD_NOT_FOUND = "PIN_FIELD_NOT_FOUND"
-    SUBMIT_BUTTON_NOT_FOUND = "SUBMIT_BUTTON_NOT_FOUND"
-    SUCCESS_URL_DID_NOT_MATCH = "SUCCESS_URL_DID_NOT_MATCH"
-    UNKNOWN_EXECUTION_ERROR = "UNKNOWN_EXECUTION_ERROR"
 
 
 class ActionHistory(_db.Model):

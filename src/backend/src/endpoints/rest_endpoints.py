@@ -13,6 +13,7 @@ from endpoints.models.action_history_model import (
     AddManualActionHistory,
 )
 from endpoints.models.api_response_model import ApiGetResponse, ApiPostResponse
+from endpoints.models.notification_model import AddNotification, GetNotification, DeleteNotification, EditNotification
 from endpoints.models.other_model import TriggerAutomaticLogin
 from endpoints.models.user_login_model import UserLogin, GetUserData
 from endpoints.models.website_model import (
@@ -21,9 +22,10 @@ from endpoints.models.website_model import (
     EditWebsite,
     DeleteWebsite,
 )
+from execution.notifications.notification_manager import NotificationManager
 
 
-def register_rest_endpoints(app: Flask, data_access: DataAccess):
+def register_rest_endpoints(app: Flask, data_access: DataAccess, notification_manager: NotificationManager,):
     @app.route("/api/websites", methods=["GET"])
     @login_required
     @validate_get_request(GetWebsite)
@@ -81,6 +83,36 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
         else:
             raise CustomValidationError("Invalid username or password")
 
+    @app.route("/api/notifications/add", methods=["POST"])
+    @login_required
+    @validate_post_request(AddNotification)
+    def add_notification(notification_request: AddNotification):
+        data_access.add_notification(notification_request)
+
+    @app.route("/api/notifications/test", methods=["POST"])
+    @login_required
+    @validate_post_request(AddNotification)
+    def test_notification(notification_request: AddNotification):
+        notification_manager.test_notification(notification_request.to_sql_model())
+
+    @app.route("/api/notifications/edit", methods=["POST"])
+    @login_required
+    @validate_post_request(EditNotification)
+    def edit_notification(notification_request: EditNotification):
+        data_access.edit_notification(notification_request)
+
+    @app.route("/api/notifications/delete", methods=["POST"])
+    @login_required
+    @validate_post_request(DeleteNotification)
+    def delete_notification(notification_request: DeleteNotification):
+        data_access.delete_notification(notification_request)
+
+    @app.route("/api/notifications", methods=["GET"])
+    @login_required
+    @validate_get_request(GetNotification)
+    def get_notifications():
+        return DataAccess.get_notifications()
+
     @app.route("/api/user/logout", methods=["POST"])
     @login_required
     def logout():
@@ -117,4 +149,3 @@ def register_rest_endpoints(app: Flask, data_access: DataAccess):
                 success=False, message="An error occurred", error=str(e)
             )
             return jsonify(response.model_dump()), HTTPStatus.INTERNAL_SERVER_ERROR
-

@@ -226,7 +226,7 @@ export default function Activity(props: ActivityProps) {
                       >
                         {searchTerm === '' && processedData.length === 0
                           ? (
-                              <EmptyState noData />
+                              <EmptyState noData noDataHelperText="Add a website to get started"/>
                             )
                           : (
                               <EmptyState />

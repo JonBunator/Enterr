@@ -26,10 +26,10 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
         identifier="name"
         disabled={loading}
         value={value.name}
-        onChange={name =>
+        onChange={event =>
           onChange?.({
             ...value,
-            name,
+            name: event.target.value,
           })}
         variant="filled"
         label="Name"
@@ -43,10 +43,10 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             identifier="url"
             disabled={loading}
             value={value.url}
-            onChange={url =>
+            onChange={event =>
               onChange?.({
                 ...value,
-                url,
+                url: event.target.value,
               })}
             variant="filled"
             label="URL"
@@ -62,10 +62,10 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             identifier="success_url"
             disabled={loading}
             value={value.success_url}
-            onChange={success_url =>
+            onChange={event =>
               onChange?.({
                 ...value,
-                success_url,
+                success_url: event.target.value,
               })}
             variant="filled"
             label="Success URL"

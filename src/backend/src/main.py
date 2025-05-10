@@ -1,5 +1,6 @@
 import eventlet
 eventlet.monkey_patch(thread=True, time=True)
+from execution.notifications.notification_manager import NotificationManager
 from utils.security import get_flask_secret_key
 from dataAccess.data_access_internal import DataAccessInternal
 from user_management import create_user
@@ -51,9 +52,10 @@ with app.app_context():
     webhook_endpoints = WebhookEndpoints(socketio=socketio)
     data_access = DataAccess(webhook_endpoints=webhook_endpoints)
     data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
-    register_rest_endpoints(app=app, data_access=data_access)
+    notification_manager = NotificationManager(app=app, data_access=data_access_internal)
+    register_rest_endpoints(app=app, data_access=data_access, notification_manager=notification_manager)
     scheduler = Scheduler(app=app, data_access_internal=data_access_internal)
-    register_database_events(scheduler=scheduler)
+    register_database_events(scheduler=scheduler, notification_manager=notification_manager)
     scheduler.start()
     if dev_mode:
         create_user(username="debug", password="123", app=app, create_db=False)

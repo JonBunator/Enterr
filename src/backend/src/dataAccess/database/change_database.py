@@ -9,7 +9,7 @@ from dataAccess.database.database import (
     _db as db,
     ActionHistory,
     ActionFailedDetails,
-    ActionStatusCode,
+    ActionStatusCode, Notification,
 )
 
 
@@ -47,12 +47,7 @@ class DataBase:
 
     @staticmethod
     def edit_website(website: Website):
-        current_user = DataBase.get_current_user()
-        website = (
-            db.session.query(Website)
-            .filter_by(id=website.id, user=current_user.id)
-            .first()
-        )
+        website = DataBase.get_website(website.id)
         if website:
             db.session.merge(website)
             db.session.commit()
@@ -61,12 +56,7 @@ class DataBase:
 
     @staticmethod
     def delete_website(website: Website):
-        current_user = DataBase.get_current_user()
-        website = (
-            db.session.query(Website)
-            .filter_by(id=website.id, user=current_user.id)
-            .first()
-        )
+        website = DataBase.get_website(website.id)
         if website:
             db.session.delete(website)
             db.session.commit()
@@ -108,11 +98,81 @@ class DataBase:
         else:
             DataBase.add_action_history(website_id, action_history)
 
+    @staticmethod
+    def add_notification(notification: Notification):
+        current_user = DataBase.get_current_user()
+        notification.user = current_user.id
+        db.session.add(notification)
+        db.session.commit()
+
+    @staticmethod
+    def get_notification(notification_id: int) -> Notification:
+        current_user = DataBase.get_current_user()
+        notification = (
+            db.session.query(Notification)
+            .filter_by(id=notification_id, user=current_user.id)
+            .first()
+        )
+        if notification:
+            return notification
+        raise Exception(f"Notification {notification_id} not found")
+
+    @staticmethod
+    def edit_notification(notification: Notification):
+        notification = DataBase.get_notification(notification.id)
+        if notification:
+            db.session.merge(notification)
+            db.session.commit()
+        else:
+            raise Exception(f"Notification {notification.id} not found")
+
+    @staticmethod
+    def delete_notification(notification: Notification):
+        notification = DataBase.get_notification(notification.id)
+        if notification:
+            db.session.delete(notification)
+            db.session.commit()
+        else:
+            raise Exception(f"Notification {notification.id} not found")
+
+    @staticmethod
+    def get_notifications() -> List[Notification]:
+        current_user = DataBase.get_current_user()
+        notifications = (
+            db.session.query(Notification)
+            .filter_by(user=current_user.id)
+            .all()
+        )
+        return notifications
+
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 
     @staticmethod
     def get_user(username: str):
         return db.session.query(User).filter_by(username=username).first()
+
+    @staticmethod
+    def get_website_by_id(website_id: int) -> Website:
+        website = (
+            db.session.query(Website)
+            .filter_by(id=website_id)
+            .first()
+        )
+        if website:
+            return website
+        raise Exception(f"Website {website_id} not found")
+
+    @staticmethod
+    def get_notifications_all_users() -> List[Notification]:
+        return db.session.query(Notification).all()
+
+    @staticmethod
+    def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
+        user_id = db.session.query(Website).filter_by(id=action_history.website).first().user
+        return (db.session.query(Notification)
+                .filter_by(user=user_id)
+                .filter(Notification._triggers.like(f"%{action_history.execution_status.value}%"))
+                .all())
 
     @staticmethod
     def get_websites_all_users() -> List[Website]:

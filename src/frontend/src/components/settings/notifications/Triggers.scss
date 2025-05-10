@@ -1,0 +1,20 @@
+.trigger {
+  display: flex;
+  gap: 8px;
+  .success {
+    .icon {
+      color: #c4f8d6;
+    }
+  }
+  .error {
+    .icon {
+      color: #f7c5c5;
+    }
+  }
+
+  .running {
+    .icon {
+      color: #c4f1f8;
+    }
+  }
+}

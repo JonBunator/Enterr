@@ -1,76 +1,25 @@
-import type { UserData } from '../../api/apiModels.ts'
-import { ArrowRightEndOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/solid'
-import { Chip, ListItemIcon, ListItemText, MenuItem, Popover } from '@mui/material'
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
-import { getUserData, logoutUser } from '../../api/apiRequests.ts'
-import { useSnackbar } from '../provider/SnackbarProvider.tsx'
-import './AccountSettings.scss'
+import { Divider, Link, Typography } from "@mui/material";
+import './AccountSettings.scss';
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
 export default function AccountSettings() {
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const navigate = useNavigate()
-  const { clear, error, loading } = useSnackbar()
-
-  useEffect(() => {
-    getUserData()
-      .then(data => setUserData(data))
-      .catch(error => console.error(error))
-  }, [])
-
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-  async function logout() {
-    handleClose()
-    loading('Logging out...')
-    try {
-      await logoutUser()
-      clear()
-      await navigate('/login')
-    }
-    catch (e) {
-      error('Failed to logout', (e as Error).message)
-    }
-  }
 
   return (
-    <div className="account-settings-button">
-      <Chip
-
-        label={userData?.username ?? 'Unknown'}
-        icon={<UserCircleIcon className="icon" />}
-        onClick={handleOpen}
-        variant="outlined"
-      />
-
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        style={{ marginTop: 8 }}
-      >
-        <MenuItem onClick={() => void logout()}>
-          <ListItemIcon>
-            <ArrowRightEndOnRectangleIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Log out" />
-        </MenuItem>
-      </Popover>
+    <div className="account-settings">
+      <div>
+        <Typography typography="h6">Account</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>Settings for your account</Typography>
+      </div>
+      <Divider flexItem/>
+      <div>
+        <Typography typography="h6">Username</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>It's not possible to change the username. You have to create a new account.</Typography>
+      </div>
+      <Divider flexItem/>
+      <div>
+        <Typography typography="h6">Password</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>The password can only be changed via the terminal. See <Link rel="noopener" href="https://github.com/JonBunator/Enterr">GitHub<ArrowTopRightOnSquareIcon className="icon-small"/></Link> for more information.</Typography>
+      </div>
     </div>
-  )
+  );
 }

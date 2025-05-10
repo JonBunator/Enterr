@@ -1,5 +1,11 @@
 import type { ChangeWebsite } from '../components/activity/activityRequests.ts'
-import type { ActionHistory, UserData, Website } from './apiModels.ts'
+import {
+  ActionHistory,
+  EditNotification,
+  Notification,
+  UserData,
+  Website,
+} from "./apiModels.ts";
 import axios from 'axios'
 
 export async function getWebsites(): Promise<Website[]> {
@@ -78,6 +84,44 @@ export async function loginUser(username: string, password: string): Promise<boo
 
 export async function logoutUser() {
   await axios.post('/api/user/logout', {}, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export async function getNotifications(): Promise<Notification[]> {
+  const data = await axios.get('/api/notifications')
+  return data.data.data as Notification[]
+}
+
+export async function addNotification(notification: Notification) {
+  await axios.post('/api/notifications/add', notification, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export async function testNotification(notification: Notification) {
+  await axios.post('/api/notifications/test', notification, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export async function deleteNotification(notificationId: number) {
+  const body = { id: notificationId }
+  await axios.post('/api/notifications/delete', body, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export async function editNotification(notification: EditNotification) {
+  await axios.post('/api/notifications/edit', notification, {
     headers: {
       'Content-Type': 'application/json',
     },

@@ -55,3 +55,23 @@ export interface UserData {
   username: string
   logged_in: boolean
 }
+
+export interface Notification {
+  id?: number
+  name: string
+  apprise_token: string
+  token: string
+  title: string
+  body: string
+  triggers: ActionStatusCode[]
+}
+
+export interface EditNotification {
+  id: number
+  name?: string
+  apprise_token?: string
+  token?: string
+  title?: string
+  body?: string
+  triggers?: ActionStatusCode[]
+}
