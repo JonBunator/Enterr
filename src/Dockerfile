@@ -1,5 +1,5 @@
 # ------------------- BUILD FRONTEND -------------------
-FROM node:23-slim AS frontend
+FROM node:24-slim AS frontend
 WORKDIR /app/frontend
 COPY frontend/ .
 RUN npm install
