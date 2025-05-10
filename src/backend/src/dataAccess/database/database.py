@@ -28,14 +28,16 @@ def init_db(app):
     with app.app_context():
         dev_mode = os.getenv("FLASK_ENV") != "production"
         if dev_mode:
-            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///databasev2.1.1.db"
-            # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         else:
             _setup_encrypted_database(app)
         _db.init_app(app)
         migrate.init_app(app, db=_db)
         login_manager.init_app(app)
-        upgrade()
+        if dev_mode:
+            _db.create_all()
+        else:
+            upgrade()
 
 
 def _setup_encrypted_database(app):
