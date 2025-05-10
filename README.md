@@ -1,6 +1,10 @@
-<div align="center">
-  <img alt="enterr logo" src=".github/images/logo.png" width="350"/>
-</div>
+<img alt="enterr logo" src=".github/images/logo.png" width="350"/>
+
+# Website Auto-Login Tool
+[![Enterr license](https://img.shields.io/github/license/JonBunator/Enterr?color=8dbf9f)](https://github.com/JonBunator/Enterr/blob/main/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/JonBunator/Enterr?color=8dbf9f)](https://github.com/JonBunator/Enterr/releases)
+[![Docker Image](https://img.shields.io/badge/Docker-GitHub%20Container%20Registry-8dbf9f?logo=docker)](https://github.com/JonBunator/Enterr/pkgs/container/enterr)
+[![Made with Love](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%20by-JonBunator-8dbf9f)](https://github.com/JonBunator)
 
 Some websites delete your account after a period of inactivity. Enterr helps manage your logins by automatically logging into your accounts, ensuring they remain active.
 
