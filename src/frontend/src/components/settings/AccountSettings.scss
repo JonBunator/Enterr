@@ -1,6 +1,9 @@
-.account-settings-button {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 3;
+.account-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  .username {
+    max-width: 200px;
+    margin-top: 24px;
+  }
 }

@@ -13,6 +13,10 @@
 .icon {
   width: 24px;
 }
+.icon-small {
+  width: 14px;
+  margin-left: 2px;
+}
 
 .MuiPaper-root {
   &:not(.MuiDialog-paper){
@@ -31,4 +35,36 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.MuiTabs-root {
+  .MuiTab-root {
+    text-transform: none;
+    min-height: 32px;
+    display: flex;
+    justify-content: flex-start;
+    width: 200px;
+    &.Mui-selected {
+      background: #242424;
+    }
+    &:hover {
+      background: #303030;
+    }
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.MuiTable-root {
+  .MuiTableCell-stickyHeader {
+    background: #151515;
+  }
+}
+
+.MuiSkeleton-root.skeleton-chip {
+  width: 90px;
+  height: 32px;
+  border-radius: 16px;
 }

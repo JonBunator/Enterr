@@ -3,7 +3,7 @@ import AddWebsite from '../actionBar/addWebsite/AddWebsite.tsx'
 import Search from '../actionBar/Search.tsx'
 import Activity from '../activity/Activity.tsx'
 import Content from '../layout/Content.tsx'
-import AccountSettings from '../settings/AccountSettings.tsx'
+import AccountButton from '../settings/AccountButton.tsx'
 import ProtectedPage from './ProtectedPage.tsx'
 import './MainPage.scss'
 
@@ -12,7 +12,7 @@ export default function MainPage() {
 
   return (
     <ProtectedPage>
-      <AccountSettings />
+      <AccountButton />
       <Content>
         <div className="main-page">
           <div className="main-page-header">

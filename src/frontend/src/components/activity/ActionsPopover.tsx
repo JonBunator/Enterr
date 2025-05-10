@@ -25,6 +25,7 @@ import { useSnackbar } from '../provider/SnackbarProvider.tsx'
 import { useWebSocket } from '../provider/WebSocketProvider.tsx'
 import { getChangeWebsite } from './activityRequests.ts'
 import AddEditWebsite, { type AddEditWebsiteRef } from './AddEditWebsite.tsx'
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
 interface ActionsPopoverProps {
   websiteId: number
@@ -185,7 +186,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         description={(
           <>
             <Typography>You manually visited the website </Typography>
-            <Link>{websiteURL}</Link>
+            <Link rel="noopener" href={websiteURL}>{websiteURL}<ArrowTopRightOnSquareIcon className="icon-small"/></Link>
             <Typography>
               Do you want to save the potential login as successful?
             </Typography>

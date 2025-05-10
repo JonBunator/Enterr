@@ -54,7 +54,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         placeholder="//input[@name='username']"
         disabled={loading}
         value={value?.custom_access?.username_xpath ?? ''}
-        onChange={val => handleCustomAccessChange(val, 'username_xpath')}
+        onChange={event => handleCustomAccessChange(event.target.value, 'username_xpath')}
         fullWidth
       />
       <TextFieldForm
@@ -64,7 +64,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         placeholder="//input[@type='password']"
         disabled={loading}
         value={value?.custom_access?.password_xpath ?? ''}
-        onChange={val => handleCustomAccessChange(val, 'password_xpath')}
+        onChange={event => handleCustomAccessChange(event.target.value, 'password_xpath')}
         fullWidth
       />
       <TextFieldForm
@@ -74,7 +74,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         placeholder="//input[@name='pin']"
         disabled={loading}
         value={value?.custom_access?.pin_xpath ?? ''}
-        onChange={val => handleCustomAccessChange(val, 'pin_xpath')}
+        onChange={event => handleCustomAccessChange(event.target.value, 'pin_xpath')}
         fullWidth
       />
       <TextFieldForm
@@ -84,7 +84,7 @@ export default function CustomAccessForm(props: CustomAccessFormProps) {
         placeholder="//input[@type='submit']"
         disabled={loading}
         value={value?.custom_access?.submit_button_xpath ?? ''}
-        onChange={val => handleCustomAccessChange(val, 'submit_button_xpath')}
+        onChange={event => handleCustomAccessChange(event.target.value, 'submit_button_xpath')}
         fullWidth
       />
     </FormGrouping>

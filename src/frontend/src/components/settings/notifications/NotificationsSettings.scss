@@ -1,0 +1,21 @@
+.notifications-settings {
+  display: flex;
+  flex-direction: column;
+  .notifications-table {
+    margin-top: 24px;
+    max-height: 100%;
+    .table-row {
+      &:last-child td, &:last-child th {
+        border: 0;
+      }
+      .skeleton-edit {
+        width: 40px;
+        margin-left: auto;
+        margin-right: 12px;
+      }
+    }
+    .empty-state {
+      height: 350px;
+    }
+  }
+}

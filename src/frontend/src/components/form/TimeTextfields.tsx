@@ -76,7 +76,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
     <>
       <TextFieldForm
         identifier={`${identifier}-weeks`}
-        onChange={val => setWeeks(Number(val))}
+        onChange={event => setWeeks(Number(event.target.value))}
         onBlur={event => handleWeeksChange(Number(event.target.value))}
         disabled={loading}
         value={weeks}
@@ -87,7 +87,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
       />
       <TextFieldForm
         identifier={`${identifier}-days`}
-        onChange={val => setDays(Number(val))}
+        onChange={event => setDays(Number(event.target.value))}
         onBlur={event => handleDaysChange(Number(event.target.value))}
         disabled={loading}
         value={days}
@@ -98,7 +98,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
       />
       <TextFieldForm
         identifier={`${identifier}-hours`}
-        onChange={val => setHours(Number(val))}
+        onChange={event => setHours(Number(event.target.value))}
         onBlur={event => handleHoursChange(Number(event.target.value))}
         value={hours}
         numberInput
@@ -110,7 +110,7 @@ export default function TimeTextfields(props: TimeTextfieldsProps) {
       />
       <TextFieldForm
         identifier={`${identifier}-minutes`}
-        onChange={val => setMinutes(Number(val))}
+        onChange={event => setMinutes(Number(event.target.value))}
         onBlur={event => handleMinutesChange(Number(event.target.value))}
         value={minutes}
         numberInput

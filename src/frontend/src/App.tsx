@@ -8,6 +8,12 @@ import MainPage from './components/pages/MainPage.tsx'
 import SnackbarProvider from './components/provider/SnackbarProvider.tsx'
 import WebSocketProvider from './components/provider/WebSocketProvider.tsx'
 import './globalStyles.scss'
+import SettingsPage from "./components/pages/SettingsPage.tsx";
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 
 const darkTheme = createTheme({
   components: {
@@ -46,6 +52,7 @@ export default function App() {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/" element={<MainPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
               </Routes>
             </BrowserRouter>
           </WebSocketProvider>
