@@ -89,7 +89,7 @@ export default function LoginPage() {
     <ProtectedPage loginPage>
       <Content>
         <div className="login">
-          <Typography variant="h3" component="h2">Enterr</Typography>
+          <img src="/images/logo.svg" alt="enterr logo"/>
           <Paper className="login-card">
             <TextField
               disabled={loggingIn}

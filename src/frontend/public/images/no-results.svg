@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Icon modified from Boris K (https://www.figma.com/community/file/1130301037961264190) -->
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -24,7 +23,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -44,8 +43,8 @@
      id="namedview30"
      showgrid="false"
      inkscape:zoom="1.8375"
-     inkscape:cx="24.943996"
-     inkscape:cy="172.92347"
+     inkscape:cx="-73.198794"
+     inkscape:cy="152.25392"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -53,7 +52,8 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:document-rotation="0" />
   <path
      id="path4"
      style="fill:#333333;fill-opacity:1"
@@ -68,20 +68,20 @@
      stroke-width="2.5"
      stroke-linecap="round"
      id="path10"
-     style="stroke:#c2b8fc;stroke-opacity:1" />
+     style="stroke:#8dbf9f;stroke-opacity:1" />
   <path
      d="m 56.797,55.325 c 2.149,1.746 4.575,3.162 7.204,4.172"
      stroke="#1F64E7"
      stroke-width="2.5"
      stroke-linecap="round"
      id="path12"
-     style="stroke:#c2b8fc;stroke-opacity:1" />
+     style="stroke:#8dbf9f;stroke-opacity:1" />
   <path
      d="m 101,61.25 6,6"
      stroke="#1F64E7"
      stroke-width="2.5"
      id="path14"
-     style="stroke:#c2b8fc;stroke-opacity:1" />
+     style="stroke:#8dbf9f;stroke-opacity:1" />
   <path
      fill-rule="evenodd"
      clip-rule="evenodd"
@@ -90,7 +90,7 @@
      stroke="#1F64E7"
      stroke-width="2.5"
      id="path16"
-     style="fill:#404040;fill-opacity:1;stroke:#c2b8fc;stroke-opacity:1" />
+     style="fill:#404040;fill-opacity:1;stroke:#8dbf9f;stroke-opacity:1" />
   <path
      d="m 111,68.25 11,11"
      stroke="white"
@@ -111,7 +111,7 @@
      stroke-width="2.5"
      stroke-linecap="round"
      id="path22"
-     style="stroke:#9685fa;stroke-opacity:1" />
+     style="stroke:#6da797;stroke-opacity:1" />
   <path
      d="M 127.176,35.0273 H 119 M 133.5,27.25 h -17.176 z m 7,0 h -2.221 z"
      stroke="#75A4FE"
@@ -119,7 +119,7 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="path24"
-     style="stroke:#9685fa;stroke-opacity:1" />
+     style="stroke:#6da797;stroke-opacity:1" />
   <path
      d="M 37.1758,57.027 H 29 M 32.5,48.25 H 15.3242 Z m -23,0 H 5.2788 Z"
      stroke="#75A4FE"
@@ -127,12 +127,12 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="path26"
-     style="stroke:#9685fa;stroke-opacity:1" />
+     style="stroke:#6da797;stroke-opacity:1" />
   <path
      d="M 73.5,68.25 C 92.002,68.25 107,53.252 107,34.75 107,16.2485 92.002,1.25 73.5,1.25 54.998,1.25 40,16.2485 40,34.75 c 0,18.502 14.998,33.5 33.5,33.5 z"
      fill="#F3F7FF"
      stroke="#1F64E7"
      stroke-width="2.5"
      id="path6"
-     style="fill:none;fill-opacity:1;stroke:#c2b8fc;stroke-opacity:1" />
+     style="fill:none;fill-opacity:1;stroke:#8dbf9f;stroke-opacity:1" />
 </svg>

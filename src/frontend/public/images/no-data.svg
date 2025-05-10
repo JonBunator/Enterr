@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Icon modified from Boris K (https://www.figma.com/community/file/1130301037961264190) -->
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -24,7 +23,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -43,9 +42,9 @@
      inkscape:window-height="1017"
      id="namedview20"
      showgrid="false"
-     inkscape:zoom="2.5986174"
-     inkscape:cx="-36.350252"
-     inkscape:cy="112.14574"
+     inkscape:zoom="1.8375"
+     inkscape:cx="-42.705667"
+     inkscape:cy="114.18677"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -53,7 +52,8 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:document-rotation="0" />
   <path
      fill-rule="evenodd"
      clip-rule="evenodd"
@@ -69,14 +69,14 @@
      d="m 107.90909,13.8302 c -0.093,-0.6839 -0.724,-1.1624 -1.408,-1.0686 -0.684,0.0938 -1.162,0.7243 -1.069,1.4082 z m 8.064,68.0128 1.24,-0.153 c 0,-0.005 -10e-4,-0.011 -0.002,-0.017 z m 0.835,6.806 1.241,-0.152 z m -3.482,4.458 0.152,1.24 z m -58.56,7.19 0.152,1.241 z m -4.4581,-3.483 1.2407,-0.152 z m -7.2536,-75.6585 0.1393,1.2422 z m 4.9977,0.6972 c 0.686,-0.0769 1.1798,-0.6955 1.1028,-1.3815 -0.0769,-0.6861 -0.6955,-1.1799 -1.3815,-1.1029 z m 3.6498,-2.9251 c -0.686,0.077 -1.1798,0.6955 -1.1029,1.3816 0.077,0.686 0.6955,1.1798 1.3816,1.1028 z m 4.8662,1.9699 c 0.686,-0.077 1.179,-0.6955 1.102,-1.3816 -0.077,-0.686 -0.695,-1.1798 -1.381,-1.1028 z m 48.864,-6.7277 9.302,67.8432 2.477,-0.34 -9.302,-67.8428 z m 9.3,67.8252 0.836,6.806 2.481,-0.304 -0.836,-6.807 z m 0.836,6.806 c 0.185,1.508 -0.887,2.88 -2.395,3.065 l 0.305,2.481 c 2.878,-0.353 4.925,-2.972 4.571,-5.85 z m -2.395,3.065 -58.56,7.19 0.305,2.482 58.56,-7.191 z m -58.56,7.19 c -1.507,0.185 -2.8793,-0.887 -3.0644,-2.394 l -2.4814,0.305 c 0.3534,2.878 2.9728,4.924 5.8508,4.571 z m -3.0644,-2.394 -9.0158,-73.4276 -2.4814,0.3047 9.0158,73.4279 z m -9.0158,-73.4276 c -0.0505,-0.4111 0.2419,-0.7853 0.653,-0.8358 l -0.3047,-2.4813 c -1.7815,0.2187 -3.0484,1.8403 -2.8297,3.6218 z m 0.653,-0.8358 c 0.003,-3e-4 0.005,-6e-4 0.008,-9e-4 l -0.2787,-2.4844 c -0.0113,0.0012 -0.0225,0.0026 -0.0338,0.004 z m 0.008,-9e-4 4.8584,-0.545 -0.2787,-2.4844 -4.8584,0.545 z m 8.7869,-0.9857 4.5875,-0.5145 -0.279,-2.4844 -4.5872,0.5145 z"
      fill="#1f64e7"
      id="path857"
-     style="fill:#c2b8fc;fill-opacity:1" />
+     style="fill:#8dbf9f;fill-opacity:1" />
   <path
      d="m 60.92109,4 c 0,-1.5188 1.231,-2.75 2.75,-2.75 h 45.557 c 0.729,0 1.428,0.2895 1.944,0.8049 l 13.443,13.4349 c 0.516,0.5158 0.806,1.2155 0.806,1.9451 V 80 c 0,1.519 -1.231,2.75 -2.75,2.75 h -59 c -1.519,0 -2.75,-1.231 -2.75,-2.75 z"
      fill="#ffffff"
      stroke="#1f64e7"
      stroke-width="2.5"
      id="path861"
-     style="fill:#4d4d4d;fill-opacity:1;stroke:#c2b8fc;stroke-opacity:1" />
+     style="fill:#4d4d4d;fill-opacity:1;stroke:#8dbf9f;stroke-opacity:1" />
   <path
      d="M 109.67109,2.4028 V 14 c 0,1.6569 1.343,3 3,3 h 7.933"
      stroke="#1f64e7"
@@ -84,7 +84,7 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="path863"
-     style="stroke:#c2b8fc;stroke-opacity:1" />
+     style="stroke:#8dbf9f;stroke-opacity:1" />
   <path
      d="m 70.99909,68 h 26 m -26,-51 h 26 z m 0,12 h 43 z m 0,13 h 43 z m 0,13 h 43 z"
      stroke="#75a4fe"

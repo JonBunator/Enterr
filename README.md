@@ -1,5 +1,8 @@
-# Enterr
-Some websites delete your account after a period of inactivity. This tool helps manage your logins by automatically logging into your accounts, ensuring they remain active.
+<div align="center">
+  <img alt="enterr logo" src=".github/images/logo.png" width="350"/>
+</div>
+
+Some websites delete your account after a period of inactivity. Enterr helps manage your logins by automatically logging into your accounts, ensuring they remain active.
 
 > [!WARNING]
 > This tool is still at an early stage of development. Expect breaking changes.
@@ -7,7 +10,7 @@ Some websites delete your account after a period of inactivity. This tool helps 
 > [!CAUTION]
 > Disclaimer: **Use of this tool may violate the Terms of Service (TOS) of the websites it interacts with.** Users are solely responsible for any consequences. The developers are not liable for misuse or damages.
 
-<img alt="enterr logo" src=".github/images/screenshot.png"/>
+<img alt="enterr screenshot" src=".github/images/screenshot.png"/>
 
 ## Docker compose
 Create a `docker-compose.yml` and add the following. You can change the port if you want. Replace `MY_RANDOM_SECRET` with a random secret.
