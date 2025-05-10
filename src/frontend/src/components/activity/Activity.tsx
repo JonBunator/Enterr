@@ -11,8 +11,8 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Typography,
-} from '@mui/material'
+  Typography
+} from "@mui/material";
 import { motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 import { useWebSocket } from '../provider/WebSocketProvider.tsx'
@@ -24,6 +24,7 @@ import LoginHistoryDetails from './LoginHistoryDetails.tsx'
 import { ActivityStatusCode } from './StatusIcon.tsx'
 import TimeDifference from './TimeDifference.tsx'
 import './Activity.scss'
+import ActivitySkeleton from "./ActivitySkeleton.tsx";
 
 enum Order {
   ASC = 'asc',
@@ -45,15 +46,19 @@ export default function Activity(props: ActivityProps) {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
   const [rawData, setRawData] = useState<ActivityData[]>([])
   const [processedData, setProcessedData] = useState<ActivityData[]>([])
+  const [isLoading, setIsLoading] = useState(false);
 
   const { on } = useWebSocket()
 
-  function fetchData() {
+  function fetchData(initialFetch: boolean = true) {
+    if(rawData.length === 0 && initialFetch) {
+      setIsLoading(true);
+    }
     getActivity()
       .then((data) => {
-        setRawData(data)
+        {setRawData(data); setIsLoading(false);}
       })
-      .catch(console.error)
+      .catch(error => {console.error(error); setIsLoading(false);});
   }
 
   useEffect(() => {
@@ -62,13 +67,13 @@ export default function Activity(props: ActivityProps) {
 
   useEffect(() => {
     on('login_data_changed', (_d) => {
-      fetchData()
+      fetchData(false)
     })
   }, [on])
 
   useEffect(() => {
     on('action_history_changed', (_d) => {
-      fetchData()
+      fetchData(false)
     })
   }, [on])
 
@@ -216,7 +221,8 @@ export default function Activity(props: ActivityProps) {
               </TableRow>
             </TableHead>
             <TableBody component={motion.tbody} layout>
-              {processedData.length === 0
+              {isLoading && <ActivitySkeleton />}
+              {rawData.length === 0 && !isLoading
                 ? (
                     <TableRow>
                       <TableCell
@@ -224,7 +230,7 @@ export default function Activity(props: ActivityProps) {
                         colSpan={6}
                         rowSpan={10}
                       >
-                        {searchTerm === '' && processedData.length === 0
+                        {searchTerm === '' && rawData.length === 0
                           ? (
                               <EmptyState noData noDataHelperText="Add a website to get started"/>
                             )
@@ -293,7 +299,7 @@ export default function Activity(props: ActivityProps) {
             </TableBody>
           </Table>
         </TableContainer>
-        {processedData.length > 0
+        {rawData.length > 0
           ? (
               <TablePagination
                 rowsPerPageOptions={[10, 20, 50]}
