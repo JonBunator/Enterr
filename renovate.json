@@ -1,12 +1,9 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "prConcurrentLimit": 1,
-  "prHourlyLimit": 0,
   "packageRules": [
     {
       "automerge": true,
       "automergeType": "branch",
+      "matchCurrentVersion": "!/^0/",
       "matchUpdateTypes": ["minor", "patch", "digest"]
     }
   ]
