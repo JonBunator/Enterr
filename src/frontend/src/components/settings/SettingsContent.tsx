@@ -10,19 +10,31 @@ export default function SettingsContent() {
 
   const [selectedTab, setSelectedTab] = useState(0);
 
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
+  const handleTabChange = (value: number) => {
+    setSelectedTab(value);
   };
 
   return (
     <Paper className="settings-content">
-      <Tabs value={selectedTab} onChange={handleTabChange} orientation="vertical">
-        <Tab icon={<BellAlertIcon className="icon"/>} iconPosition="start" label="Notifications"  />
-        <Tab icon={<UserCircleIcon className="icon"/>} iconPosition="start" label="Account" />
+      <Tabs
+        value={selectedTab}
+        onChange={(_event, value) => handleTabChange(value)}
+        orientation="vertical"
+      >
+        <Tab
+          icon={<BellAlertIcon className="icon" />}
+          iconPosition="start"
+          label="Notifications"
+        />
+        <Tab
+          icon={<UserCircleIcon className="icon" />}
+          iconPosition="start"
+          label="Account"
+        />
       </Tabs>
-      <Divider orientation="vertical" flexItem/>
+      <Divider orientation="vertical" flexItem />
       <div className="settings-content-container">
-        {selectedTab === 0 && <NotificationsSettings/>}
+        {selectedTab === 0 && <NotificationsSettings />}
         {selectedTab === 1 && <AccountSettings />}
       </div>
     </Paper>

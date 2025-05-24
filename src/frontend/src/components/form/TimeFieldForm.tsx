@@ -4,7 +4,7 @@ import { TimeField } from '@mui/x-date-pickers'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from './FormProvider.tsx'
 
-export type TimeFieldFormProps = Omit<TimeFieldProps<Dayjs>, 'onChange' | 'error' | 'required'> & {
+export type TimeFieldFormProps = Omit<TimeFieldProps, 'onChange' | 'error' | 'required'> & {
   /**
    * Is used to identify the timefield for form validation. Must be unique.
    */

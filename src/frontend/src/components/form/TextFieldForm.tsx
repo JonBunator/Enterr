@@ -85,7 +85,7 @@ export default function TextFieldForm(props: TextFieldFormProps) {
     <TextField
       {...otherProps}
       required={required}
-      value={value}
+      value={numberInput ? value?.toString() : value}
       slotProps={numberInput ? {
         input: {
           inputComponent: NumberMask as any as ElementType<InputBaseComponentProps>,

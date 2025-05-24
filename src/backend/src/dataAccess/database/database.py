@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 
-from flask_migrate import Migrate, upgrade
+from flask_migrate import Migrate, upgrade, stamp, init, revision
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,7 +11,7 @@ from sqlalchemy import ForeignKey
 from enum import Enum
 from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from sqlalchemy import inspect
 from utils.security import get_database_key, get_database_pepper
 
 try:
@@ -32,12 +32,21 @@ def init_db(app):
         else:
             _setup_encrypted_database(app)
         _db.init_app(app)
-        migrate.init_app(app, db=_db)
         login_manager.init_app(app)
         if dev_mode:
             _db.create_all()
-        else:
-            upgrade()
+            return
+
+        migrate.init_app(app, db=_db, directory="src/migrations")
+        if not os.path.exists("/config/database.db"):
+            _db.create_all()
+            stamp()
+            return
+
+        # Stamp version that was created without alembic versioning
+        if "alembic_version" not in inspect(_db.engine).get_table_names():
+            stamp(revision='8e6efc857763')
+        upgrade()
 
 
 def _setup_encrypted_database(app):
