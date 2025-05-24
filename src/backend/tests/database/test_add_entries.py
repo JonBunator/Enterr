@@ -1,7 +1,5 @@
-import random
 from datetime import datetime, timedelta, timezone
 from flask import Flask
-from mouseinfo import screenshot
 
 from dataAccess.database.database import Website, _db, CustomAccess, ActionHistory, ActionStatusCode, ActionFailedDetails, \
     ActionInterval
