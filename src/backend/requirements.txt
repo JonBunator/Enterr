@@ -3,7 +3,7 @@ Flask-SocketIO==5.5.1
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
 Flask-Migrate==4.1.0
-python-dotenv==1.1.0
+python-dotenv==1.1.1
 gunicorn==23.0.0
 eventlet==0.39.1
 seleniumbase==4.39.5
