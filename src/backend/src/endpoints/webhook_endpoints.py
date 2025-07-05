@@ -1,5 +1,4 @@
 from enum import Enum
-from flask_socketio import SocketIO
 
 class Topic(Enum):
     LOGIN_DATA_CHANGED = "login_data_changed"
@@ -7,11 +6,8 @@ class Topic(Enum):
     NOTIFICATIONS_CHANGED = "notifications_changed"
 
 class WebhookEndpoints:
-    def __init__(self, socketio: SocketIO):
-        self.socketio = socketio
-
     def _send_webhook_message(self, topic: str, message: any):
-        self.socketio.emit(topic, message)
+        print("Sending webhook message", topic, message)
 
     def login_data_changed(self):
         self._send_webhook_message(Topic.LOGIN_DATA_CHANGED.value, {})

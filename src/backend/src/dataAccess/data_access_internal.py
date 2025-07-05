@@ -1,8 +1,11 @@
 from datetime import datetime
 from typing import List
+
+from sqlalchemy.orm import Session
+
 from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import (
-    Website, ActionHistory, ActionStatusCode, ActionFailedDetails, Notification,
+    Website, ActionHistory, ActionStatusCode, ActionFailedDetails, Notification, CustomAccess,
 )
 from endpoints.webhook_endpoints import WebhookEndpoints
 
@@ -23,8 +26,8 @@ class DataAccessInternal:
         return DataBase.get_websites_all_users()
 
     @staticmethod
-    def get_website_all_users(website_id: int) -> Website:
-        return DataBase.get_website_all_users(website_id)
+    def get_website_all_users(website_id: int, session: Session) -> Website:
+        return DataBase.get_website_all_users(website_id, session)
 
     def unexpected_execution_failure(
         self, website_id: int, execution_started: datetime

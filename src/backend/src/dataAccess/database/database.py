@@ -1,17 +1,13 @@
-import os
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
-
-from flask_migrate import Migrate, upgrade, stamp, init, revision
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, declarative_base, sessionmaker, Session
 from sqlalchemy import ForeignKey
 from enum import Enum
-from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import inspect
 from utils.security import get_database_key, get_database_pepper
 
 try:
@@ -19,34 +15,19 @@ try:
 except ImportError:
     sqlcipher3 = None
 
-_db = SQLAlchemy()
-login_manager = LoginManager()
-migrate = Migrate()
+Base = declarative_base()
+engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool )
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def init_db(app):
-    with app.app_context():
-        dev_mode = os.getenv("FLASK_ENV") != "production"
-        if dev_mode:
-            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        else:
-            _setup_encrypted_database(app)
-        _db.init_app(app)
-        login_manager.init_app(app)
-        if dev_mode:
-            _db.create_all()
-            return
+def init_db():
+    Base.metadata.create_all(engine)
 
-        migrate.init_app(app, db=_db, directory="src/migrations")
-        if not os.path.exists("/config/database.db"):
-            _db.create_all()
-            stamp()
-            return
 
-        # Stamp version that was created without alembic versioning
-        if "alembic_version" not in inspect(_db.engine).get_table_names():
-            stamp(revision='8e6efc857763')
-        upgrade()
+@contextmanager
+def get_session():
+    with SessionLocal() as session:
+        yield session
 
 
 def _setup_encrypted_database(app):
@@ -57,9 +38,10 @@ def _setup_encrypted_database(app):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"module": sqlcipher3}
 
 
-@login_manager.user_loader
+"""
 def load_user(user_id):
     return _db.session.get(User, int(user_id))
+"""
 
 
 class ActionStatusCode(Enum):
@@ -77,7 +59,8 @@ class ActionFailedDetails(Enum):
     SUCCESS_URL_DID_NOT_MATCH = "SUCCESS_URL_DID_NOT_MATCH"
     UNKNOWN_EXECUTION_ERROR = "UNKNOWN_EXECUTION_ERROR"
 
-class User(UserMixin, _db.Model):
+
+class User(Base):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -106,7 +89,7 @@ class User(UserMixin, _db.Model):
         return check_password_hash(self.password_hash, password + pepper)
 
 
-class Notification(_db.Model):
+class Notification(Base):
     __tablename__ = "notification"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -131,7 +114,7 @@ class Notification(_db.Model):
         self._triggers = ";".join(v.value for v in value)
 
 
-class Website(_db.Model):
+class Website(Base):
     __tablename__ = "website"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -171,7 +154,7 @@ class Website(_db.Model):
     )
 
 
-class CustomAccess(_db.Model):
+class CustomAccess(Base):
     __tablename__ = "custom_access"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -183,7 +166,7 @@ class CustomAccess(_db.Model):
     website: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
 
-class ActionHistory(_db.Model):
+class ActionHistory(Base):
     __tablename__ = "action_history"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -193,10 +176,10 @@ class ActionHistory(_db.Model):
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
     screenshot_id: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-    website: Mapped[int] = mapped_column(_db.ForeignKey("website.id"), nullable=False)
+    website: Mapped[int] = mapped_column(ForeignKey("website.id"), nullable=False)
 
 
-class ActionInterval(_db.Model):
+class ActionInterval(Base):
     __tablename__ = "action_interval"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -208,11 +191,11 @@ class ActionInterval(_db.Model):
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
     def __init__(
-        self,
-        date_minutes_start,
-        date_minutes_end,
-        allowed_time_minutes_start,
-        allowed_time_minutes_end,
+            self,
+            date_minutes_start,
+            date_minutes_end,
+            allowed_time_minutes_start,
+            allowed_time_minutes_end,
     ):
         self.date_minutes_start = date_minutes_start
         self.date_minutes_end = date_minutes_end
@@ -245,16 +228,16 @@ class ActionInterval(_db.Model):
                 "date_minutes_end must be greater than or equal to date_minutes_start"
             )
         if (
-            self.allowed_time_minutes_start_not_none
-            > self.allowed_time_minutes_end_not_none
+                self.allowed_time_minutes_start_not_none
+                > self.allowed_time_minutes_end_not_none
         ):
             raise ValueError(
                 "allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start"
             )
 
         if (
-            self.allowed_time_minutes_start_not_none == 0
-            and self.allowed_time_minutes_end_not_none == 1440
+                self.allowed_time_minutes_start_not_none == 0
+                and self.allowed_time_minutes_end_not_none == 1440
         ):
             # allow any value
             return
@@ -282,8 +265,8 @@ class ActionInterval(_db.Model):
         )
         random_date = datetime.now(timezone.utc) + timedelta(minutes=random_date_delta)
         if (
-            self.date_minutes_start % 1440 == 0
-            and self.date_minutes_end_not_none % 1440 == 0
+                self.date_minutes_start % 1440 == 0
+                and self.date_minutes_end_not_none % 1440 == 0
         ):
             random_time = randint(
                 self.allowed_time_minutes_start_not_none,

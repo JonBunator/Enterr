@@ -1,9 +1,6 @@
 from datetime import timezone, datetime, timedelta
-
 import apprise
-from flask import Flask
 from enum import Enum
-
 from dataAccess.data_access_internal import DataAccessInternal
 from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails
 
@@ -24,16 +21,14 @@ class NotificationVariable(Enum):
 
 
 class NotificationManager:
-    def __init__(self, app: Flask, data_access: DataAccessInternal):
-        self.app = app
+    def __init__(self, data_access: DataAccessInternal):
         self.notifier = apprise.Apprise()
         self.data_access = data_access
         self._init_notifications()
 
     def _init_notifications(self):
-        with self.app.app_context():
-            for notification in self.data_access.get_notifications_all_users():
-                self.add_notification(notification)
+        for notification in self.data_access.get_notifications_all_users():
+            self.add_notification(notification)
 
     def add_notification(self, notification: Notification):
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
@@ -52,15 +47,14 @@ class NotificationManager:
         self._init_notifications()
 
     def notify(self, action_history: ActionHistory):
-        with self.app.app_context():
-            for notification in self.data_access.get_notifications_for_user(action_history):
-                title = NotificationManager._replace_variables(notification.title, action_history)
-                body = NotificationManager._replace_variables(notification.body, action_history)
-                self.notifier.notify(
-                    title=title,
-                    body=body,
-                    tag=str(notification.id),
-                )
+        for notification in self.data_access.get_notifications_for_user(action_history):
+            title = NotificationManager._replace_variables(notification.title, action_history)
+            body = NotificationManager._replace_variables(notification.body, action_history)
+            self.notifier.notify(
+                title=title,
+                body=body,
+                tag=str(notification.id),
+            )
 
     @staticmethod
     def _get_status_message(action_history: ActionHistory) -> str:

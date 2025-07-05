@@ -15,9 +15,9 @@ class GetUserData(GetRequestBaseModel):
 
     @staticmethod
     def from_sql_model(user: User) -> "GetUserData":
-        if user is None or user.is_anonymous:
+        if user is None:
             username = ''
         else:
             username = user.username
-        is_logged_in = user is not None and user.is_authenticated
+        is_logged_in = user is not None
         return GetUserData(username=username, logged_in=is_logged_in)
