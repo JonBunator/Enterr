@@ -27,8 +27,9 @@ class Scheduler:
             self.data_access.unexpected_execution_failure(website_id=event.job_id, execution_started=event.scheduled_run_time)
 
     def _init_tasks(self):
-        for website in DataAccessInternal.get_websites_all_users():
-            self.add_task(website.id)
+        with get_session() as session:
+            for website in DataAccessInternal.get_websites_all_users(session):
+                self.add_task(website.id)
 
     def _login_task(self, website_id: int):
         screenshot_id = None
@@ -36,7 +37,7 @@ class Scheduler:
             website = DataAccessInternal.get_website_all_users(website_id, session)
             if website.take_screenshot:
                 screenshot_id = str(uuid.uuid4())
-            start_time = datetime.now(timezone.utc)
+            start_time = datetime.now()
             url = website.url
             success_url = website.success_url
             username = website.username
@@ -77,8 +78,8 @@ class Scheduler:
             if website.next_schedule is None:
                 return
 
-            if website.next_schedule.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
-                run_date = datetime.now(timezone.utc)
+            if website.next_schedule < datetime.now():
+                run_date = datetime.now()
             else:
                 run_date = website.next_schedule
             self.scheduler.add_job(

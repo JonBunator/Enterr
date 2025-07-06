@@ -10,22 +10,22 @@ import axios from 'axios'
 
 export async function getWebsites(): Promise<Website[]> {
   const data = await axios.get('/api/websites')
-  return data.data.data as Website[]
+  return data.data as Website[]
 }
 
 export async function getWebsite(website_id: number): Promise<Website> {
   const data = await axios.get(`/api/websites/${website_id}`)
-  return data.data.data as Website
+  return data.data as Website
 }
 
 export async function getLoginHistory(website_id: number): Promise<ActionHistory[]> {
   const data = await axios.get(`/api/action_history/${website_id}`)
-  return data.data.data as ActionHistory[]
+  return data.data as ActionHistory[]
 }
 
 export async function getUserData(): Promise<UserData> {
   const data = await axios.get(`/api/user/data`)
-  return data.data.data as UserData
+  return data.data as UserData
 }
 
 export async function addWebsite(website: ChangeWebsite) {

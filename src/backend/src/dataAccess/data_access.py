@@ -1,9 +1,12 @@
 from typing import List
+
+from sqlalchemy.orm import Session
+
 from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import (
     Website,
     ActionHistory,
-    User, Notification, ActionStatusCode,
+    User, Notification, ActionStatusCode, get_session,
 )
 from endpoints.models.action_history_model import AddManualActionHistory
 from endpoints.models.notification_model import AddNotification, EditNotification, DeleteNotification
@@ -16,16 +19,16 @@ class DataAccess:
         self.webhook_endpoints = webhook_endpoints
 
     @staticmethod
-    def get_current_user() -> User:
-        return DataBase.get_current_user()
+    def get_current_user(session: Session) -> User:
+        return DataBase.get_current_user(session)
 
     @staticmethod
-    def get_websites() -> List[Website]:
-        return DataBase.get_websites()
+    def get_websites(session: Session) -> List[Website]:
+        return DataBase.get_websites(session)
 
     @staticmethod
-    def get_website(website_id: int) -> Website:
-        return DataBase.get_website(website_id)
+    def get_website(website_id: int, session: Session) -> Website:
+        return DataBase.get_website(website_id, session)
 
     def add_website(self, request: AddWebsite):
         website = request.to_sql_model()
@@ -33,15 +36,17 @@ class DataAccess:
         self.webhook_endpoints.login_data_changed()
 
     def edit_website(self, request: EditWebsite):
-        existing_website = DataBase.get_website(request.id)
-        website = request.edit_existing_model(existing_website)
-        DataBase.edit_website(website)
-        self.webhook_endpoints.login_data_changed()
+        with get_session() as session:
+            existing_website = DataBase.get_website(request.id, session)
+            website = request.edit_existing_model(existing_website)
+            DataBase.edit_website(website)
+            self.webhook_endpoints.login_data_changed()
 
     def delete_website(self, request: DeleteWebsite):
-        website = DataBase.get_website(request.id)
-        DataBase.delete_website(website)
-        self.webhook_endpoints.login_data_changed()
+        with get_session() as session:
+            website = DataBase.get_website(request.id, session)
+            DataBase.delete_website(website)
+            self.webhook_endpoints.login_data_changed()
 
     def add_manual_action_history(self, action_history_request: AddManualActionHistory):
         action_history = action_history_request.to_sql_model()
@@ -71,13 +76,13 @@ class DataAccess:
         DataBase.trigger_login(website_id=website_id)
 
     @staticmethod
-    def get_action_history(website_id: int) -> List[ActionHistory]:
-        return DataBase.get_action_history(website_id)
+    def get_action_history(website_id: int, session: Session) -> List[ActionHistory]:
+        return DataBase.get_action_history(website_id, session)
 
     @staticmethod
-    def get_user(username: str):
-        return DataBase.get_user(username)
+    def get_user(username: str, session: Session):
+        return DataBase.get_user(username, session)
 
     @staticmethod
-    def get_notifications() -> List[Notification]:
-        return DataBase.get_notifications()
+    def get_notifications(session: Session) -> List[Notification]:
+        return DataBase.get_notifications(session)

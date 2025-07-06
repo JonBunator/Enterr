@@ -3,7 +3,7 @@ import os
 
 
 def _get_secret_key(public_salt: str):
-    dev_mode = os.getenv("FLASK_ENV") != "production"
+    dev_mode = os.getenv("RUN_MODE") != "production"
     if dev_mode:
         key = "DEBUG_SECRET_KEY"
     else:
@@ -18,7 +18,3 @@ def get_database_key():
 
 def get_database_pepper():
     return _get_secret_key("9DC3PNZQPMZXNL4T")
-
-
-def get_flask_secret_key():
-    return _get_secret_key("SDQTQZRWUN99FXRY")

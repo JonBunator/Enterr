@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from dataAccess.database.database import User
-from endpoints.decorators.get_request_validator import GetRequestBaseModel
+from endpoints.decorators.request_validator import GetRequestBaseModel
 
 
 class UserLogin(BaseModel):

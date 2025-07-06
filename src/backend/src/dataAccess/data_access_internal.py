@@ -18,12 +18,12 @@ class DataAccessInternal:
         self.webhook_endpoints = webhook_endpoints
 
     @staticmethod
-    def get_website_by_id(website_id: int) -> Website:
-        return DataBase.get_website_by_id(website_id)
+    def get_website_by_id(website_id: int, session: Session) -> Website:
+        return DataBase.get_website_by_id(website_id, session)
 
     @staticmethod
-    def get_websites_all_users() -> List[Website]:
-        return DataBase.get_websites_all_users()
+    def get_websites_all_users(session: Session) -> List[Website]:
+        return DataBase.get_websites_all_users(session)
 
     @staticmethod
     def get_website_all_users(website_id: int, session: Session) -> Website:
@@ -62,9 +62,9 @@ class DataAccessInternal:
         )
 
     @staticmethod
-    def get_notifications_all_users() -> List[Notification]:
-        return DataBase.get_notifications_all_users()
+    def get_notifications_all_users(session: Session) -> List[Notification]:
+        return DataBase.get_notifications_all_users(session)
 
     @staticmethod
-    def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
-        return DataBase.get_notifications_for_user(action_history)
+    def get_notifications_for_user(action_history: ActionHistory, session: Session) -> List[Notification]:
+        return DataBase.get_notifications_for_user(action_history, session)

@@ -66,7 +66,7 @@ def test_website_entry_creation_null_values(app):
             name="Example",
             username="user123",
             password="password123",
-            added_at=datetime.now(timezone.utc),
+            added_at=datetime.now(),
             take_screenshot=False,
             paused=False,
             user=1,
@@ -84,7 +84,7 @@ def test_website_entry_creation_null_values(app):
 def test_website_with_custom_accesses(app):
     """Test that CustomAccess objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now(timezone.utc))
+        website = create_website(datetime.now())
 
         custom_access = CustomAccess(
             username_xpath="//input[@name='username']",
@@ -108,7 +108,7 @@ def test_website_with_custom_accesses(app):
 def test_website_with_action_history(app):
     """Test that ActionHistory objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now(timezone.utc))
+        website = create_website(datetime.now())
 
         dt = datetime(2020, 1, 1, 2, 43)
 
@@ -148,7 +148,7 @@ def test_website_with_action_history(app):
 def test_website_with_action_intervals(app):
     """Test that ActionInterval objects are correctly added to a Website."""
     with app.app_context():
-        website = create_website(datetime.now(timezone.utc))
+        website = create_website(datetime.now())
         interval = ActionInterval(
             date_minutes_start=1440,
             date_minutes_end=2880,
@@ -173,7 +173,7 @@ def test_website_with_action_intervals(app):
 def test_website_with_action_intervals_none_values(app):
     """Test that ActionInterval objects are correctly added to a Website with none values."""
     with app.app_context():
-        website = create_website(datetime.now(timezone.utc))
+        website = create_website(datetime.now())
         interval = ActionInterval(
             date_minutes_start=5,
             date_minutes_end=None,
