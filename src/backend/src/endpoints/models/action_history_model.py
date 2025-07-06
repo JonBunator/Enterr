@@ -1,9 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 from dataAccess.database.database import ActionHistory, ActionStatusCode
-from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from endpoints.decorators.post_request_validator import PostRequestBaseModel
-
+from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
 class GetActionHistory(GetRequestBaseModel):
     id: int
@@ -30,7 +28,7 @@ class AddManualActionHistory(PostRequestBaseModel):
 
     def to_sql_model(self) -> ActionHistory:
         return ActionHistory(
-            execution_started=datetime.now(timezone.utc),
-            execution_ended=datetime.now(timezone.utc),
+            execution_started=datetime.now(),
+            execution_ended=datetime.now(),
             execution_status=ActionStatusCode.SUCCESS,
         )

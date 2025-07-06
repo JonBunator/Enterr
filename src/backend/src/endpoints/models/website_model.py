@@ -3,8 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from dataAccess.database.database import Website, CustomAccess
-from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from endpoints.decorators.post_request_validator import PostRequestBaseModel
+from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
 from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
 from utils.utils import timedelta_to_parts
@@ -54,7 +53,7 @@ class AddWebsite(PostRequestBaseModel):
             pin=self.pin if self.pin != '' else None,
             take_screenshot=self.take_screenshot,
             paused=self.paused if self.paused is not None else False,
-            added_at=datetime.now(timezone.utc),
+            added_at=datetime.now(),
             expiration_interval=expiration_interval,
         )
         if self.custom_access is not None:

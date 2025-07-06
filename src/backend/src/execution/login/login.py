@@ -146,7 +146,7 @@ def find_elements(
 def save_screenshot(sb: SB, screenshot_id: str):
     if screenshot_id is None:
         return
-    dev_mode = os.getenv("FLASK_ENV") != "production"
+    dev_mode = os.getenv("RUN_MODE") != "production"
 
     if dev_mode:
         path = f"../config/images"

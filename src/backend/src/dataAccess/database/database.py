@@ -16,7 +16,7 @@ except ImportError:
     sqlcipher3 = None
 
 Base = declarative_base()
-engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool )
+engine = create_engine("sqlite:///database.db", connect_args={"check_same_thread": False}, poolclass=StaticPool )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -263,7 +263,7 @@ class ActionInterval(Base):
         random_date_delta = randint(
             self.date_minutes_start, self.date_minutes_end_not_none
         )
-        random_date = datetime.now(timezone.utc) + timedelta(minutes=random_date_delta)
+        random_date = datetime.now() + timedelta(minutes=random_date_delta)
         if (
                 self.date_minutes_start % 1440 == 0
                 and self.date_minutes_end_not_none % 1440 == 0

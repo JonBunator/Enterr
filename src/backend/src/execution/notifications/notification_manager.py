@@ -2,7 +2,7 @@ from datetime import timezone, datetime, timedelta
 import apprise
 from enum import Enum
 from dataAccess.data_access_internal import DataAccessInternal
-from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails
+from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails, get_session
 
 
 class NotificationVariable(Enum):
@@ -27,8 +27,9 @@ class NotificationManager:
         self._init_notifications()
 
     def _init_notifications(self):
-        for notification in self.data_access.get_notifications_all_users():
-            self.add_notification(notification)
+        with get_session() as session:
+            for notification in self.data_access.get_notifications_all_users(session):
+                self.add_notification(notification)
 
     def add_notification(self, notification: Notification):
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
@@ -47,14 +48,15 @@ class NotificationManager:
         self._init_notifications()
 
     def notify(self, action_history: ActionHistory):
-        for notification in self.data_access.get_notifications_for_user(action_history):
-            title = NotificationManager._replace_variables(notification.title, action_history)
-            body = NotificationManager._replace_variables(notification.body, action_history)
-            self.notifier.notify(
-                title=title,
-                body=body,
-                tag=str(notification.id),
-            )
+        with get_session() as session:
+            for notification in self.data_access.get_notifications_for_user(action_history, session):
+                title = NotificationManager._replace_variables(notification.title, action_history)
+                body = NotificationManager._replace_variables(notification.body, action_history)
+                self.notifier.notify(
+                    title=title,
+                    body=body,
+                    tag=str(notification.id),
+                )
 
     @staticmethod
     def _get_status_message(action_history: ActionHistory) -> str:
@@ -149,7 +151,7 @@ class NotificationManager:
                               "Login failed")
 
         # Execution time replacements
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now()
         end_time = start_time + timedelta(seconds=30)
 
         # Datetimes
