@@ -6,7 +6,7 @@ Flask-Migrate==4.1.0
 python-dotenv==1.1.1
 gunicorn==23.0.0
 eventlet==0.39.1
-seleniumbase==4.40.5
+seleniumbase==4.40.6
 lxml==5.4.0
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.41
