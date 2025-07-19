@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
 from hashlib import pbkdf2_hmac
 import os
+from jose import jwt, JWTError
 
 
 def _get_secret_key(public_salt: str):
@@ -18,3 +20,25 @@ def get_database_key():
 
 def get_database_pepper():
     return _get_secret_key("9DC3PNZQPMZXNL4T")
+
+
+def get_jwt_secret():
+    return _get_secret_key("WBVCLH2EL7UZECXR")
+
+
+JWT_ALGORITHM = "HS256"
+
+
+def create_access_token(username: str):
+    to_encode = {"sub": username}
+    expire = datetime.now() + timedelta(minutes=30)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+
+def decode_token(token: str) -> str | None:
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        return None

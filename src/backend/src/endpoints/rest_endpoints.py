@@ -18,32 +18,16 @@ from endpoints.models.notification_model import (
     EditNotification,
 )
 from endpoints.models.other_model import TriggerAutomaticLogin
-from endpoints.models.user_login_model import UserLogin, GetUserData, Token
+from endpoints.models.user_login_model import GetUserData, Token
 from endpoints.models.website_model import (
     GetWebsite,
     AddWebsite,
     EditWebsite,
     DeleteWebsite,
 )
-from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.notifications.notification_manager import NotificationManager
-from utils.exceptions import NotFoundException, RequestValidationError
-from jose import jwt
-from datetime import datetime, timedelta
-
-
-SECRET_KEY = "your_secret_key"  # Must match main.py
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    expire = datetime.now() + (
-        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+from utils.exceptions import NotFoundException
+from utils.security import create_access_token
 
 
 def register_rest_endpoints(
@@ -56,32 +40,32 @@ def register_rest_endpoints(
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite)
     def get_website(website_id: int, current_user=Depends(DataBase.get_current_user)):
-        website = DataBase.get_website(website_id)
+        website = DataBase.get_website(website_id, current_user)
         return GetWebsite.from_sql_model(website)
 
     @app.post("/api/websites/add")
     async def add_website(
         website_request: AddWebsite, current_user=Depends(DataBase.get_current_user)
     ):
-        data_access.add_website(website_request)
+        data_access.add_website(website_request, current_user)
 
     @app.post("/api/websites/edit")
     async def edit_website(
         website_request: EditWebsite, current_user=Depends(DataBase.get_current_user)
     ):
-        data_access.edit_website(website_request)
+        data_access.edit_website(website_request, current_user)
 
     @app.post("/api/websites/delete")
     async def delete_website(
         website_request: DeleteWebsite, current_user=Depends(DataBase.get_current_user)
     ):
-        data_access.delete_website(website_request)
+        data_access.delete_website(website_request, current_user)
 
     @app.get("/api/action_history/{website_id}", response_model=List[GetActionHistory])
     def get_action_history(
         website_id: int, current_user=Depends(DataBase.get_current_user)
     ):
-        action_histories = DataBase.get_action_history(website_id)
+        action_histories = DataBase.get_action_history(website_id, current_user)
         return [GetActionHistory.from_sql_model(d) for d in action_histories]
 
     @app.post("/api/action_history/manual_add")
@@ -89,53 +73,59 @@ def register_rest_endpoints(
         action_history_request: AddManualActionHistory,
         current_user=Depends(DataBase.get_current_user),
     ):
-        data_access.add_manual_action_history(action_history_request)
+        data_access.add_manual_action_history(action_history_request, current_user)
 
     @app.post("/api/trigger_login")
     def trigger_login(
         login_request: TriggerAutomaticLogin,
         current_user=Depends(DataBase.get_current_user),
     ):
-        DataBase.trigger_login(login_request.id)
+        DataBase.trigger_login(login_request.id, current_user)
 
     @app.post("/api/notifications/add")
     async def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataBase.get_current_user),
     ):
-        data_access.add_notification(notification_request)
+        data_access.add_notification(notification_request, current_user)
 
     @app.post("/api/notifications/test")
     def test_notification(
         notification_request: AddNotification,
         current_user=Depends(DataBase.get_current_user),
     ):
-        notification_manager.test_notification(notification_request.to_sql_model())
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+        notification_manager.test_notification(
+            notification_request.to_sql_model()
+        )
 
     @app.post("/api/notifications/edit")
     async def edit_notification(
         notification_request: EditNotification,
         current_user=Depends(DataBase.get_current_user),
     ):
-        data_access.edit_notification(notification_request)
+        data_access.edit_notification(notification_request, current_user)
 
     @app.post("/api/notifications/delete")
     async def delete_notification(
         notification_request: DeleteNotification,
         current_user=Depends(DataBase.get_current_user),
     ):
-        data_access.delete_notification(notification_request)
+        data_access.delete_notification(notification_request, current_user)
 
     @app.get("/api/notifications", response_model=List[GetNotification])
     def get_notifications(current_user=Depends(DataBase.get_current_user)):
-        notifications = DataBase.get_notifications()
+        notifications = DataBase.get_notifications(current_user)
         return [GetNotification.from_sql_model(d) for d in notifications]
 
-    @app.post("/api/token")
+    @app.post("/api/user/login")
     def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
         user = data_access.get_user(form_data.username)
         if user and user.check_password(form_data.password):
-            access_token = create_access_token(data={"sub": user.username})
+            access_token = create_access_token(user.username)
             return Token(access_token=access_token, token_type="bearer")
         else:
             raise HTTPException(
@@ -144,23 +134,20 @@ def register_rest_endpoints(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-    """
-    @app.post("/api/user/logout")
-    def logout():
-        logout_user()
-    """
-
     @app.get("/api/user/data", response_model=GetUserData)
     @validate_request()
     def get_user_data(current_user=Depends(DataBase.get_current_user)):
-        user = DataBase.get_current_user()
-        return GetUserData.from_sql_model(user)
+        return GetUserData.from_sql_model(current_user)
 
     @app.get("/api/screenshot/{screenshot_id}")
     @validate_request()
     def get_screenshot(
         screenshot_id: str, current_user=Depends(DataBase.get_current_user)
     ):
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         dev_mode = os.getenv("RUN_MODE") != "production"
         if dev_mode:
             path = f"../config/images"
