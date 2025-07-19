@@ -1,4 +1,4 @@
-from datetime import timezone, datetime, timedelta
+from datetime import datetime, timedelta
 import apprise
 from enum import Enum
 from dataAccess.data_access_internal import DataAccessInternal
@@ -27,9 +27,8 @@ class NotificationManager:
         self._init_notifications()
 
     def _init_notifications(self):
-        with get_session() as session:
-            for notification in self.data_access.get_notifications_all_users(session):
-                self.add_notification(notification)
+        for notification in self.data_access.get_notifications_all_users():
+            self.add_notification(notification)
 
     def add_notification(self, notification: Notification):
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
@@ -48,15 +47,14 @@ class NotificationManager:
         self._init_notifications()
 
     def notify(self, action_history: ActionHistory):
-        with get_session() as session:
-            for notification in self.data_access.get_notifications_for_user(action_history, session):
-                title = NotificationManager._replace_variables(notification.title, action_history)
-                body = NotificationManager._replace_variables(notification.body, action_history)
-                self.notifier.notify(
-                    title=title,
-                    body=body,
-                    tag=str(notification.id),
-                )
+        for notification in self.data_access.get_notifications_for_user(action_history):
+            title = NotificationManager._replace_variables(notification.title, action_history)
+            body = NotificationManager._replace_variables(notification.body, action_history)
+            self.notifier.notify(
+                title=title,
+                body=body,
+                tag=str(notification.id),
+            )
 
     @staticmethod
     def _get_status_message(action_history: ActionHistory) -> str:
@@ -138,7 +136,7 @@ class NotificationManager:
                               str(action_history.screenshot_id) if action_history.screenshot_id else "null")
 
         # Website info replacements
-        website = DataAccessInternal.get_website_by_id(action_history.website)
+        website = DataAccessInternal.get_website_by_id(action_history.website, session)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), website.name)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), website.url)
         return value

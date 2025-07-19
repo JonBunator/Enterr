@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from dataAccess.database.database import (
     Website,
@@ -19,31 +19,46 @@ class DataBase:
     """--------------------------- USER ACCESS ---------------------------"""
 
     @staticmethod
-    def get_current_user(session: Session) -> User:
+    def get_current_user() -> User:
         # TODO get first user
-        user = session.query(User).first()
-        if not user:
-            raise NotFoundException("User not found")
-        return user
+        with get_session() as session:
+            user = session.query(User).first()
+            if not user:
+                print(user)
+                raise NotFoundException("User not found",)
+            return user
 
     @staticmethod
-    def get_websites(session: Session) -> List[Website]:
-        user = DataBase.get_current_user(session)
-        user = session.get(User, user.id)
-        return user.websites
+    def get_websites() -> List[Website]:
+        with get_session() as session:
+            current_user = DataBase.get_current_user()
+            user = session.query(User).options(
+                joinedload(User.websites)
+                .joinedload(Website.custom_access),
+                joinedload(User.websites)
+                .joinedload(Website.action_interval)
+            ).get(current_user.id)
+            return user.websites
 
     @staticmethod
-    def get_website(website_id: int, session: Session) -> Website:
-        current_user = DataBase.get_current_user(session)
-        website = session.query(Website).filter_by(id=website_id, user=current_user.id).first()
-        if website:
-            return website
-        raise NotFoundException(f"Website {website_id} not found")
+    def get_website(website_id: int) -> Website:
+        with get_session() as session:
+            current_user = DataBase.get_current_user()
+            query = session.query(Website).filter_by(id=website_id, user=current_user.id)
+            query = query.options(
+                joinedload(Website.custom_access),
+                joinedload(Website.action_interval)
+            )
+            website = query.first()
+
+            if website:
+                return website
+            raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
     def add_website(website: Website):
         with get_session() as session:
-            current_user = DataBase.get_current_user(session)
+            current_user = DataBase.get_current_user()
             website.user = current_user.id
             website.next_schedule = datetime.now()
             session.add(website)
@@ -60,19 +75,19 @@ class DataBase:
                 raise NotFoundException(f"Website {website.id} not found")
 
     @staticmethod
-    def delete_website(website: Website):
+    def delete_website(website_id: int):
         with get_session() as session:
-            existing_website = session.query(Website).filter_by(id=website.id).first()
+            existing_website = session.query(Website).filter_by(id=website_id).first()
             if existing_website:
                 session.delete(existing_website)
                 session.commit()
             else:
-                raise NotFoundException(f"Website {website.id} not found")
+                raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
     def trigger_login(website_id: int):
         with get_session() as session:
-            current_user = DataBase.get_current_user(session)
+            current_user = DataBase.get_current_user()
             website = session.query(Website).filter_by(id=website_id, user=current_user.id).first()
             if website:
                 website.next_schedule = datetime.now()
@@ -81,17 +96,18 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def get_action_history(website_id: int, session: Session) -> List[ActionHistory]:
-        current_user = DataBase.get_current_user(session)
-        website = session.get(Website, website_id)
-        if website is None or website.user != current_user.id:
-            raise NotFoundException(f"Website {website_id} not found")
-        return sorted(website.action_histories, key=lambda ah: ah.execution_started, reverse=True)
+    def get_action_history(website_id: int) -> List[ActionHistory]:
+        with get_session() as session:
+            current_user = DataBase.get_current_user()
+            website = session.get(Website, website_id)
+            if website is None or website.user != current_user.id:
+                raise NotFoundException(f"Website {website_id} not found")
+            return sorted(website.action_histories, key=lambda ah: ah.execution_started, reverse=True)
 
     @staticmethod
     def add_manual_action_history(website_id: int, action_history: ActionHistory):
         with get_session() as session:
-            current_user = DataBase.get_current_user(session)
+            current_user = DataBase.get_current_user()
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException("Website not found")
@@ -101,18 +117,19 @@ class DataBase:
     @staticmethod
     def add_notification(notification: Notification):
         with get_session() as session:
-            current_user = DataBase.get_current_user(session)
+            current_user = DataBase.get_current_user()
             notification.user = current_user.id
             session.add(notification)
             session.commit()
 
     @staticmethod
-    def get_notification(notification_id: int, session: Session) -> Notification:
-        current_user = DataBase.get_current_user(session)
-        notification = session.query(Notification).filter_by(id=notification_id, user=current_user.id).first()
-        if notification:
-            return notification
-        raise NotFoundException(f"Notification {notification_id} not found")
+    def get_notification(notification_id: int) -> Notification:
+        with get_session() as session:
+            current_user = DataBase.get_current_user()
+            notification = session.query(Notification).filter_by(id=notification_id, user=current_user.id).first()
+            if notification:
+                return notification
+            raise NotFoundException(f"Notification {notification_id} not found")
 
     @staticmethod
     def edit_notification(notification: Notification):
@@ -135,48 +152,64 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def get_notifications(session: Session) -> List[Notification]:
-        current_user = DataBase.get_current_user(session)
-        notifications = session.query(Notification).filter_by(user=current_user.id).all()
-        return notifications
+    def get_notifications() -> List[Notification]:
+        with get_session() as session:
+            current_user = DataBase.get_current_user()
+            notifications = session.query(Notification).filter_by(user=current_user.id).all()
+            return notifications
 
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 
     @staticmethod
-    def get_user(username: str, session: Session) -> User:
-        return session.query(User).filter_by(username=username).first()
+    def get_user(username: str) -> User:
+        with get_session() as session:
+            return session.query(User).filter_by(username=username).first()
 
     @staticmethod
-    def get_website_by_id(website_id: int, session: Session) -> Website:
-        website = session.query(Website).filter_by(id=website_id).first()
-        if website:
-            return website
-        raise NotFoundException(f"Website {website_id} not found")
-
-    @staticmethod
-    def get_notifications_all_users(session: Session) -> List[Notification]:
-        return session.query(Notification).all()
-
-    @staticmethod
-    def get_notifications_for_user(action_history: ActionHistory, session: Session) -> List[Notification]:
-        user_id = session.query(Website).filter_by(id=action_history.website).first().user
-        return (
-            session.query(Notification)
-            .filter_by(user=user_id)
-            .filter(Notification._triggers.like(f"%{action_history.execution_status.value}%"))
-            .all()
-        )
-
-    @staticmethod
-    def get_websites_all_users(session: Session) -> List[Website]:
-        return session.scalars(select(Website)).all()
-
-    @staticmethod
-    def get_website_all_users(website_id: int, session: Session) -> Website:
-        website = session.get(Website, website_id)
-        if not website:
+    def get_website_by_id(website_id: int) -> Website:
+        with get_session() as session:
+            website = session.query(Website).filter_by(id=website_id).first()
+            if website:
+                return website
             raise NotFoundException(f"Website {website_id} not found")
-        return website
+
+    @staticmethod
+    def get_notifications_all_users() -> List[Notification]:
+        with get_session() as session:
+            return session.query(Notification).all()
+
+    @staticmethod
+    def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
+        with get_session() as session:
+            user_id = session.query(Website).filter_by(id=action_history.website).first().user
+            return (
+                session.query(Notification)
+                .filter_by(user=user_id)
+                .filter(Notification._triggers.like(f"%{action_history.execution_status.value}%"))
+                .all()
+            )
+
+    @staticmethod
+    def get_websites_all_users() -> List[Website]:
+        with get_session() as session:
+            stmt = select(Website).options(
+                selectinload(Website.custom_access),
+                selectinload(Website.action_interval)
+            )
+            return session.scalars(stmt).all()
+
+    @staticmethod
+    def get_website_all_users(website_id: int) -> Website:
+        with get_session() as session:
+            website = session.query(Website).options(
+                joinedload(Website.custom_access),
+                joinedload(Website.action_interval)
+            ).filter_by(id=website_id).first()
+
+            if not website:
+                raise NotFoundException(f"Website {website_id} not found")
+
+            return website
 
     @staticmethod
     def action_history_finish_execution(

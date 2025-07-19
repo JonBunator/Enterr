@@ -33,6 +33,8 @@ def login(
         x_paths: XPaths = None,
         screenshot_id: str = None,
 ) -> LoginStatusCode:
+    import nest_asyncio
+    nest_asyncio.apply()
     try:
         with SB(uc=True, headed=True, window_size="1920,953") as sb:
             try:
