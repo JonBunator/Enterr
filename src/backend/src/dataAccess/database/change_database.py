@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Annotated
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 
 from dataAccess.database.database import (
     Website,
@@ -14,40 +17,56 @@ from dataAccess.database.database import (
 )
 from utils.exceptions import NotFoundException
 
+SECRET_KEY = "your_secret_key"  # Must match main.py
+ALGORITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+
 
 class DataBase:
     """--------------------------- USER ACCESS ---------------------------"""
 
     @staticmethod
-    def get_current_user() -> User:
-        # TODO get first user
+    def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username: str = payload.get("sub")
+            if username is None:
+                raise credentials_exception
+        except JWTError:
+            raise credentials_exception
         with get_session() as session:
-            user = session.query(User).first()
+            user = session.query(User).filter_by(username=username).first()
             if not user:
-                print(user)
-                raise NotFoundException("User not found",)
+                raise credentials_exception
             return user
 
     @staticmethod
-    def get_websites() -> List[Website]:
+    def get_websites(current_user: User) -> List[Website]:
         with get_session() as session:
-            current_user = DataBase.get_current_user()
-            user = session.query(User).options(
-                joinedload(User.websites)
-                .joinedload(Website.custom_access),
-                joinedload(User.websites)
-                .joinedload(Website.action_interval)
-            ).get(current_user.id)
+            user = (
+                session.query(User)
+                .options(
+                    joinedload(User.websites).joinedload(Website.custom_access),
+                    joinedload(User.websites).joinedload(Website.action_interval),
+                )
+                .get(current_user.id)
+            )
             return user.websites
 
     @staticmethod
     def get_website(website_id: int) -> Website:
         with get_session() as session:
             current_user = DataBase.get_current_user()
-            query = session.query(Website).filter_by(id=website_id, user=current_user.id)
+            query = session.query(Website).filter_by(
+                id=website_id, user=current_user.id
+            )
             query = query.options(
-                joinedload(Website.custom_access),
-                joinedload(Website.action_interval)
+                joinedload(Website.custom_access), joinedload(Website.action_interval)
             )
             website = query.first()
 
@@ -88,7 +107,11 @@ class DataBase:
     def trigger_login(website_id: int):
         with get_session() as session:
             current_user = DataBase.get_current_user()
-            website = session.query(Website).filter_by(id=website_id, user=current_user.id).first()
+            website = (
+                session.query(Website)
+                .filter_by(id=website_id, user=current_user.id)
+                .first()
+            )
             if website:
                 website.next_schedule = datetime.now()
                 session.commit()
@@ -102,7 +125,11 @@ class DataBase:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException(f"Website {website_id} not found")
-            return sorted(website.action_histories, key=lambda ah: ah.execution_started, reverse=True)
+            return sorted(
+                website.action_histories,
+                key=lambda ah: ah.execution_started,
+                reverse=True,
+            )
 
     @staticmethod
     def add_manual_action_history(website_id: int, action_history: ActionHistory):
@@ -126,7 +153,11 @@ class DataBase:
     def get_notification(notification_id: int) -> Notification:
         with get_session() as session:
             current_user = DataBase.get_current_user()
-            notification = session.query(Notification).filter_by(id=notification_id, user=current_user.id).first()
+            notification = (
+                session.query(Notification)
+                .filter_by(id=notification_id, user=current_user.id)
+                .first()
+            )
             if notification:
                 return notification
             raise NotFoundException(f"Notification {notification_id} not found")
@@ -134,7 +165,9 @@ class DataBase:
     @staticmethod
     def edit_notification(notification: Notification):
         with get_session() as session:
-            existing_notification = session.query(Notification).filter_by(id=notification.id).first()
+            existing_notification = (
+                session.query(Notification).filter_by(id=notification.id).first()
+            )
             if existing_notification:
                 session.merge(notification)
                 session.commit()
@@ -144,7 +177,9 @@ class DataBase:
     @staticmethod
     def delete_notification(notification: Notification):
         with get_session() as session:
-            existing_notification = session.query(Notification).filter_by(id=notification.id).first()
+            existing_notification = (
+                session.query(Notification).filter_by(id=notification.id).first()
+            )
             if existing_notification:
                 session.delete(existing_notification)
                 session.commit()
@@ -155,7 +190,9 @@ class DataBase:
     def get_notifications() -> List[Notification]:
         with get_session() as session:
             current_user = DataBase.get_current_user()
-            notifications = session.query(Notification).filter_by(user=current_user.id).all()
+            notifications = (
+                session.query(Notification).filter_by(user=current_user.id).all()
+            )
             return notifications
 
     """--------------------------- INTERNAL ACCESS ---------------------------"""
@@ -181,11 +218,17 @@ class DataBase:
     @staticmethod
     def get_notifications_for_user(action_history: ActionHistory) -> List[Notification]:
         with get_session() as session:
-            user_id = session.query(Website).filter_by(id=action_history.website).first().user
+            user_id = (
+                session.query(Website).filter_by(id=action_history.website).first().user
+            )
             return (
                 session.query(Notification)
                 .filter_by(user=user_id)
-                .filter(Notification._triggers.like(f"%{action_history.execution_status.value}%"))
+                .filter(
+                    Notification._triggers.like(
+                        f"%{action_history.execution_status.value}%"
+                    )
+                )
                 .all()
             )
 
@@ -194,17 +237,22 @@ class DataBase:
         with get_session() as session:
             stmt = select(Website).options(
                 selectinload(Website.custom_access),
-                selectinload(Website.action_interval)
+                selectinload(Website.action_interval),
             )
             return session.scalars(stmt).all()
 
     @staticmethod
     def get_website_all_users(website_id: int) -> Website:
         with get_session() as session:
-            website = session.query(Website).options(
-                joinedload(Website.custom_access),
-                joinedload(Website.action_interval)
-            ).filter_by(id=website_id).first()
+            website = (
+                session.query(Website)
+                .options(
+                    joinedload(Website.custom_access),
+                    joinedload(Website.action_interval),
+                )
+                .filter_by(id=website_id)
+                .first()
+            )
 
             if not website:
                 raise NotFoundException(f"Website {website_id} not found")
@@ -245,7 +293,9 @@ class DataBase:
             for action_history in running_action_histories:
                 action_history.execution_status = ActionStatusCode.FAILED
                 action_history.execution_ended = datetime.now()
-                action_history.failed_details = ActionFailedDetails.UNKNOWN_EXECUTION_ERROR
+                action_history.failed_details = (
+                    ActionFailedDetails.UNKNOWN_EXECUTION_ERROR
+                )
                 action_history_ids.append(action_history.id)
             if len(running_action_histories) == 0:
                 action_history_id = DataBase.add_action_history(
@@ -269,6 +319,8 @@ class DataBase:
             if website.paused:
                 website.next_schedule = None  # In order to prevent race conditions
             else:
-                website.next_schedule = website.action_interval.get_random_action_datetime()
+                website.next_schedule = (
+                    website.action_interval.get_random_action_datetime()
+                )
             session.commit()
             return action_history.id

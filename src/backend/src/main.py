@@ -65,54 +65,6 @@ class SPAStaticFiles(StaticFiles):
 
 app.mount("/", SPAStaticFiles(directory="dist", html=True), name="spa-static-files")
 """
-
-# JWT config
-SECRET_KEY = "your_secret_key"  # Use a secure value in production!
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
-
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    with get_session() as session:
-        user = session.query(User).filter_by(username=username).first()
-        if user is None:
-            raise credentials_exception
-        return user
-
-# Add login endpoint for JWT
-@app.post("/api/token")
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    with get_session() as session:
-        user = session.query(User).filter_by(username=form_data.username).first()
-        if not user or not user.check_password(form_data.password):
-            raise HTTPException(status_code=400, detail="Incorrect username or password")
-        access_token = create_access_token(data={"sub": user.username})
-        return {"access_token": access_token, "token_type": "bearer"}
-
-# Example protected endpoint
-@app.get("/api/protected")
-def protected_route(current_user: User = Depends(get_current_user)):
-    return {"message": f"Hello, {current_user.username}!"}
-
 init_db()
 if dev_mode:
     create_user(username="debug", password="123", create_db=False)
@@ -122,5 +74,7 @@ data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
 notification_manager = NotificationManager(data_access=data_access_internal)
 scheduler = Scheduler(data_access_internal=data_access_internal)
 register_database_events(scheduler=scheduler, notification_manager=notification_manager)
-register_rest_endpoints(app=app, data_access=data_access, notification_manager=notification_manager)
+register_rest_endpoints(
+    app=app, data_access=data_access, notification_manager=notification_manager
+)
 scheduler.start()

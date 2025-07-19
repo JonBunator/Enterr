@@ -4,6 +4,11 @@ from dataAccess.database.database import User
 from endpoints.decorators.request_validator import GetRequestBaseModel
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class UserLogin(BaseModel):
     username: str
     password: str

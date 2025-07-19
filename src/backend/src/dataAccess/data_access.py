@@ -21,8 +21,8 @@ class DataAccess:
         return DataBase.get_current_user()
 
     @staticmethod
-    def get_websites() -> List[Website]:
-        return DataBase.get_websites()
+    def get_websites(current_user: User) -> List[Website]:
+        return DataBase.get_websites(current_user)
 
     @staticmethod
     def get_website(website_id: int) -> Website:
