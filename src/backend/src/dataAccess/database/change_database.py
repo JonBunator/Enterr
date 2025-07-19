@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Annotated
 from sqlalchemy import select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from jose import JWTError
 
 from dataAccess.database.database import (
     Website,
@@ -16,10 +16,11 @@ from dataAccess.database.database import (
     get_session,
 )
 from utils.exceptions import NotFoundException
+from utils.security import decode_token
 
 SECRET_KEY = "your_secret_key"  # Must match main.py
 ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
 
 
 class DataBase:
@@ -32,12 +33,8 @@ class DataBase:
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            username: str = payload.get("sub")
-            if username is None:
-                raise credentials_exception
-        except JWTError:
+        username = decode_token(token)
+        if username is None:
             raise credentials_exception
         with get_session() as session:
             user = session.query(User).filter_by(username=username).first()
@@ -59,9 +56,8 @@ class DataBase:
             return user.websites
 
     @staticmethod
-    def get_website(website_id: int) -> Website:
+    def get_website(website_id: int, current_user: User) -> Website:
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             query = session.query(Website).filter_by(
                 id=website_id, user=current_user.id
             )
@@ -75,18 +71,21 @@ class DataBase:
             raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def add_website(website: Website):
+    def add_website(website: Website, current_user: User):
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             website.user = current_user.id
             website.next_schedule = datetime.now()
             session.add(website)
             session.commit()
 
     @staticmethod
-    def edit_website(website: Website):
+    def edit_website(website: Website, current_user: User):
         with get_session() as session:
-            existing_website = session.query(Website).filter_by(id=website.id).first()
+            existing_website = (
+                session.query(Website)
+                .filter_by(id=website.id, user=current_user.id)
+                .first()
+            )
             if existing_website:
                 session.merge(website)
                 session.commit()
@@ -94,9 +93,13 @@ class DataBase:
                 raise NotFoundException(f"Website {website.id} not found")
 
     @staticmethod
-    def delete_website(website_id: int):
+    def delete_website(website_id: int, current_user: User):
         with get_session() as session:
-            existing_website = session.query(Website).filter_by(id=website_id).first()
+            existing_website = (
+                session.query(Website)
+                .filter_by(id=website_id, user=current_user.id)
+                .first()
+            )
             if existing_website:
                 session.delete(existing_website)
                 session.commit()
@@ -104,9 +107,8 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def trigger_login(website_id: int):
+    def trigger_login(website_id: int, current_user: User):
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             website = (
                 session.query(Website)
                 .filter_by(id=website_id, user=current_user.id)
@@ -119,9 +121,8 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def get_action_history(website_id: int) -> List[ActionHistory]:
+    def get_action_history(website_id: int, current_user: User) -> List[ActionHistory]:
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException(f"Website {website_id} not found")
@@ -132,9 +133,10 @@ class DataBase:
             )
 
     @staticmethod
-    def add_manual_action_history(website_id: int, action_history: ActionHistory):
+    def add_manual_action_history(
+        website_id: int, action_history: ActionHistory, current_user: User
+    ):
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException("Website not found")
@@ -142,17 +144,15 @@ class DataBase:
                 DataBase.add_action_history(website_id, action_history)
 
     @staticmethod
-    def add_notification(notification: Notification):
+    def add_notification(notification: Notification, current_user: User):
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             notification.user = current_user.id
             session.add(notification)
             session.commit()
 
     @staticmethod
-    def get_notification(notification_id: int) -> Notification:
+    def get_notification(notification_id: int, current_user: User) -> Notification:
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             notification = (
                 session.query(Notification)
                 .filter_by(id=notification_id, user=current_user.id)
@@ -163,10 +163,12 @@ class DataBase:
             raise NotFoundException(f"Notification {notification_id} not found")
 
     @staticmethod
-    def edit_notification(notification: Notification):
+    def edit_notification(notification: Notification, current_user: User):
         with get_session() as session:
             existing_notification = (
-                session.query(Notification).filter_by(id=notification.id).first()
+                session.query(Notification)
+                .filter_by(id=notification.id, user=current_user.id)
+                .first()
             )
             if existing_notification:
                 session.merge(notification)
@@ -175,10 +177,12 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def delete_notification(notification: Notification):
+    def delete_notification(notification: Notification, current_user: User):
         with get_session() as session:
             existing_notification = (
-                session.query(Notification).filter_by(id=notification.id).first()
+                session.query(Notification)
+                .filter_by(id=notification.id, user=current_user.id)
+                .first()
             )
             if existing_notification:
                 session.delete(existing_notification)
@@ -187,9 +191,8 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def get_notifications() -> List[Notification]:
+    def get_notifications(current_user: User) -> List[Notification]:
         with get_session() as session:
-            current_user = DataBase.get_current_user()
             notifications = (
                 session.query(Notification).filter_by(user=current_user.id).all()
             )
