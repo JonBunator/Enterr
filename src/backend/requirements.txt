@@ -13,5 +13,5 @@ SQLAlchemy==2.0.43
 pydantic==2.11.9
 APScheduler==3.11.0
 pytz==2025.2
-apprise==1.9.4
+apprise==1.9.5
 sqlcipher3-binary==0.5.4
