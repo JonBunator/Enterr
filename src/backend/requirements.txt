@@ -11,7 +11,7 @@ lxml==5.4.0
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.44
 pydantic==2.12.3
-APScheduler==3.11.0
+APScheduler==3.11.1
 pytz==2025.2
 apprise==1.9.5
 sqlcipher3-binary==0.5.4
