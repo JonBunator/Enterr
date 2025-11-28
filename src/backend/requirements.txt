@@ -10,7 +10,7 @@ seleniumbase==4.44.17
 lxml==5.4.0
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.44
-pydantic==2.12.4
+pydantic==2.12.5
 APScheduler==3.11.1
 pytz==2025.2
 apprise==1.9.5
