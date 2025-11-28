@@ -34,7 +34,9 @@ export default function WebSocketProvider({
   const [socket, setSocket] = useState<Socket | null>(null)
 
   useEffect(() => {
-    const socketIo = io(SOCKET_URL)
+    const socketIo = io(SOCKET_URL, {
+      withCredentials: true,
+    })
     setSocket(socketIo)
     return () => {
       socketIo.disconnect()

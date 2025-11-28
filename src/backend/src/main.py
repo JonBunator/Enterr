@@ -1,9 +1,6 @@
-import asyncio
-import socketio
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from jose import JWTError, jwt
+from jose import JWTError
 from datetime import datetime, timedelta
 
 from endpoints.webhooks.socketio import sio

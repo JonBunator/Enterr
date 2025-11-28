@@ -13,13 +13,19 @@ interface ProtectedPageProps {
 
 export default function ProtectedPage(props: ProtectedPageProps) {
   const { loginPage, children } = props
-  const [userData, setUserData] = useState<UserData | null>({ username: "debug", logged_in: true })
-  const [loading, setLoading] = useState(false)
-
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     console.log(userData)
-  }, [userData]);
+  }, []);
+
+  useEffect(() => {
+      getUserData()
+          .then(data => setUserData(data))
+          .catch(error => console.error(error))
+          .finally(() => setLoading(false))
+  }, [])
 
   if (loading) {
     return (
@@ -30,10 +36,10 @@ export default function ProtectedPage(props: ProtectedPageProps) {
     )
   }
 
-  if (!userData?.logged_in && !loginPage) {
+  if (userData === null && !loginPage) {
     return <Navigate to="/login" replace />
   }
-  else if (userData?.logged_in && loginPage) {
+  else if (userData !== null && loginPage) {
     return <Navigate to="/" replace />
   }
 

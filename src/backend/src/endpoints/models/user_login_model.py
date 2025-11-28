@@ -9,14 +9,8 @@ class Token(BaseModel):
     token_type: str
 
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
 class GetUserData(GetRequestBaseModel):
     username: str
-    logged_in: bool
 
     @staticmethod
     def from_sql_model(user: User) -> "GetUserData":
@@ -24,5 +18,4 @@ class GetUserData(GetRequestBaseModel):
             username = ''
         else:
             username = user.username
-        is_logged_in = user is not None
-        return GetUserData(username=username, logged_in=is_logged_in)
+        return GetUserData(username=username)

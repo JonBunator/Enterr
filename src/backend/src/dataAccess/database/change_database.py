@@ -15,12 +15,11 @@ from dataAccess.database.database import (
     Notification,
     get_session,
 )
+from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
 
-SECRET_KEY = "your_secret_key"  # Must match main.py
-ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
+oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/api/user/login")
 
 
 class DataBase:

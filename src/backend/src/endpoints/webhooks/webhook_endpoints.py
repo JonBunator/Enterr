@@ -1,7 +1,11 @@
-import asyncio
 from enum import Enum
+from http.cookies import SimpleCookie
+from urllib.parse import unquote
 import socketio
+
 from endpoints.webhooks.socketio import sio
+from utils.security import decode_token
+
 
 class Topic(Enum):
     LOGIN_DATA_CHANGED = "login_data_changed"
@@ -10,6 +14,34 @@ class Topic(Enum):
 
 
 class WebhookEndpoints(socketio.AsyncNamespace):
+
+    def on_connect(self, sid, environ):
+        headers = environ["asgi.scope"]["headers"]
+        cookie_header = None
+        for name, value in headers:
+            if name == b'cookie':
+                cookie_header = value.decode('utf-8')
+                break
+        if not cookie_header:
+            return False
+
+        decoded = unquote(cookie_header)
+        cookies = SimpleCookie()
+        cookies.load(decoded)
+
+        if 'access_token' not in cookies:
+            return False
+        raw_token = cookies['access_token'].value
+        access_token = raw_token[len("Bearer "):]
+        username = decode_token(access_token)
+        if username is None:
+            return False
+
+        return True
+
+    def connect_error(*args):
+        print("The connection failed!", args)
+
 
     @staticmethod
     async def _send_message(topic: str, message: any):

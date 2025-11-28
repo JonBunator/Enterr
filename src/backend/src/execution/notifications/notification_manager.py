@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import apprise
 from enum import Enum
 from dataAccess.data_access_internal import DataAccessInternal
-from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails, get_session
+from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails
 
 
 class NotificationVariable(Enum):
@@ -136,7 +136,7 @@ class NotificationManager:
                               str(action_history.screenshot_id) if action_history.screenshot_id else "null")
 
         # Website info replacements
-        website = DataAccessInternal.get_website_by_id(action_history.website, session)
+        website = DataAccessInternal.get_website_by_id(action_history.website)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), website.name)
         value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), website.url)
         return value
