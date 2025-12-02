@@ -1,8 +1,9 @@
+import os
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
-from sqlalchemy import create_engine, StaticPool
+from sqlalchemy import create_engine
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import (
     Mapped,
@@ -10,7 +11,6 @@ from sqlalchemy.orm import (
     relationship,
     declarative_base,
     sessionmaker,
-    Session,
 )
 from sqlalchemy import ForeignKey
 from enum import Enum
@@ -23,9 +23,21 @@ except ImportError:
     sqlcipher3 = None
 
 Base = declarative_base()
-engine = create_engine(
-    "sqlite:///database.db",
-)
+
+dev_mode = os.getenv("RUN_MODE") != "production"
+
+if dev_mode:
+    engine = create_engine("sqlite:///database.db")
+else:
+    # Encrypted database in production
+    if sqlcipher3 is None:
+        raise ImportError("sqlcipher3 is required for encrypted database in production")
+    db_key = get_database_key()
+    database_uri = f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
+    engine = create_engine(
+        database_uri,
+    )
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -37,20 +49,6 @@ def init_db():
 def get_session():
     with SessionLocal() as session:
         yield session
-
-
-def _setup_encrypted_database(app):
-    db_key = get_database_key()
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
-    )
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"module": sqlcipher3}
-
-
-"""
-def load_user(user_id):
-    return _db.session.get(User, int(user_id))
-"""
 
 
 class ActionStatusCode(Enum):
@@ -196,11 +194,11 @@ class ActionInterval(Base):
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
     def __init__(
-        self,
-        date_minutes_start,
-        date_minutes_end,
-        allowed_time_minutes_start,
-        allowed_time_minutes_end,
+            self,
+            date_minutes_start,
+            date_minutes_end,
+            allowed_time_minutes_start,
+            allowed_time_minutes_end,
     ):
         self.date_minutes_start = date_minutes_start
         self.date_minutes_end = date_minutes_end
@@ -233,16 +231,16 @@ class ActionInterval(Base):
                 "date_minutes_end must be greater than or equal to date_minutes_start"
             )
         if (
-            self.allowed_time_minutes_start_not_none
-            > self.allowed_time_minutes_end_not_none
+                self.allowed_time_minutes_start_not_none
+                > self.allowed_time_minutes_end_not_none
         ):
             raise ValueError(
                 "allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start"
             )
 
         if (
-            self.allowed_time_minutes_start_not_none == 0
-            and self.allowed_time_minutes_end_not_none == 1440
+                self.allowed_time_minutes_start_not_none == 0
+                and self.allowed_time_minutes_end_not_none == 1440
         ):
             # allow any value
             return
@@ -270,8 +268,8 @@ class ActionInterval(Base):
         )
         random_date = datetime.now() + timedelta(minutes=random_date_delta)
         if (
-            self.date_minutes_start % 1440 == 0
-            and self.date_minutes_end_not_none % 1440 == 0
+                self.date_minutes_start % 1440 == 0
+                and self.date_minutes_end_not_none % 1440 == 0
         ):
             random_time = randint(
                 self.allowed_time_minutes_start_not_none,

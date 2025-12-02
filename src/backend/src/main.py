@@ -1,21 +1,17 @@
 import asyncio
 import socketio
 import os
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
-from jose import JWTError, jwt
-from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
-
 from endpoints.webhooks.socketio import sio
 from execution.notifications.notification_manager import NotificationManager
 from dataAccess.data_access_internal import DataAccessInternal
 from user_management import create_user
 from dataAccess.data_access import DataAccess
-from dataAccess.database.database import init_db, User, get_session
+from dataAccess.database.database import init_db
 from dotenv import load_dotenv
 from dataAccess.database.database_events import register_database_events
 from endpoints.rest_endpoints import register_rest_endpoints
@@ -25,7 +21,6 @@ from execution.scheduler import Scheduler
 load_dotenv()
 dev_mode = os.getenv("RUN_MODE") != "production"
 
-# Initialize database and services
 init_db()
 if dev_mode or True:
     create_user(username="debug", password="123", create_db=False)
@@ -38,7 +33,7 @@ notification_manager = NotificationManager(data_access=data_access_internal)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     scheduler = Scheduler(data_access_internal=data_access_internal, webhook_endpoints=webhook_endpoints)
     register_database_events(
         scheduler=scheduler, notification_manager=notification_manager
