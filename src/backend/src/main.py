@@ -44,8 +44,10 @@ async def lifespan(_app: FastAPI):
     finally:
         scheduler.stop()
 
-
-app = FastAPI(lifespan=lifespan)
+if dev_mode:
+    app = FastAPI(lifespan=lifespan)
+else:
+    app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 if dev_mode:
     app.add_middleware(
@@ -56,7 +58,7 @@ if dev_mode:
         allow_headers=["*"],
     )
 
-sio.register_namespace(WebhookEndpoints("/"))
+sio.register_namespace(webhook_endpoints)
 sio_asgi_app = socketio.ASGIApp(socketio_server=sio, other_asgi_app=app)
 app.add_route("/socket.io/", route=sio_asgi_app, methods=["GET", "POST"])
 app.add_websocket_route("/socket.io/", sio_asgi_app)
