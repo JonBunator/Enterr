@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import (
     Mapped,
@@ -16,6 +16,9 @@ from sqlalchemy import ForeignKey
 from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
 from utils.security import get_database_key, get_database_pepper
+from alembic.config import Config
+from alembic import command
+import sys
 
 try:
     import sqlcipher3
@@ -26,23 +29,52 @@ Base = declarative_base()
 
 dev_mode = os.getenv("RUN_MODE") != "production"
 
+
+def get_database_uri() -> str:
+    """Get the database URI based on the current environment."""
+    if dev_mode:
+        return "sqlite:///:memory:"
+    else:
+        db_key = get_database_key()
+        return f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
+
+
+database_uri = get_database_uri()
+
 if dev_mode:
-    engine = create_engine("sqlite:///database.db")
+    engine = create_engine(database_uri)
 else:
     # Encrypted database in production
     if sqlcipher3 is None:
         raise ImportError("sqlcipher3 is required for encrypted database in production")
-    db_key = get_database_key()
-    database_uri = f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
-    engine = create_engine(
-        database_uri,
-    )
+    engine = create_engine(database_uri, module=sqlcipher3)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db():
-    Base.metadata.create_all(engine)
+    """Initialize database with Alembic migrations"""
+    # In dev mode, just create all tables without migrations
+    if dev_mode:
+        Base.metadata.create_all(engine)
+        return
+
+    # Production mode: use Alembic migrations
+    alembic_cfg = Config("src/migrations/alembic.ini", stdout=sys.stdout)
+    alembic_cfg.set_main_option("script_location", "src/migrations")
+
+    # Check if database file exists
+    if not os.path.exists("/config/database.db"):
+        Base.metadata.create_all(engine)
+        command.stamp(alembic_cfg, "head", sql=False)
+        return
+
+    inspector = inspect(engine)
+    if "alembic_version" not in inspector.get_table_names():
+        command.stamp(alembic_cfg, "8e6efc857763", sql=False)
+
+    command.upgrade(alembic_cfg, "head", sql=False)
+
 
 
 @contextmanager
@@ -194,11 +226,11 @@ class ActionInterval(Base):
     website_id: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
     def __init__(
-            self,
-            date_minutes_start,
-            date_minutes_end,
-            allowed_time_minutes_start,
-            allowed_time_minutes_end,
+        self,
+        date_minutes_start,
+        date_minutes_end,
+        allowed_time_minutes_start,
+        allowed_time_minutes_end,
     ):
         self.date_minutes_start = date_minutes_start
         self.date_minutes_end = date_minutes_end
@@ -231,16 +263,16 @@ class ActionInterval(Base):
                 "date_minutes_end must be greater than or equal to date_minutes_start"
             )
         if (
-                self.allowed_time_minutes_start_not_none
-                > self.allowed_time_minutes_end_not_none
+            self.allowed_time_minutes_start_not_none
+            > self.allowed_time_minutes_end_not_none
         ):
             raise ValueError(
                 "allowed_time_minutes_end must be greater than or equal to allowed_time_minutes_start"
             )
 
         if (
-                self.allowed_time_minutes_start_not_none == 0
-                and self.allowed_time_minutes_end_not_none == 1440
+            self.allowed_time_minutes_start_not_none == 0
+            and self.allowed_time_minutes_end_not_none == 1440
         ):
             # allow any value
             return
@@ -268,8 +300,8 @@ class ActionInterval(Base):
         )
         random_date = datetime.now() + timedelta(minutes=random_date_delta)
         if (
-                self.date_minutes_start % 1440 == 0
-                and self.date_minutes_end_not_none % 1440 == 0
+            self.date_minutes_start % 1440 == 0
+            and self.date_minutes_end_not_none % 1440 == 0
         ):
             random_time = randint(
                 self.allowed_time_minutes_start_not_none,

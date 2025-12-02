@@ -1,6 +1,7 @@
 import asyncio
 import socketio
 import os
+import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
@@ -22,7 +23,8 @@ load_dotenv()
 dev_mode = os.getenv("RUN_MODE") != "production"
 
 init_db()
-if dev_mode or True:
+
+if dev_mode:
     create_user(username="debug", password="123", create_db=False)
 
 event_loop = asyncio.get_event_loop()
