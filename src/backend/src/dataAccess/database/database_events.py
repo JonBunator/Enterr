@@ -1,11 +1,9 @@
-from sqlalchemy import inspect
 from sqlalchemy.event import listens_for
 from sqlalchemy.orm.attributes import get_history
-
 from dataAccess.database.database import Website, ActionHistory, Notification
 from execution.notifications.notification_manager import NotificationManager
 from execution.scheduler import Scheduler
-from sqlalchemy.orm import object_session, make_transient_to_detached
+from sqlalchemy.orm import object_session
 
 
 def register_database_events(scheduler: Scheduler, notification_manager: NotificationManager):

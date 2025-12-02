@@ -53,7 +53,6 @@ export interface ActionHistory {
 
 export interface UserData {
   username: string
-  logged_in: boolean
 }
 
 export interface Notification {

@@ -25,14 +25,15 @@ TIMEOUT = 30
 
 
 def login(
-        url: str,
-        success_url: str,
-        username: str,
-        password: str,
-        pin: str,
-        x_paths: XPaths = None,
-        screenshot_id: str = None,
+    url: str,
+    success_url: str,
+    username: str,
+    password: str,
+    pin: str,
+    x_paths: XPaths = None,
+    screenshot_id: str = None,
 ) -> LoginStatusCode:
+
     try:
         with SB(uc=True, headed=True, window_size="1920,953") as sb:
             try:
@@ -99,7 +100,7 @@ def login(
 
 
 def find_elements(
-        sb: SB, x_paths: XPaths, pin: str
+    sb: SB, x_paths: XPaths, pin: str
 ) -> tuple[XPaths | None, LoginStatusCode | None]:
     pin_used = pin != "" and pin is not None
     selenium_driver = SeleniumbaseDriver(sb)
@@ -146,7 +147,7 @@ def find_elements(
 def save_screenshot(sb: SB, screenshot_id: str):
     if screenshot_id is None:
         return
-    dev_mode = os.getenv("FLASK_ENV") != "production"
+    dev_mode = os.getenv("RUN_MODE") != "production"
 
     if dev_mode:
         path = f"../config/images"

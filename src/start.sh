@@ -5,5 +5,4 @@ Xvfb -ac :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
 
 sleep 1
 
-# Note: More than 1 worker is not supported with socketio
-exec gunicorn main:app -b 0.0.0.0:7653 -w 1 --worker-class eventlet
+exec uvicorn main:app --host 0.0.0.0 --port 7653

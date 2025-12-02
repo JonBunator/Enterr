@@ -3,9 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from dataAccess.database.database import Notification, ActionStatusCode
-from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from endpoints.decorators.post_request_validator import PostRequestBaseModel
-
+from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
 class AddNotification(PostRequestBaseModel):
     name: str

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { ReactNode } from "react";
 import type { UserData } from '../../api/apiModels.ts'
 import { CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from 'react'
@@ -17,10 +17,14 @@ export default function ProtectedPage(props: ProtectedPageProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getUserData()
-      .then(data => setUserData(data))
-      .catch(error => console.error(error))
-      .finally(() => setLoading(false))
+    console.log(userData)
+  }, []);
+
+  useEffect(() => {
+      getUserData()
+          .then(data => setUserData(data))
+          .catch(error => console.error(error))
+          .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
@@ -32,10 +36,10 @@ export default function ProtectedPage(props: ProtectedPageProps) {
     )
   }
 
-  if (!userData?.logged_in && !loginPage) {
+  if (userData === null && !loginPage) {
     return <Navigate to="/login" replace />
   }
-  else if (userData?.logged_in && loginPage) {
+  else if (userData !== null && loginPage) {
     return <Navigate to="/" replace />
   }
 

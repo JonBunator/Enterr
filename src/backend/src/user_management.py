@@ -1,19 +1,16 @@
 import sys
 import argparse
-from flask import Flask
-from dataAccess.database.database import init_db, User, _db as db
+from dataAccess.database.database import init_db, User, get_session
 
 
 def create_user(
-    username: str, password: str, app: Flask = None, create_db: bool = True
+    username: str, password: str, create_db: bool = True
 ):
-    if app is None:
-        app = Flask(__name__)
-    with app.app_context():
-        if create_db:
-            init_db(app)
 
-        if db.session.query(User).filter_by(username=username).first():
+    if create_db:
+        init_db()
+    with get_session() as session:
+        if session.query(User).filter_by(username=username).first():
             print("User already exists.")
             if create_db:
                 sys.exit(1)
@@ -21,19 +18,18 @@ def create_user(
                 return
 
         user = User(username=username, password=password)
-        db.session.add(user)
-        db.session.commit()
+        session.add(user)
+        session.commit()
         print("User created successfully.")
 
 
 def set_password(username: str, new_password: str):
-    app = Flask(__name__)
-    with app.app_context():
-        init_db(app)
-        user = db.session.query(User).filter_by(username=username).first()
+    init_db()
+    with get_session() as session:
+        user = session.query(User).filter_by(username=username).first()
         if user:
             user.set_password(new_password)
-            db.session.commit()
+            session.commit()
             print("Password updated successfully.")
         else:
             print("User not found.")
@@ -41,13 +37,12 @@ def set_password(username: str, new_password: str):
 
 
 def delete_user(username: str):
-    app = Flask(__name__)
-    with app.app_context():
-        init_db(app)
-        user = db.session.query(User).filter_by(username=username).first()
+    init_db()
+    with get_session() as session:
+        user = session.query(User).filter_by(username=username).first()
         if user:
-            db.session.delete(user)
-            db.session.commit()
+            session.delete(user)
+            session.commit()
             print("User deleted successfully.")
         else:
             print("User not found.")

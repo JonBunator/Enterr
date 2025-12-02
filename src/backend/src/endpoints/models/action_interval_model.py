@@ -1,8 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from dataAccess.database.database import ActionInterval
-from endpoints.decorators.get_request_validator import GetRequestBaseModel
-from endpoints.decorators.post_request_validator import PostRequestBaseModel
+from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
 
 class AddActionInterval(PostRequestBaseModel):
