@@ -33,7 +33,7 @@ dev_mode = os.getenv("RUN_MODE") != "production"
 def get_database_uri() -> str:
     """Get the database URI based on the current environment."""
     if dev_mode:
-        return "sqlite:///:memory:"
+        return "sqlite:///database.db"
     else:
         db_key = get_database_key()
         return f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
