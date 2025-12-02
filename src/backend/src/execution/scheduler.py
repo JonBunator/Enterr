@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.date import DateTrigger
@@ -14,25 +15,35 @@ from execution.login.login import LoginStatusCode, login
 
 
 class Scheduler:
-    def __init__(self, data_access_internal: DataAccessInternal):
-        self.scheduler = AsyncIOScheduler()
+    def __init__(
+        self,
+        data_access_internal: DataAccessInternal,
+        webhook_endpoints: WebhookEndpoints,
+    ):
         self.data_access = data_access_internal
+        self.webhook_endpoints = webhook_endpoints
+        self.scheduler = AsyncIOScheduler()
 
     def start(self):
         self._init_tasks()
         self.scheduler.add_listener(self._scheduler_event, EVENT_JOB_ERROR)
         self.scheduler.start()
 
+    def stop(self):
+        if self.scheduler.running:
+            self.scheduler.shutdown(wait=True)
+
     def _scheduler_event(self, event: JobExecutionEvent):
         if event.exception:
-            self.data_access.unexpected_execution_failure(website_id=event.job_id,
-                                                          execution_started=event.scheduled_run_time)
+            self.data_access.unexpected_execution_failure(
+                website_id=event.job_id, execution_started=event.scheduled_run_time
+            )
 
     def _init_tasks(self):
         for website in DataAccessInternal.get_websites_all_users():
             self.add_task(website.id)
 
-    async def _login_task(self, website_id: int):
+    def _login_task(self, website_id: int):
         screenshot_id = None
         website = DataAccessInternal.get_website_all_users(website_id)
         if website.take_screenshot:
@@ -50,29 +61,41 @@ class Scheduler:
                 username=XPath(access.username_xpath),
                 password=XPath(access.password_xpath),
                 pin=XPath(access.pin_xpath),
-                submit_button=XPath(access.submit_button_xpath))
+                submit_button=XPath(access.submit_button_xpath),
+            )
 
         action_history = ActionHistory(
             execution_started=start_time,
             execution_status=ActionStatusCode.IN_PROGRESS,
         )
-        action_history_id = self.data_access.add_action_history(website_id=website.id,
-                                                                      action_history=action_history)
-        await WebhookEndpoints.action_history_changed_async(action_history_id=action_history_id)
+        action_history_id = self.data_access.add_action_history(
+            website_id=website.id, action_history=action_history
+        )
+        self.webhook_endpoints.action_history_changed(
+            action_history_id=action_history_id
+        )
         # login
-        status = login(url=url, success_url=success_url, username=username, password=password, pin=pin, x_paths=x_paths,
-                       screenshot_id=screenshot_id)
+        status = login(
+            url=url,
+            success_url=success_url,
+            username=username,
+            password=password,
+            pin=pin,
+            x_paths=x_paths,
+            screenshot_id=screenshot_id,
+        )
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
         if status != LoginStatusCode.SUCCESS:
             executions_status = LoginStatusCode.FAILED
             failed_details = status.value
 
-        self.data_access.action_history_finish_execution(action_history_id=action_history_id,
-                                                               execution_status=ActionStatusCode(
-                                                                   executions_status.value),
-                                                               failed_details=failed_details,
-                                                               screenshot_id=screenshot_id)
+        self.data_access.action_history_finish_execution(
+            action_history_id=action_history_id,
+            execution_status=ActionStatusCode(executions_status.value),
+            failed_details=failed_details,
+            screenshot_id=screenshot_id,
+        )
 
     def add_task(self, website_id: int):
         website = DataAccessInternal.get_website_all_users(website_id)
@@ -90,7 +113,7 @@ class Scheduler:
             id=f"{website_id}",
             replace_existing=True,
             coalesce=True,
-            misfire_grace_time=3600
+            misfire_grace_time=3600,
         )
 
     def remove_task(self, website_id: int):

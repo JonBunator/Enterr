@@ -38,7 +38,7 @@ RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
 EXPOSE 7653
-ENV FLASK_ENV=production
+ENV RUN_MODE=production
 VOLUME /config
 
 ENTRYPOINT ["/app/entrypoint.sh"]

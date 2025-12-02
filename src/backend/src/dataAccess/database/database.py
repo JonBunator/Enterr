@@ -25,8 +25,6 @@ except ImportError:
 Base = declarative_base()
 engine = create_engine(
     "sqlite:///database.db",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
