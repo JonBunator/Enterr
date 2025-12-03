@@ -14,11 +14,10 @@ Scoring = NewType('Scoring', Dict[Element, Tuple[List[str], Score]])
 class XPaths:
     username: XPath
     password: XPath
-    pin: XPath
     submit_button: XPath
 
 
-def find_login_automatically(sd: SeleniumDriver, html: str, pin_used: bool) -> XPaths | None:
+def find_login_automatically(sd: SeleniumDriver, html: str) -> XPaths | None:
     """
     Tries to find the login form automatically and returns the xpath.
     @param html: The html that is used for parsing.
@@ -28,14 +27,10 @@ def find_login_automatically(sd: SeleniumDriver, html: str, pin_used: bool) -> X
     dom = HTML(html)
     username_xpath = _find_username_field(sd, dom)
     password_xpath = _find_password_field(sd, dom)
-    if pin_used:
-        pin_xpath = _find_pin_field(sd, dom)
-    else:
-        pin_xpath = None
     submit_button_xpath = _find_submit_button(sd, dom)
     if username_xpath is None and password_xpath and None and submit_button_xpath is None:
         return None
-    return XPaths(username=username_xpath, password=password_xpath, pin=pin_xpath, submit_button=submit_button_xpath)
+    return XPaths(username=username_xpath, password=password_xpath, submit_button=submit_button_xpath)
 
 
 def _find_username_field(sd: SeleniumDriver, dom: HTML) -> XPath | None:
@@ -56,17 +51,6 @@ def _find_password_field(sd: SeleniumDriver, dom: etree.HTML) -> XPath | None:
     tag_scores = [("input", Score(8))]
     id_aliases = ["password", "pwd"]
     type_scores = [("password", Score(10)), ("text", Score(1))]
-    property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
-    return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
-
-
-def _find_pin_field(sd: SeleniumDriver, dom: HTML) -> XPath | None:
-    """
-    Tries to find xpath of pin field automatically.
-    """
-    tag_scores = [("input", Score(8))]
-    id_aliases = ["pin"]
-    type_scores = [("number", Score(10)), ("text", Score(1))]
     property_scores = [("@name", Score(10)), ("@id", Score(10)), ("@class", Score(2)), ("@autocomplete", Score(10)), ("@placeholder", Score(3))]
     return _find_form_field(sd, dom, id_aliases, tag_scores, type_scores, property_scores)
 

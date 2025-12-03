@@ -57,19 +57,16 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
 
     switch (loginHistory.failed_details) {
       case FailedDetails.AUTOMATIC_FORM_DETECTION_FAILED:
-        message = 'Automatic form detection failed. Try to define custom xpaths or submit an issue on GitHub.';
+        message = 'Automatic form detection failed. Try to define a custom login script or submit an issue on GitHub.';
         break;
       case FailedDetails.USERNAME_FIELD_NOT_FOUND:
-        message = 'Username field not found. Try to define custom username xpath or submit an issue on GitHub.';
+        message = 'Username field not found. Try to define a custom login script or submit an issue on GitHub.';
         break;
       case FailedDetails.PASSWORD_FIELD_NOT_FOUND:
-        message = 'Password field not found. Try to define custom password xpath or submit an issue on GitHub.';
-        break;
-      case FailedDetails.PIN_FIELD_NOT_FOUND:
-        message = 'PIN field not not found. Try to define custom PIN xpath or submit an issue on GitHub.';
+        message = 'Password field not found. Try to define a custom login script or submit an issue on GitHub.';
         break;
       case FailedDetails.SUBMIT_BUTTON_NOT_FOUND:
-        message = 'Submit button not found. Try to define custom submit button xpath or submit an issue on GitHub.';
+        message = 'Submit button not found. Try to define a custom login script or submit an issue on GitHub.';
         break;
       case FailedDetails.SUCCESS_URL_DID_NOT_MATCH:
         message = 'The success URL did not match after login attempt.';

@@ -1,32 +1,13 @@
 import os
 import traceback
-from enum import Enum
 from typing import Tuple
-
 from seleniumbase import SB
-from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
 from utils.utils import compare_urls
+from .constants import LoginStatusCode, CustomFailedDetailsMessage, TIMEOUT
+from .custom_login.custom_login_methods_implementation import CustomLoginMethodsSeleniumbase
+from .custom_login.parser import CustomLoginScriptParser
 from .find_form_automatically import find_login_automatically, XPaths
 from .selenium_adapter import SeleniumbaseDriver
-
-
-class LoginStatusCode(Enum):
-    SUCCESS = ActionStatusCode.SUCCESS
-    AUTOMATIC_FORM_DETECTION_FAILED = (
-        ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED
-    )
-    USERNAME_FIELD_NOT_FOUND = ActionFailedDetails.USERNAME_FIELD_NOT_FOUND
-    PASSWORD_FIELD_NOT_FOUND = ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND
-    PIN_FIELD_NOT_FOUND = ActionFailedDetails.PIN_FIELD_NOT_FOUND
-    SUBMIT_BUTTON_NOT_FOUND = ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND
-    SUCCESS_URL_DID_NOT_MATCH = ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH
-    UNKNOWN_EXECUTION_ERROR = ActionFailedDetails.UNKNOWN_EXECUTION_ERROR
-    FAILED = ActionStatusCode.FAILED
-
-
-TIMEOUT = 30
-
-type CustomFailedDetailsMessage = str | None
 
 
 def login(
@@ -34,9 +15,8 @@ def login(
     success_url: str,
     username: str,
     password: str,
-    pin: str,
-    x_paths: XPaths = None,
-    screenshot_id: str = None,
+    custom_login_script: str | None = None,
+    screenshot_id: str | None = None,
 ) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage]:
 
     try:
@@ -45,43 +25,14 @@ def login(
                 sb.activate_cdp_mode(url)
                 sb.uc_gui_handle_captcha()
 
-                # Wait until paths are found
-                for i in range(0, TIMEOUT, 5):
-                    sb.uc_gui_click_captcha()
-                    elements, error = find_elements(sb=sb, x_paths=x_paths, pin=pin)
-                    if elements is not None:
-                        break
-                    sb.sleep(5)
-                if elements is None:
+                if custom_login_script is None:
+                    status = standard_login(sb, username, password)
+                else:
+                    status = custom_login(sb, custom_login_script, username, password)
+
+                if status is not None:
                     save_screenshot(sb, screenshot_id)
-                    return error, None
-
-                username_xpath = elements.username
-                password_xpath = elements.password
-                pin_xpath = elements.pin
-                submit_button_xpath = elements.submit_button
-
-                if sb.cdp.send_keys(username_xpath, username) == False:
-                    save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.USERNAME_FIELD_NOT_FOUND, None
-
-                sb.sleep(0.5)
-
-                if sb.cdp.send_keys(password_xpath, password) == False:
-                    save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND, None
-
-                if pin != "" and pin is not None:
-                    sb.sleep(0.5)
-                    if sb.cdp.send_keys(pin_xpath, pin) == False:
-                        save_screenshot(sb, screenshot_id)
-                        return LoginStatusCode.PIN_FIELD_NOT_FOUND, None
-
-                sb.sleep(0.5)
-
-                if sb.cdp.click(submit_button_xpath) == False:
-                    save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND, None
+                    return status
 
                 # Redirect to success url
                 sb.cdp.open(success_url)
@@ -112,52 +63,78 @@ def login(
             )
     except Exception as ex:
         traceback.print_exc()
+        sb.reconnect()
+        sb.driver.quit()
         return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
 
 
-def find_elements(
-    sb: SB, x_paths: XPaths, pin: str
-) -> tuple[XPaths | None, LoginStatusCode | None]:
-    pin_used = pin != "" and pin is not None
+def standard_login(sb: SB, username: str, password: str) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage] | None:
+    xpaths = None
+    # Wait until paths are found
+    for i in range(0, TIMEOUT, 5):
+        sb.uc_gui_click_captcha()
+        xpaths, error = _find_elements(sb=sb)
+        if xpaths is not None:
+            break
+        sb.sleep(5)
+    if xpaths is None:
+        return error, None
+
+    username_xpath = xpaths.username
+    password_xpath = xpaths.password
+    submit_button_xpath = xpaths.submit_button
+
+    if sb.cdp.send_keys(username_xpath, username) == False:
+        return LoginStatusCode.USERNAME_FIELD_NOT_FOUND, None
+
+    sb.sleep(0.5)
+
+    if sb.cdp.send_keys(password_xpath, password) == False:
+        return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND, None
+
+    sb.sleep(0.5)
+
+    if sb.cdp.click(submit_button_xpath) == False:
+        return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND, None
+
+    return None
+
+
+def custom_login(sb: SB, custom_login_script, username: str, password: str) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage] | None:
+    xpaths, error = _find_elements(sb=sb)
+    custom_login_seleniumbase = CustomLoginMethodsSeleniumbase(driver=sb, x_paths=xpaths, username=username, password=password)
+    parser = CustomLoginScriptParser(custom_login_seleniumbase)
+    exception = parser.execute(custom_login_script)
+    if exception is not None:
+        return exception.status, exception.message
+    return None
+
+
+def _find_elements(sb: SB) -> tuple[XPaths | None, LoginStatusCode | None]:
     selenium_driver = SeleniumbaseDriver(sb)
     x_paths_automatic = find_login_automatically(
-        selenium_driver, sb.cdp.get_element_html("html"), pin_used=pin_used
+        selenium_driver, sb.cdp.get_element_html("html"),
     )
     username_xpath = None
     password_xpath = None
-    pin_xpath = None
     submit_button_xpath = None
 
     if x_paths_automatic is not None:
         username_xpath = x_paths_automatic.username
         password_xpath = x_paths_automatic.password
-        pin_xpath = x_paths_automatic.pin
         submit_button_xpath = x_paths_automatic.submit_button
 
-    if x_paths is None:
-        if x_paths_automatic is None:
-            return None, LoginStatusCode.AUTOMATIC_FORM_DETECTION_FAILED
-    else:
-        if x_paths.username is not None:
-            username_xpath = x_paths.username
-        if x_paths.password is not None:
-            password_xpath = x_paths.password
-        if x_paths.pin is not None:
-            pin_xpath = x_paths.pin
-        if x_paths.submit_button is not None:
-            submit_button_xpath = x_paths.submit_button
+    if x_paths_automatic is None:
+        return None, LoginStatusCode.AUTOMATIC_FORM_DETECTION_FAILED
 
     if username_xpath is None or sb.cdp.find_element(username_xpath) is None:
         return None, LoginStatusCode.USERNAME_FIELD_NOT_FOUND
     if password_xpath is None or sb.cdp.find_element(password_xpath) is None:
         return None, LoginStatusCode.PASSWORD_FIELD_NOT_FOUND
-    if pin_used:
-        if pin_xpath is not None or sb.cdp.find_element(pin_xpath) is None:
-            return None, LoginStatusCode.PIN_FIELD_NOT_FOUND
     if submit_button_xpath is None or sb.cdp.find_element(submit_button_xpath) is None:
         return None, LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
 
-    return XPaths(username_xpath, password_xpath, pin_xpath, submit_button_xpath), None
+    return XPaths(username_xpath, password_xpath, submit_button_xpath), None
 
 
 def save_screenshot(sb: SB, screenshot_id: str):
