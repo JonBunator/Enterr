@@ -75,7 +75,7 @@ class Scheduler:
             action_history_id=action_history_id
         )
         # login
-        status = login(
+        status, custom_failed_details_message = login(
             url=url,
             success_url=success_url,
             username=username,
@@ -89,11 +89,11 @@ class Scheduler:
         if status != LoginStatusCode.SUCCESS:
             executions_status = LoginStatusCode.FAILED
             failed_details = status.value
-
         self.data_access.action_history_finish_execution(
             action_history_id=action_history_id,
             execution_status=ActionStatusCode(executions_status.value),
             failed_details=failed_details,
+            custom_failed_details_message=custom_failed_details_message,
             screenshot_id=screenshot_id,
         )
 

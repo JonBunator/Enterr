@@ -266,6 +266,7 @@ class DataBase:
         action_history_id: int,
         execution_status: ActionStatusCode,
         failed_details: ActionFailedDetails,
+        custom_failed_details_message: str = None,
         screenshot_id: str = None,
     ):
         with get_session() as session:
@@ -275,6 +276,7 @@ class DataBase:
             existing_action_history.execution_ended = datetime.now()
             existing_action_history.execution_status = execution_status
             existing_action_history.failed_details = failed_details
+            existing_action_history.custom_failed_details_message = custom_failed_details_message
             existing_action_history.screenshot_id = screenshot_id
             session.commit()
 

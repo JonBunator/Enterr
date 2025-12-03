@@ -1,11 +1,6 @@
 from abc import abstractmethod, ABC
-from functools import wraps
-from typing import Callable
-from fastapi import HTTPException
 from pydantic import BaseModel
 from dataAccess.database.database import Base
-import traceback
-from utils.exceptions import NotFoundException
 
 
 class GetRequestBaseModel(BaseModel, ABC):

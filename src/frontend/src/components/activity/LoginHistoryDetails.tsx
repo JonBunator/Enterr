@@ -53,25 +53,40 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   }
 
   function getFailedDetails(): string {
+    let message: string;
+
     switch (loginHistory.failed_details) {
       case FailedDetails.AUTOMATIC_FORM_DETECTION_FAILED:
-        return 'Automatic form detection failed. Try to define custom xpaths or submit a issue on GitHub.'
+        message = 'Automatic form detection failed. Try to define custom xpaths or submit an issue on GitHub.';
+        break;
       case FailedDetails.USERNAME_FIELD_NOT_FOUND:
-        return 'Username field not found. Try to define custom username xpath or submit a issue on GitHub.'
+        message = 'Username field not found. Try to define custom username xpath or submit an issue on GitHub.';
+        break;
       case FailedDetails.PASSWORD_FIELD_NOT_FOUND:
-        return 'Password field not found. Try to define custom password xpath or submit a issue on GitHub.'
+        message = 'Password field not found. Try to define custom password xpath or submit an issue on GitHub.';
+        break;
       case FailedDetails.PIN_FIELD_NOT_FOUND:
-        return 'PIN field not found. Try to define custom PIN xpath or submit a issue on GitHub.'
+        message = 'PIN field not not found. Try to define custom PIN xpath or submit an issue on GitHub.';
+        break;
       case FailedDetails.SUBMIT_BUTTON_NOT_FOUND:
-        return 'Submit button not found. Try to define custom submit button xpath or submit a issue on GitHub.'
+        message = 'Submit button not found. Try to define custom submit button xpath or submit an issue on GitHub.';
+        break;
       case FailedDetails.SUCCESS_URL_DID_NOT_MATCH:
-        return 'The success url did not match after login attempt.'
+        message = 'The success url did not match after login attempt.';
+        break;
       case FailedDetails.UNKNOWN_EXECUTION_ERROR:
-        return 'An unknown error occurred while executing task.'
-      case null: { throw new Error('Not implemented yet: null case') }
+        message = 'An unknown error occurred while executing task.';
+        break;
+      case null:
+        message = 'Unknown error';
+        break;
       default:
-        return 'Unknown error'
+        message = 'Unknown error';
     }
+
+    const customMessage = loginHistory.custom_failed_details_message;
+
+    return message + `${customMessage !== null ? " " + customMessage : ''}`;
   }
   const open = Boolean(anchorEl)
 

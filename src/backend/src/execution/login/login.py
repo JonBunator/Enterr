@@ -1,6 +1,8 @@
 import os
 import traceback
 from enum import Enum
+from typing import Tuple
+
 from seleniumbase import SB
 from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
 from .find_form_automatically import find_login_automatically, XPaths
@@ -23,6 +25,8 @@ class LoginStatusCode(Enum):
 
 TIMEOUT = 30
 
+type CustomFailedDetailsMessage = str | None
+
 
 def login(
     url: str,
@@ -32,7 +36,7 @@ def login(
     pin: str,
     x_paths: XPaths = None,
     screenshot_id: str = None,
-) -> LoginStatusCode:
+) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage]:
 
     try:
         with SB(uc=True, headed=True, window_size="1920,953") as sb:
@@ -49,7 +53,7 @@ def login(
                     sb.sleep(5)
                 if elements is None:
                     save_screenshot(sb, screenshot_id)
-                    return error
+                    return error, None
 
                 username_xpath = elements.username
                 password_xpath = elements.password
@@ -58,25 +62,25 @@ def login(
 
                 if sb.cdp.send_keys(username_xpath, username) == False:
                     save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.USERNAME_FIELD_NOT_FOUND
+                    return LoginStatusCode.USERNAME_FIELD_NOT_FOUND, None
 
                 sb.sleep(0.5)
 
                 if sb.cdp.send_keys(password_xpath, password) == False:
                     save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND
+                    return LoginStatusCode.PASSWORD_FIELD_NOT_FOUND, None
 
                 if pin != "" and pin is not None:
                     sb.sleep(0.5)
                     if sb.cdp.send_keys(pin_xpath, pin) == False:
                         save_screenshot(sb, screenshot_id)
-                        return LoginStatusCode.PIN_FIELD_NOT_FOUND
+                        return LoginStatusCode.PIN_FIELD_NOT_FOUND, None
 
                 sb.sleep(0.5)
 
                 if sb.cdp.click(submit_button_xpath) == False:
                     save_screenshot(sb, screenshot_id)
-                    return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND
+                    return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND, None
 
                 # Wait for expected url
                 for i in range(TIMEOUT):
@@ -84,7 +88,7 @@ def login(
                     sb.sleep(1)
                     if sb.cdp.get_current_url() == success_url:
                         save_screenshot(sb, screenshot_id)
-                        return LoginStatusCode.SUCCESS
+                        return LoginStatusCode.SUCCESS, None
                 save_screenshot(sb, screenshot_id)
 
             except Exception as ex:
@@ -92,11 +96,19 @@ def login(
                 save_screenshot(sb, screenshot_id)
                 sb.reconnect()
                 sb.driver.quit()
-                return LoginStatusCode.UNKNOWN_EXECUTION_ERROR
-        return LoginStatusCode.SUCCESS_URL_DID_NOT_MATCH
+                return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
+
+            current_url = sb.cdp.get_current_url()
+            success_url_not_matching_custom_failed_details_message = (
+                f'Expected: "{success_url}", Found: "{current_url}"'
+            )
+            return (
+                LoginStatusCode.SUCCESS_URL_DID_NOT_MATCH,
+                success_url_not_matching_custom_failed_details_message,
+            )
     except Exception as ex:
         traceback.print_exc()
-        return LoginStatusCode.UNKNOWN_EXECUTION_ERROR
+        return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
 
 
 def find_elements(

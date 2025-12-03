@@ -60,7 +60,7 @@ def init_db():
         return
 
     # Production mode: use Alembic migrations
-    alembic_cfg = Config("src/migrations/alembic.ini", stdout=sys.stdout)
+    alembic_cfg = Config("src/alembic.ini", stdout=sys.stdout)
     alembic_cfg.set_main_option("script_location", "src/migrations")
 
     # Check if database file exists
@@ -74,7 +74,6 @@ def init_db():
         command.stamp(alembic_cfg, "8e6efc857763", sql=False)
 
     command.upgrade(alembic_cfg, "head", sql=False)
-
 
 
 @contextmanager
@@ -209,6 +208,7 @@ class ActionHistory(Base):
     execution_ended: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     execution_status: Mapped[ActionStatusCode] = mapped_column(nullable=False)
     failed_details: Mapped[Optional[ActionFailedDetails]] = mapped_column(nullable=True)
+    custom_failed_details_message: Mapped[Optional[str]] = mapped_column(nullable=True)
     screenshot_id: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     website: Mapped[int] = mapped_column(ForeignKey("website.id"), nullable=False)

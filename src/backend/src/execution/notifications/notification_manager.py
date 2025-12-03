@@ -90,7 +90,10 @@ class NotificationManager:
                 "An unknown error occurred while executing task"
         }
 
-        return failed_details_messages.get(action_history.failed_details, "Unknown error")
+        main_message = failed_details_messages.get(action_history.failed_details, "Unknown error")
+        if action_history.custom_failed_details_message is not None:
+            main_message += " " + action_history.custom_failed_details_message
+        return main_message
 
     @staticmethod
     def _get_variable(variable: NotificationVariable) -> str:

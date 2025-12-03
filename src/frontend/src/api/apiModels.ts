@@ -48,6 +48,7 @@ export interface ActionHistory {
   execution_ended: string | null
   execution_status: ActionStatusCode
   failed_details: FailedDetails | null
+  custom_failed_details_message: string | null
   screenshot_id: string | null
 }
 

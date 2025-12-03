@@ -3,12 +3,14 @@ from typing import Optional
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
+
 class GetActionHistory(GetRequestBaseModel):
     id: int
     execution_started: datetime
     execution_ended: Optional[datetime]
     execution_status: str
     failed_details: Optional[str]
+    custom_failed_details_message: Optional[str]
     screenshot_id: Optional[str]
 
     @staticmethod
@@ -19,6 +21,7 @@ class GetActionHistory(GetRequestBaseModel):
             execution_ended=action_history.execution_ended,
             execution_status=action_history.execution_status.value,
             failed_details=action_history.failed_details.value if action_history.failed_details else None,
+            custom_failed_details_message=action_history.custom_failed_details_message,
             screenshot_id=action_history.screenshot_id
         )
 

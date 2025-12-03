@@ -53,10 +53,11 @@ class DataAccessInternal:
         action_history_id: int,
         execution_status: ActionStatusCode,
         failed_details: ActionFailedDetails,
+        custom_failed_details_message: str = None,
         screenshot_id: str = None,
     ):
         DataBase.action_history_finish_execution(
-            action_history_id, execution_status, failed_details, screenshot_id
+            action_history_id, execution_status, failed_details, custom_failed_details_message, screenshot_id
         )
 
         self.webhook_endpoints.action_history_changed(
