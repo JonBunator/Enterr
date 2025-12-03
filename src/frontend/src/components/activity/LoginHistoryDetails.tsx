@@ -72,7 +72,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
         message = 'Submit button not found. Try to define custom submit button xpath or submit an issue on GitHub.';
         break;
       case FailedDetails.SUCCESS_URL_DID_NOT_MATCH:
-        message = 'The success url did not match after login attempt.';
+        message = 'The success URL did not match after login attempt.';
         break;
       case FailedDetails.UNKNOWN_EXECUTION_ERROR:
         message = 'An unknown error occurred while executing task.';

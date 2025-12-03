@@ -83,6 +83,9 @@ def login(
                     save_screenshot(sb, screenshot_id)
                     return LoginStatusCode.SUBMIT_BUTTON_NOT_FOUND, None
 
+                # Redirect to success url
+                sb.cdp.open(success_url)
+
                 # Wait for expected url
                 for i in range(TIMEOUT):
                     sb.uc_gui_click_captcha()
