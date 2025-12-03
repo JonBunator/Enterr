@@ -20,3 +20,15 @@ def timedelta_to_parts(td: timedelta):
     seconds = total_seconds % 60
 
     return TimeParts(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+
+def compare_urls(url1: str, url2: str) -> bool:
+    """
+    Compares two url strings. Returns True if they match.
+    """
+    if url1.endswith("/"):
+        url1 = url1[:-1]
+    if url2.endswith("/"):
+        url2 = url2[:-1]
+    return url1 == url2
+

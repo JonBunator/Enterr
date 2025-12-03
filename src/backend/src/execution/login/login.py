@@ -5,6 +5,7 @@ from typing import Tuple
 
 from seleniumbase import SB
 from dataAccess.database.database import ActionFailedDetails, ActionStatusCode
+from utils.utils import compare_urls
 from .find_form_automatically import find_login_automatically, XPaths
 from .selenium_adapter import SeleniumbaseDriver
 
@@ -86,7 +87,7 @@ def login(
                 for i in range(TIMEOUT):
                     sb.uc_gui_click_captcha()
                     sb.sleep(1)
-                    if sb.cdp.get_current_url() == success_url:
+                    if compare_urls(sb.cdp.get_current_url(), success_url):
                         save_screenshot(sb, screenshot_id)
                         return LoginStatusCode.SUCCESS, None
                 save_screenshot(sb, screenshot_id)
