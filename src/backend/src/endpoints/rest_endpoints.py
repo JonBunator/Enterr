@@ -176,3 +176,8 @@ def register_rest_endpoints(
             return FileResponse(image_path, media_type="image/png")
         else:
             raise NotFoundException(f"Image with id {screenshot_id} was not found")
+
+
+    @app.get("/api/health")
+    def health_check():
+        return {"status": "healthy"}

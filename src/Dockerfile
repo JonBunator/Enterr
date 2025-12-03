@@ -41,5 +41,6 @@ EXPOSE 7653
 ENV RUN_MODE=production
 VOLUME /config
 
+HEALTHCHECK --interval=15m --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "http://localhost:7653/api/health" ]
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/start.sh"]
