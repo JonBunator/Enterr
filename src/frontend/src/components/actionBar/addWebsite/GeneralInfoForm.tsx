@@ -52,7 +52,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             label="URL"
             required
             fullWidth
-            helperText="The url of the login page."
+            helperText="The URL of the login page."
             placeholder="https://www.example.com"
             onValidate={validateURL}
           />
@@ -72,7 +72,7 @@ export default function GeneralInfoForm(props: GeneralInfoFormProps) {
             required
             fullWidth
             placeholder="https://www.example.com/success"
-            helperText="The url that is displayed after a successful login. This is used to check if the login was successful."
+            helperText="Redirects to URL after login. This is used to check if the login was successful. Make sure that the URL is not accessible when logged out."
             onValidate={validateURL}
           />
         </Grid>

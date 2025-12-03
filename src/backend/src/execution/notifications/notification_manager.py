@@ -85,7 +85,7 @@ class NotificationManager:
             ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND:
                 "Submit button not found",
             ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH:
-                "The success url did not match after login attempt",
+                "The success URL did not match after login attempt",
             ActionFailedDetails.UNKNOWN_EXECUTION_ERROR:
                 "An unknown error occurred while executing task"
         }
