@@ -7,7 +7,7 @@ pydantic==2.12.5
 APScheduler==3.11.1
 pytz==2025.2
 apprise==1.9.5
-fastapi[standard]==0.123.4
+fastapi[standard]==0.124.0
 python-socketio==5.15.0
 python-jose[cryptography]==3.5.0
 Werkzeug==3.1.4
