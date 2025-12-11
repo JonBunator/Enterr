@@ -74,11 +74,6 @@ class Scheduler:
         self.webhook_endpoints.action_history_changed(
             action_history_id=action_history_id
         )
-        custom_login_script ="""
-        fillPassword("asdfasdf")
-        fillUsername()
-        clickSubmitButton()
-        """
 
         # login
         status, custom_failed_details_message = login(
@@ -86,7 +81,6 @@ class Scheduler:
             success_url=success_url,
             username=username,
             password=password,
-            custom_login_script=custom_login_script,
             screenshot_id=screenshot_id,
         )
         executions_status = LoginStatusCode.SUCCESS

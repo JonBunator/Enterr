@@ -80,8 +80,6 @@ class NotificationManager:
                 "Username field not found",
             ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND:
                 "Password field not found",
-            ActionFailedDetails.PIN_FIELD_NOT_FOUND:
-                "PIN field not found",
             ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND:
                 "Submit button not found",
             ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH:

@@ -1,7 +1,7 @@
 from lark import Lark, Transformer, LarkError
 from lark.exceptions import VisitError
 
-from execution.login.custom_login.custom_login_methods_interfaces import CustomLoginMethods
+from execution.login.custom_login.custom_login_methods_interfaces import CustomLoginMethodsInterface
 from utils.exceptions import ScriptExecutionStopped
 
 grammar = r"""
@@ -44,7 +44,7 @@ parser = Lark(grammar, start="start")
 
 
 class Executor(Transformer):
-    def __init__(self, custom_login_methods: CustomLoginMethods):
+    def __init__(self, custom_login_methods: CustomLoginMethodsInterface):
         super().__init__()
         self._custom_login_methods = custom_login_methods
 
@@ -85,7 +85,7 @@ class Executor(Transformer):
 
 
 class CustomLoginScriptParser:
-    def __init__(self, custom_login_methods: CustomLoginMethods):
+    def __init__(self, custom_login_methods: CustomLoginMethodsInterface):
         self._custom_login_methods = custom_login_methods
 
     @staticmethod
