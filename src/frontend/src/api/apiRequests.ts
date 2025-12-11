@@ -1,4 +1,6 @@
-import type { ChangeWebsite } from '../components/activity/activityRequests.ts'
+import type {
+  ChangeWebsite,
+} from "../components/activity/activityRequests.ts";
 import {
   ActionHistory,
   EditNotification,
@@ -38,8 +40,17 @@ export async function deleteWebsite(websiteId: number) {
 }
 
 export async function editWebsite(websiteId: number, website: ChangeWebsite) {
-  const body = { id: websiteId, ...website }
-  await apiClient.post('/websites/edit', body);
+  const body = { id: websiteId, ...website };
+  await apiClient.post("/websites/edit", body);
+}
+
+export async function checkCustomLoginScript(customLoginScript: string): Promise<string | null> {
+  const body = { script: customLoginScript };
+  const data = await apiClient.post(
+    "/websites/check_custom_login_script",
+    body,
+  );
+  return data.data.error;
 }
 
 export async function addManualLogin(websiteId: number) {

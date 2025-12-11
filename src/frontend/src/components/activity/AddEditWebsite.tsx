@@ -20,11 +20,10 @@ const emptyChangeWebsite: ChangeWebsite = {
   name: '',
   username: '',
   password: '',
-  pin: '',
   take_screenshot: true,
   paused: false,
   expiration_interval_minutes: null,
-  custom_access: null,
+  custom_login_script: null,
   action_interval: {
     date_minutes_start: 0,
     date_minutes_end: null,
@@ -80,9 +79,9 @@ const AddEditWebsite = forwardRef<AddEditWebsiteRef, AddEditWebsiteProps>((props
     setCurrentValue(value ?? emptyChangeWebsite)
   }, [value])
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (formRef?.current) {
-      const isValid = formRef?.current.validate()
+      const isValid = await formRef?.current.validate()
       if (isValid) {
         onChange?.(currentValue)
       }

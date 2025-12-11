@@ -15,8 +15,10 @@ from endpoints.models.notification_model import (
     EditNotification,
     DeleteNotification,
 )
-from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite
+from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite, CheckCustomLoginScript, \
+    CheckCustomLoginScriptResponse
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
+from execution.login.custom_login.parser import CustomLoginScriptParser
 
 
 class DataAccess:
@@ -34,6 +36,11 @@ class DataAccess:
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
         return DataBase.get_website(website_id, current_user)
+
+    @staticmethod
+    def check_custom_login_script(request: CheckCustomLoginScript) -> CheckCustomLoginScriptResponse:
+        error = CustomLoginScriptParser.check_syntax(request.script)
+        return CheckCustomLoginScriptResponse(error=error)
 
     def add_website(self, request: AddWebsite, current_user: User):
         website = request.to_sql_model()

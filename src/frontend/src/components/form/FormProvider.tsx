@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { createContext, forwardRef, useCallback, useContext, useImperativeHandle, useMemo, useState } from 'react'
 
 interface Subscriber {
-  identifier: string
-  callback: () => boolean
+  identifier: string;
+  callback: () => (boolean | Promise<boolean>);
 }
 
 interface FormContextType {
@@ -28,7 +28,7 @@ export interface FormProviderRef {
   /**
    * Validates all form elements and returns true when all fields are valid.
    */
-  validate: () => boolean
+  validate: () => Promise<boolean>
   /**
    * Scrolls to first error element
    */
@@ -50,7 +50,7 @@ export const FormProvider = forwardRef<FormProviderRef, FormProviderProps>((prop
     )
   }, [])
 
-  const validate = () => {
+  const validate = async () => {
     const results = subscribers.map(subscriber => subscriber.callback())
     return results.every(result => result)
   }

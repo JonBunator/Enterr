@@ -160,3 +160,11 @@ class GetWebsite(GetRequestBaseModel):
                 website.action_interval) if website.action_interval else None,
             next_schedule=website.next_schedule,
         )
+
+
+class CheckCustomLoginScript(BaseModel):
+    script: str
+
+
+class CheckCustomLoginScriptResponse(BaseModel):
+    error: str | None

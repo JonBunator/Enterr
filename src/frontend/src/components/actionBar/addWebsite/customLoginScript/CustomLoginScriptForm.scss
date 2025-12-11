@@ -1,0 +1,25 @@
+.custom-login-script-form .custom-login-script-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+
+  .code-editor {
+    flex: 1;
+
+    .cm-editor {
+      height: 200px;
+    }
+    &.error {
+      border: 1px solid #f44336;
+    }
+  }
+  .code-editor-helper-row {
+    display: flex;
+    justify-content: space-between;
+
+    .code-editor-error-text {
+      margin-top: 0;
+    }
+  }
+}
