@@ -2,7 +2,7 @@ python-dotenv==1.2.1
 seleniumbase==4.44.20
 lxml==6.0.2
 PyAutoGUI==0.9.54
-SQLAlchemy==2.0.44
+SQLAlchemy==2.0.45
 pydantic==2.12.5
 APScheduler==3.11.1
 pytz==2025.2
