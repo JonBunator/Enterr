@@ -13,7 +13,7 @@ import {
 import { useForm } from "../../../form/FormProvider.tsx";
 import {completions} from "./codeMirrorLoginScriptLanguage.ts";
 import { autocompletion } from "@codemirror/autocomplete";
-import { Diagnostic, linter, lintGutter } from "@codemirror/lint";
+import { Diagnostic, linter } from "@codemirror/lint";
 
 interface CustomLoginScriptFormProps {
   value: ChangeWebsite;
