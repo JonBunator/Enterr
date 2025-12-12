@@ -1,5 +1,5 @@
 import type { ChangeWebsite } from "../../../activity/activityRequests.ts";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import FormGrouping from "../../FormGrouping.tsx";
@@ -11,6 +11,9 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { useForm } from "../../../form/FormProvider.tsx";
+import {completions} from "./codeMirrorLoginScriptLanguage.ts";
+import { autocompletion } from "@codemirror/autocomplete";
+import { Diagnostic, linter, lintGutter } from "@codemirror/lint";
 
 interface CustomLoginScriptFormProps {
   value: ChangeWebsite;
@@ -26,6 +29,7 @@ export default function CustomLoginScriptForm(
     value.custom_login_script !== null,
   );
   const [ error, setError ] = useState<string>("");
+  const codeEditorLintingErrors = useRef<Diagnostic[]>([]);
   const [ scriptCorrect, setScriptCorrect ] = useState<boolean>(false);
   const { subscribe, unsubscribe } = useForm();
 
@@ -42,13 +46,48 @@ export default function CustomLoginScriptForm(
     }
   }
 
-  function handleCustomAccessChange(val: string) {
+  function handleCustomLoginScriptChange(val: string) {
     setScriptCorrect(false);
+    setError("");
+    codeEditorLintingErrors.current = [];
     onChange?.({
       ...value,
       custom_login_script: val,
     });
   }
+
+  const setEditorError = useCallback(
+    (errorMessage: string) => {
+      if (errorMessage === "") {
+        codeEditorLintingErrors.current = [];
+        return;
+      }
+
+      const match = errorMessage.match(/.*line ([0-9]+) col ([0-9]+).*/);
+      if (match) {
+        const line = parseInt(match[1]);
+        const col = parseInt(match[2]);
+
+        const codeEditorRows = value.custom_login_script?.split("\n") ?? [];
+        if(line > codeEditorRows.length) {
+          return;
+        }
+
+        const from = codeEditorRows.slice(0, line - 1).join("\n").length + col;
+        const to = from + codeEditorRows[line - 1].length - col + 1;
+
+        codeEditorLintingErrors.current = [
+          {
+            from: from,
+            to: to,
+            severity: "error",
+            message: errorMessage,
+          },
+        ];
+      }
+    },
+    [value.custom_login_script],
+  );
 
   const validate = useCallback(async (): Promise<boolean> => {
     if (!customAccessEnabled) {
@@ -64,6 +103,7 @@ export default function CustomLoginScriptForm(
       setError(error);
       const valid = error === "";
       setScriptCorrect(valid);
+      setEditorError(error);
       return valid;
     } catch {
       setError("Couldn't check syntax. Request failed.");
@@ -82,6 +122,10 @@ export default function CustomLoginScriptForm(
   }, [subscribe, unsubscribe, validate]);
 
 
+  const lintError = linter(() => {
+    return codeEditorLintingErrors.current;
+  });
+
   return (
     <FormGrouping
       className="custom-login-script-form"
@@ -97,8 +141,15 @@ export default function CustomLoginScriptForm(
         <CodeMirror
           className={`code-editor ${error ? "error" : ""}`}
           value={value.custom_login_script ?? ""}
-          onChange={handleCustomAccessChange}
+          onChange={handleCustomLoginScriptChange}
           theme={vscodeDark}
+          extensions={[
+            autocompletion({
+              override: [completions],
+              activateOnTyping: true,
+            }),
+            lintError,
+          ]}
         />
 
         <div className="code-editor-helper-row">
@@ -106,7 +157,7 @@ export default function CustomLoginScriptForm(
             className="code-editor-error-text"
             error={error !== ""}
           >
-            {error}
+            {error.split("\n")[0]}
           </FormHelperText>
 
           <Button
