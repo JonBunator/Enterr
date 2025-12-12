@@ -51,7 +51,6 @@ def create_website(dt: datetime, user_id: int) -> Website:
         name="Example",
         username="user123",
         password="password123",
-        pin="1234",
         added_at=dt,
         expiration_interval=timedelta(days=1),
         next_schedule=dt,
@@ -76,7 +75,6 @@ def test_website_entry_creation(test_session, test_user):
     assert website_in_db.name == "Example"
     assert website_in_db.username == "user123"
     assert website_in_db.password == "password123"
-    assert website_in_db.pin == "1234"
     assert website_in_db.added_at == dt
     assert website_in_db.expiration_interval == timedelta(days=1)
     assert website_in_db.take_screenshot is True
@@ -86,7 +84,6 @@ def test_website_entry_creation(test_session, test_user):
 
 
 def test_website_entry_creation_null_values(test_session, test_user):
-    """Tests website creation with no pin."""
     new_website = Website(
         url="https://example.com",
         success_url="https://example.com/login",
@@ -104,33 +101,8 @@ def test_website_entry_creation_null_values(test_session, test_user):
     website_in_db = test_session.query(Website).first()
 
     assert website_in_db is not None
-    assert website_in_db.pin is None
     assert website_in_db.expiration_interval is None
     assert website_in_db.next_schedule is None
-
-
-def test_website_with_custom_accesses(test_session, test_user):
-    """Test that CustomAccess objects are correctly added to a Website."""
-    website = create_website(datetime.now(), test_user.id)
-
-    custom_access = CustomAccess(
-        username_xpath="//input[@name='username']",
-        password_xpath="//input[@name='password']",
-        submit_button_xpath="//button[@type='submit']",
-    )
-
-    website.custom_access = custom_access
-    test_session.add(website)
-    test_session.commit()
-
-    retrieved_website = test_session.query(Website).one()
-
-    assert retrieved_website is not None
-
-    access = retrieved_website.custom_access
-    assert access.username_xpath == "//input[@name='username']"
-    assert access.password_xpath == "//input[@name='password']"
-    assert access.submit_button_xpath == "//button[@type='submit']"
 
 
 def test_website_with_action_history(test_session, test_user):

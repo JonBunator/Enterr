@@ -158,7 +158,7 @@ class Website(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     username: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
-    pin: Mapped[Optional[str]] = mapped_column(nullable=True)
+    custom_login_script: Mapped[Optional[str]] = mapped_column(nullable=True)
     added_at: Mapped[datetime] = mapped_column(nullable=False)
     take_screenshot: Mapped[bool] = mapped_column(nullable=False)
     paused: Mapped[bool] = mapped_column(nullable=False)
@@ -166,14 +166,6 @@ class Website(Base):
     next_schedule: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
     user: Mapped[int] = mapped_column(ForeignKey("user.id"))
-
-    # Relationship to CustomAccess
-    custom_access: Mapped[Optional["CustomAccess"]] = relationship(
-        "CustomAccess",
-        cascade="all, delete-orphan",
-        backref="parent_website",
-        uselist=False,
-    )
 
     # Relationship to ActionHistory
     action_histories: Mapped[List["ActionHistory"]] = relationship(
@@ -187,18 +179,6 @@ class Website(Base):
         backref="parent_website",
         uselist=False,
     )
-
-
-class CustomAccess(Base):
-    __tablename__ = "custom_access"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username_xpath: Mapped[str] = mapped_column(nullable=True)
-    password_xpath: Mapped[str] = mapped_column(nullable=True)
-    pin_xpath: Mapped[Optional[str]] = mapped_column(nullable=True)
-    submit_button_xpath: Mapped[str] = mapped_column(nullable=True)
-
-    website: Mapped[int] = mapped_column(ForeignKey("website.id"))
 
 
 class ActionHistory(Base):

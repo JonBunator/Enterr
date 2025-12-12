@@ -47,7 +47,6 @@ class DataBase:
             user = (
                 session.query(User)
                 .options(
-                    joinedload(User.websites).joinedload(Website.custom_access),
                     joinedload(User.websites).joinedload(Website.action_interval),
                 )
                 .get(current_user.id)
@@ -61,7 +60,7 @@ class DataBase:
                 id=website_id, user=current_user.id
             )
             query = query.options(
-                joinedload(Website.custom_access), joinedload(Website.action_interval)
+                joinedload(Website.action_interval)
             )
             website = query.first()
 
@@ -238,7 +237,6 @@ class DataBase:
     def get_websites_all_users() -> List[Website]:
         with get_session() as session:
             stmt = select(Website).options(
-                selectinload(Website.custom_access),
                 selectinload(Website.action_interval),
             )
             return session.scalars(stmt).all()
@@ -249,7 +247,6 @@ class DataBase:
             website = (
                 session.query(Website)
                 .options(
-                    joinedload(Website.custom_access),
                     joinedload(Website.action_interval),
                 )
                 .filter_by(id=website_id)
