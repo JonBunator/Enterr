@@ -1,6 +1,9 @@
+import traceback
+
 from lark import Lark, Transformer, LarkError
 from lark.exceptions import VisitError
 
+from execution.login.constants import LoginStatusCode
 from execution.login.custom_login.custom_login_methods_interfaces import CustomLoginMethodsInterface
 from utils.exceptions import ScriptExecutionStopped
 
@@ -55,7 +58,7 @@ class Executor(Transformer):
     def INT(self, token):
         return int(token)
 
-    def click_submit_button(self, items) -> bool:
+    def click_submit_button(self, items):
         xpath = items[0] if items else None
         self._custom_login_methods.click_submit_button(xpath)
 
@@ -110,8 +113,12 @@ class CustomLoginScriptParser:
         try:
             executor.transform(tree)
         except VisitError as e:
-            orig = getattr(e, "orig_exc", None)
-            if isinstance(orig, ScriptExecutionStopped):
+            orig = e.orig_exc
+            if orig is not None and type(orig).__name__ == "ScriptExecutionStopped":
                 return orig
-            raise
+            traceback.print_exc()
+            return ScriptExecutionStopped()
+        except Exception:
+            traceback.print_exc()
+            return ScriptExecutionStopped()
         return None
