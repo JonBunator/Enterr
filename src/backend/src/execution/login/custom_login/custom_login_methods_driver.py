@@ -28,7 +28,6 @@ class CustomLoginMethodsDriver(CustomLoginMethodsInterface):
             xpath = self._x_paths.username if self._x_paths is not None else None
             if xpath is None:
                 raise ScriptExecutionStopped(LoginStatusCode.USERNAME_FIELD_NOT_FOUND, None)
-        print(self._driver)
         try:
             self._driver.fill_text(xpath, self._username)
         except Exception:

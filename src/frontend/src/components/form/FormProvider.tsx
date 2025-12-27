@@ -51,8 +51,10 @@ export const FormProvider = forwardRef<FormProviderRef, FormProviderProps>((prop
   }, [])
 
   const validate = async () => {
-    const results = subscribers.map(subscriber => subscriber.callback())
-    return results.every(result => result)
+    const results = await Promise.all(
+      subscribers.map((subscriber) => subscriber.callback()),
+    );
+    return results.every((result) => result);
   }
 
   const scrollToError = () => {
