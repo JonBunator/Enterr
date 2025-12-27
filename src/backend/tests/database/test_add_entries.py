@@ -2,15 +2,11 @@ from datetime import datetime, timedelta
 from dataAccess.database.database import (
     Website,
     User,
-    CustomAccess,
     ActionHistory,
     ActionStatusCode,
     ActionFailedDetails,
     ActionInterval,
     Base,
-    engine,
-    SessionLocal,
-    get_session,
 )
 import pytest
 from sqlalchemy import create_engine
