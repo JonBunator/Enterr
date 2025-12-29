@@ -18,6 +18,7 @@ import {
   autocompletion,
 } from "@codemirror/autocomplete";
 import { Diagnostic, linter } from "@codemirror/lint";
+import ExternalLink from "../../../common/ExternalLink.tsx";
 
 interface CustomLoginScriptFormProps {
   value: ChangeWebsite;
@@ -139,7 +140,13 @@ export default function CustomLoginScriptForm(
       elevation={16}
       backgroundElevation={8}
       title="Custom login script (Optional)"
-      subtitle="Allows to define a custom login script."
+      subtitle={
+        <ExternalLink
+          href="https://github.com/JonBunator/Enterr/wiki/Custom-Login-Scripts"
+          text="Allows to define a custom login script. See INSERT_LINK for more information."
+          linkText="GitHub"
+        />
+      }
     >
       <div className="custom-login-script-form-container">
         <CodeMirror
