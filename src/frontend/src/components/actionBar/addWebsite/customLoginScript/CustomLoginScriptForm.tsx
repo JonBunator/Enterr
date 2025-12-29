@@ -1,6 +1,7 @@
 import type { ChangeWebsite } from "../../../activity/activityRequests.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
+import { keymap } from "@codemirror/view";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import FormGrouping from "../../FormGrouping.tsx";
 import "./CustomLoginScriptForm.scss";
@@ -9,10 +10,13 @@ import { checkCustomLoginScript } from "../../../../api/apiRequests.ts";
 import {
   CheckIcon,
 } from "@heroicons/react/24/outline";
-
+import { indentWithTab } from "@codemirror/commands";
 import { useForm } from "../../../form/FormProvider.tsx";
-import {completions} from "./codeMirrorLoginScriptLanguage.ts";
-import { autocompletion } from "@codemirror/autocomplete";
+import { completions } from "./codeMirrorLoginScriptLanguage.ts";
+import {
+  acceptCompletion,
+  autocompletion,
+} from "@codemirror/autocomplete";
 import { Diagnostic, linter } from "@codemirror/lint";
 
 interface CustomLoginScriptFormProps {
@@ -143,11 +147,13 @@ export default function CustomLoginScriptForm(
           value={value.custom_login_script ?? ""}
           onChange={handleCustomLoginScriptChange}
           theme={vscodeDark}
+          indentWithTab={false}
           extensions={[
             autocompletion({
               override: [completions],
               activateOnTyping: true,
             }),
+            keymap.of([{ key: "Tab", run: acceptCompletion }, indentWithTab]),
             lintError,
           ]}
         />
