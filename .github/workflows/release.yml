@@ -4,10 +4,13 @@ name: Create and publish Docker
 on:
   push:
     tags: [ v* ]
+    branches: [ main ]
 
 env:
   REGISTRY: ghcr.io
   REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+  IS_DEV: ${{ github.ref == 'refs/heads/main' }}
 
 jobs:
   build-and-push-image:
@@ -33,9 +36,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            # For tags: use semver patterns
+            type=semver,pattern={{version}},enable=${{ env.IS_RELEASE }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ env.IS_RELEASE }}
+            type=raw,value=latest,enable=${{ env.IS_RELEASE }}
+            # For main branch: use dev tag
+            type=raw,value=dev,enable=${{ env.IS_DEV }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
