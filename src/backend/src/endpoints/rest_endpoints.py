@@ -140,7 +140,7 @@ def register_rest_endpoints(
                 httponly=True,
                 secure=True,
                 samesite="strict",
-                max_age=1800,
+                max_age=24 * 60 * 60,
                 path="/",
             )
 

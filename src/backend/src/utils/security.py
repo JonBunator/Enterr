@@ -31,7 +31,7 @@ JWT_ALGORITHM = "HS256"
 
 def create_access_token(username: str):
     to_encode = {"sub": username}
-    expire = datetime.now() + timedelta(minutes=30)
+    expire = datetime.now() + timedelta(minutes=24 * 60)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
