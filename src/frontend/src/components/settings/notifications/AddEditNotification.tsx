@@ -89,9 +89,9 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
     }));
   }
 
-  function editOrCreate() {
+  async function editOrCreate() {
     if (formRef?.current) {
-      const isValid = formRef?.current.validate();
+      const isValid = await formRef?.current.validate();
       if (isValid) {
         if (isCreation()) {
           onCreate(currentNotification);
@@ -113,7 +113,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
 
   async function testCreate() {
     if (formRef?.current) {
-      const isValid = formRef?.current.validate();
+      const isValid = await formRef?.current.validate();
       if (isValid) {
         await testNotification(currentNotification);
       }

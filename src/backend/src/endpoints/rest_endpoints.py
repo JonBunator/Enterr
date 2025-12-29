@@ -22,7 +22,7 @@ from endpoints.models.website_model import (
     GetWebsite,
     AddWebsite,
     EditWebsite,
-    DeleteWebsite,
+    DeleteWebsite, CheckCustomLoginScript,
 )
 from execution.notifications.notification_manager import NotificationManager
 from utils.exceptions import NotFoundException
@@ -60,6 +60,12 @@ def register_rest_endpoints(
         current_user=Depends(DataAccess.get_current_user),
     ):
         data_access.delete_website(website_request, current_user)
+
+    @app.post("/api/websites/check_custom_login_script")
+    async def check_custom_login_script(
+            check_custom_login_script_request: CheckCustomLoginScript,
+    ):
+        return DataAccess.check_custom_login_script(check_custom_login_script_request)
 
     @app.get("/api/action_history/{website_id}", response_model=List[GetActionHistory])
     def get_action_history(

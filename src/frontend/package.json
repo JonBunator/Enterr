@@ -11,12 +11,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.0",
+    "@codemirror/lint": "^6.9.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/roboto": "^5.2.9",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^7.3.5",
     "@mui/x-date-pickers": "^8.19.0",
+    "@uiw/codemirror-theme-vscode": "^4.25.3",
+    "@uiw/react-codemirror": "^4.25.3",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
     "framer-motion": "^12.23.25",

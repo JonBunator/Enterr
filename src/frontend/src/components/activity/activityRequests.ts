@@ -14,13 +14,6 @@ export interface ActivityData {
   loginHistory: ActionHistory[] | null
 }
 
-export interface CustomAccess {
-  username_xpath: string
-  password_xpath: string
-  pin_xpath: string
-  submit_button_xpath: string
-}
-
 export interface ActionInterval {
   date_minutes_start: number
   date_minutes_end: number | null
@@ -29,17 +22,16 @@ export interface ActionInterval {
 }
 
 export interface ChangeWebsite {
-  url?: string
-  success_url?: string
-  name?: string
-  username?: string
-  password?: string
-  pin?: string | null
-  take_screenshot?: boolean
-  paused?: boolean
-  expiration_interval_minutes?: number | null
-  custom_access?: CustomAccess | null
-  action_interval?: ActionInterval | null
+  url?: string;
+  success_url?: string;
+  name?: string;
+  username?: string;
+  password?: string;
+  take_screenshot?: boolean;
+  paused?: boolean;
+  expiration_interval_minutes?: number | null;
+  custom_login_script?: string | null;
+  action_interval?: ActionInterval | null;
 }
 
 export async function getActivity(): Promise<ActivityData[]> {

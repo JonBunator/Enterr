@@ -2,10 +2,9 @@ from datetime import timedelta, datetime, timezone
 from typing import Optional
 from pydantic import BaseModel
 
-from dataAccess.database.database import Website, CustomAccess
+from dataAccess.database.database import Website
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
-from endpoints.models.custom_access_model import AddCustomAccess, GetCustomAccess, EditCustomAccess
 from utils.utils import timedelta_to_parts
 
 
@@ -33,11 +32,10 @@ class AddWebsite(PostRequestBaseModel):
     name: str
     username: str
     password: str
-    pin: Optional[str] = None
     take_screenshot: bool
     paused: Optional[bool] = None
     expiration_interval_minutes: Optional[int] = None
-    custom_access: Optional[AddCustomAccess] = None
+    custom_login_script: Optional[str] = None
     action_interval: AddActionInterval
 
     def to_sql_model(self) -> Website:
@@ -50,14 +48,12 @@ class AddWebsite(PostRequestBaseModel):
             name=self.name,
             username=self.username,
             password=self.password,
-            pin=self.pin if self.pin != '' else None,
+            custom_login_script=self.custom_login_script,
             take_screenshot=self.take_screenshot,
             paused=self.paused if self.paused is not None else False,
             added_at=datetime.now(),
             expiration_interval=expiration_interval,
         )
-        if self.custom_access is not None:
-            website.custom_access = self.custom_access.to_sql_model()
 
         website.action_interval = self.action_interval.to_sql_model()
         return website
@@ -70,11 +66,10 @@ class EditWebsite(BaseModel):
     name: Optional[str] = None
     username: Optional[str] = None
     password: Optional[str] = None
-    pin: Optional[str] = None
     take_screenshot: Optional[bool] = None
     paused: Optional[bool] = None
     expiration_interval_minutes: Optional[int] = None
-    custom_access: Optional[EditCustomAccess] = None
+    custom_login_script: Optional[str] = None
     action_interval: Optional[EditActionInterval] = None
 
     def edit_existing_model(self, existing_website: Website) -> Website:
@@ -88,8 +83,6 @@ class EditWebsite(BaseModel):
             existing_website.username = self.username
         if self.password is not None:
             existing_website.password = self.password
-        if self.pin is not None:
-            existing_website.pin = self.pin
         if self.take_screenshot is not None:
             existing_website.take_screenshot = self.take_screenshot
         if self.paused is not None:
@@ -98,13 +91,7 @@ class EditWebsite(BaseModel):
             existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
         else:
             existing_website.expiration_interval = None
-        if self.custom_access is not None:
-            existing_website.custom_access = CustomAccess(username_xpath=self.custom_access.username_xpath,
-                                                          password_xpath=self.custom_access.password_xpath,
-                                                          pin_xpath=self.custom_access.pin_xpath,
-                                                          submit_button_xpath=self.custom_access.submit_button_xpath)
-        else:
-            existing_website.custom_access = None
+        existing_website.custom_login_script = self.custom_login_script
         if self.action_interval is not None:
             existing_website.action_interval = self.action_interval.edit_existing_model(
                 existing_website.action_interval)
@@ -128,11 +115,10 @@ class GetWebsite(GetRequestBaseModel):
     name: str
     username: str
     password: str
-    pin: Optional[str] = None
     take_screenshot: bool
     paused: bool
     expiration_interval_minutes: Optional[int] = None
-    custom_access: Optional[GetCustomAccess] = None
+    custom_login_script: Optional[str] = None
     action_interval: Optional[GetActionInterval] = None
     next_schedule: Optional[datetime] = None
 
@@ -151,12 +137,19 @@ class GetWebsite(GetRequestBaseModel):
             name=website.name,
             username=website.username,
             password=website.password,
-            pin=website.pin,
             take_screenshot=website.take_screenshot,
             paused=website.paused,
             expiration_interval_minutes=expiration_interval_minutes,
-            custom_access=GetCustomAccess.from_sql_model(website.custom_access) if website.custom_access else None,
+            custom_login_script=website.custom_login_script,
             action_interval=GetActionInterval.from_sql_model(
                 website.action_interval) if website.action_interval else None,
             next_schedule=website.next_schedule,
         )
+
+
+class CheckCustomLoginScript(BaseModel):
+    script: str
+
+
+class CheckCustomLoginScriptResponse(BaseModel):
+    error: str | None
