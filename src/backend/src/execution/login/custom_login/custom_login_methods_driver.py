@@ -60,7 +60,7 @@ class CustomLoginMethodsDriver(CustomLoginMethodsInterface):
         self._driver.wait(500)
 
     def open_url(self, url):
-        self._driver.open(url)
+        self._driver.open_url(url)
 
     def wait(self, ms):
-        self._driver.wait(ms / 1000)
+        self._driver.wait(ms)

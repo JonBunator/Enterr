@@ -1,4 +1,4 @@
-"""v2_5_0
+"""v3_0_0
 
 Revision ID: ec08ca6514ef
 Revises: db2df5c80c91

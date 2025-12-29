@@ -31,7 +31,7 @@ class LoginFormFinder:
         username_xpath = self._find_username_field()
         password_xpath = self._find_password_field()
         submit_button_xpath = self._find_submit_button()
-        if username_xpath is None and password_xpath and None and submit_button_xpath is None:
+        if username_xpath is None and password_xpath is None and submit_button_xpath is None:
             return None
         return XPaths(username=username_xpath, password=password_xpath, submit_button=submit_button_xpath)
 

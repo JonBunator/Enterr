@@ -260,7 +260,7 @@ class TestCustomLoginScriptParser:
         ]
 
     def test_string_parsing(self, parser, mock_methods):
-        """Test that string are parsed correctly with different quote styles"""
+        """Test that strings are parsed correctly with different quote styles"""
         script = """
         fillUsername('"')
         fillUsername('\\'')

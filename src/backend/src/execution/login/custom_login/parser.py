@@ -3,8 +3,6 @@ import traceback
 
 from lark import Lark, Transformer, LarkError
 from lark.exceptions import VisitError
-
-from execution.login.constants import LoginStatusCode
 from execution.login.custom_login.custom_login_methods_interfaces import (
     CustomLoginMethodsInterface,
 )
