@@ -14,7 +14,7 @@ export function completions(context: CompletionContext) {
         info: "fillUsername(): Tries to automatically find username text field and fills value.",
       },
       {
-        label: 'fillUsername("")',
+        label: 'fillUsername(\'\')',
         type: "function",
         info: "fillUsername(xpath): Fills username in text field found by xpath.",
       },
@@ -24,7 +24,7 @@ export function completions(context: CompletionContext) {
         info: "fillPassword(): Tries to automatically find password text field and fills value.",
       },
       {
-        label: 'fillPassword("")',
+        label: 'fillPassword(\'\')',
         type: "function",
         info: "fillPassword(xpath): Fills password in text field found by xpath.",
       },
@@ -34,22 +34,22 @@ export function completions(context: CompletionContext) {
         info: "clickSubmitButton(): Tries to automatically find submit button and clicks it.",
       },
       {
-        label: 'clickSubmitButton("")',
+        label: 'clickSubmitButton(\'\')',
         type: "function",
         info: "clickSubmitButton(xpath): Clicks the submit button found by xpath.",
       },
       {
-        label: 'fillText("", "")',
+        label: 'fillText(\'\', \'\')',
         type: "function",
         info: "fillText(xpath, value): Fills value in text field found by xpath.",
       },
       {
-        label: 'clickButton("")',
+        label: 'clickButton(\'\')',
         type: "function",
         info: "clickButton(xpath): Clicks button found by xpath.",
       },
       {
-        label: 'openUrl("")',
+        label: 'openUrl(\'\')',
         type: "function",
         info: "openUrl(url): Navigates to specified URL.",
       },

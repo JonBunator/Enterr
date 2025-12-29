@@ -178,7 +178,9 @@ class TestCustomLoginScriptParser:
 
         class ExceptionRaisingMock(CustomLoginMethodsInterface):
             def fill_username(self, xpath=None):
-                raise ScriptExecutionStopped(status=LoginStatusCode.USERNAME_FIELD_NOT_FOUND, message="Test stop")
+                raise ScriptExecutionStopped(
+                    status=LoginStatusCode.USERNAME_FIELD_NOT_FOUND, message="Test stop"
+                )
 
             def fill_password(self, xpath=None):
                 pass
@@ -257,5 +259,18 @@ class TestCustomLoginScriptParser:
             )
         ]
 
-
-
+    def test_string_parsing(self, parser, mock_methods):
+        """Test that string are parsed correctly with different quote styles"""
+        script = """
+        fillUsername('"')
+        fillUsername('\\'')
+        fillUsername("'")
+        fillUsername("\\"")
+        """
+        parser.execute(script)
+        assert mock_methods.calls == [
+            ("fill_username", '"'),
+            ("fill_username", "'"),
+            ("fill_username", "'"),
+            ("fill_username", '"'),
+        ]

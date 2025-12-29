@@ -1,10 +1,13 @@
+import ast
 import traceback
 
 from lark import Lark, Transformer, LarkError
 from lark.exceptions import VisitError
 
 from execution.login.constants import LoginStatusCode
-from execution.login.custom_login.custom_login_methods_interfaces import CustomLoginMethodsInterface
+from execution.login.custom_login.custom_login_methods_interfaces import (
+    CustomLoginMethodsInterface,
+)
 from utils.exceptions import ScriptExecutionStopped
 
 grammar = r"""
@@ -36,7 +39,8 @@ open_url            : "openUrl" "(" STRING ")"
 wait                : "wait" "(" INT ")"
 
 // Terminals
-%import common.ESCAPED_STRING -> STRING
+STRING              : "\"" _STRING_ESC_INNER "\"" | "'" _STRING_ESC_INNER "'"
+%import common._STRING_ESC_INNER
 %import common.INT
 %import common.WS
 
@@ -52,8 +56,7 @@ class Executor(Transformer):
         self._custom_login_methods = custom_login_methods
 
     def STRING(self, token):
-        # ESCAPED_STRING includes quotes -> strip them
-        return token[1:-1]
+        return ast.literal_eval(token)
 
     def INT(self, token):
         return int(token)
