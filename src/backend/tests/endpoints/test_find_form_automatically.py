@@ -2,8 +2,8 @@ import os
 import pytest
 from lxml.etree import HTML
 
-from src.execution.login.find_form_automatically import LoginFormFinder
-from src.execution.login.dom_interaction.interfaces.dom_interaction_interface import (
+from execution.login.find_form_automatically import LoginFormFinder
+from execution.login.dom_interaction.interfaces.dom_interaction_interface import (
     DomInteractionInterface,
 )
 

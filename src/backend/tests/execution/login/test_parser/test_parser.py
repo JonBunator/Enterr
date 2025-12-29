@@ -1,11 +1,11 @@
 import pytest
 
-from src.execution.login.constants import LoginStatusCode
-from src.execution.login.custom_login.parser import CustomLoginScriptParser
-from src.execution.login.custom_login.custom_login_methods_interfaces import (
+from execution.login.constants import LoginStatusCode
+from execution.login.custom_login.parser import CustomLoginScriptParser
+from execution.login.custom_login.custom_login_methods_interfaces import (
     CustomLoginMethodsInterface,
 )
-from src.utils.exceptions import ScriptExecutionStopped
+from utils.exceptions import ScriptExecutionStopped
 
 
 class MockCustomLoginMethods(CustomLoginMethodsInterface):
