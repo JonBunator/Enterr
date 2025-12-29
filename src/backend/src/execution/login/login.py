@@ -4,23 +4,27 @@ from utils.utils import compare_urls
 from .constants import LoginStatusCode, CustomFailedDetailsMessage, TIMEOUT
 from .custom_login.custom_login_methods_driver import CustomLoginMethodsDriver
 from .custom_login.parser import CustomLoginScriptParser
-from execution.login.dom_interaction.interfaces.dom_interaction_interface import DomInteractionInterface
+from execution.login.dom_interaction.interfaces.dom_interaction_interface import (
+    DomInteractionInterface,
+)
 from .dom_interaction.dom_interaction_driver import DomInteractionDriver
 from .find_form_automatically import XPaths, LoginFormFinder
 
 
 def login(
-        url: str,
-        success_url: str,
-        username: str,
-        password: str,
-        custom_login_script: str | None = None,
-        screenshot_id: str | None = None,
+    url: str,
+    success_url: str,
+    username: str,
+    password: str,
+    custom_login_script: str | None = None,
+    screenshot_id: str | None = None,
 ) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage]:
     try:
         with DomInteractionDriver(url=url) as driver:
             try:
-                status = _execute_interaction(driver, custom_login_script, username, password)
+                status = _execute_interaction(
+                    driver, custom_login_script, username, password
+                )
 
                 if status is not None:
                     driver.save_screenshot(screenshot_id)
@@ -57,8 +61,12 @@ def login(
         return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
 
 
-def _execute_interaction(driver: DomInteractionInterface, custom_login_script: str | None, username: str,
-                         password: str) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage] | None:
+def _execute_interaction(
+    driver: DomInteractionInterface,
+    custom_login_script: str | None,
+    username: str,
+    password: str,
+) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage] | None:
     xpaths = None
     xpath_not_found_error = None
     if custom_login_script is None:
@@ -79,8 +87,9 @@ def _execute_interaction(driver: DomInteractionInterface, custom_login_script: s
             return xpath_not_found_error, None
     else:
         xpaths = _find_elements(driver=driver)
-    custom_login_seleniumbase = CustomLoginMethodsDriver(driver=driver, x_paths=xpaths, username=username,
-                                                         password=password)
+    custom_login_seleniumbase = CustomLoginMethodsDriver(
+        driver=driver, x_paths=xpaths, username=username, password=password
+    )
     parser = CustomLoginScriptParser(custom_login_seleniumbase)
     exception = parser.execute(custom_login_script)
     if exception is not None:
@@ -109,13 +118,12 @@ def _find_elements(driver: DomInteractionInterface) -> XPaths:
     password_xpath = x_paths_automatic.password
     submit_button_xpath = x_paths_automatic.submit_button
 
-    if not driver.find_element(username_xpath):
+    if username_xpath is None or not driver.find_element(username_xpath):
         username_xpath = None
 
-    if not driver.find_element(password_xpath):
-        username_xpath = None
+    if password_xpath is None or not driver.find_element(password_xpath):
+        password_xpath = None
 
-    if not driver.find_element(submit_button_xpath):
-        username_xpath = None
-
+    if submit_button_xpath is None or not driver.find_element(submit_button_xpath):
+        submit_button_xpath = None
     return XPaths(username_xpath, password_xpath, submit_button_xpath)
