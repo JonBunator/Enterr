@@ -138,7 +138,7 @@ def register_rest_endpoints(
                 key="access_token",
                 value=f"Bearer {access_token}",
                 httponly=True,
-                secure=True,
+                secure=False,
                 samesite="strict",
                 max_age=24 * 60 * 60,
                 path="/",
@@ -156,7 +156,7 @@ def register_rest_endpoints(
     @app.post("/api/user/logout")
     def logout(response: Response):
         response.delete_cookie(
-            key="access_token", path="/", httponly=True, secure=True, samesite="strict"
+            key="access_token", path="/", httponly=True, secure=False, samesite="strict"
         )
 
     @app.get("/api/user/data", response_model=GetUserData)
