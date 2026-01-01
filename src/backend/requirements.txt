@@ -1,5 +1,5 @@
 python-dotenv==1.2.1
-seleniumbase==4.45.6
+seleniumbase==4.45.8
 lxml==6.0.2
 PyAutoGUI==0.9.54
 SQLAlchemy==2.0.45
