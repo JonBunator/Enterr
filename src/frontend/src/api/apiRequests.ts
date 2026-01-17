@@ -1,6 +1,6 @@
 import type {
   ChangeWebsite,
-} from "../components/activity/activityRequests.ts";
+} from "../components/activity/model.ts";
 import {
   ActionHistory,
   EditNotification,

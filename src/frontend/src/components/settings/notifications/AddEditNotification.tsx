@@ -4,7 +4,7 @@ import './AddEditNotification.scss'
 import { useEffect, useRef, useState } from "react";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 import ApprovalDialog from "../../ApprovalDialog.tsx";
-import { testNotification } from "../../../api/apiRequests.ts";
+import { useTestNotification } from "../../../api/hooks";
 import { FormProvider, type FormProviderRef } from "../../form/FormProvider.tsx";
 import TextFieldForm from "../../form/TextFieldForm.tsx";
 
@@ -69,6 +69,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
   const [deletionApprovalDialogOpen, setDeletionApprovalDialogOpen] = useState<boolean>(false)
 
   const formRef = useRef<FormProviderRef>(null)
+  const testMutation = useTestNotification();
 
   useEffect(() => {
     setCurrentNotification(notification ?? emptyNotification);
@@ -115,7 +116,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
     if (formRef?.current) {
       const isValid = await formRef?.current.validate();
       if (isValid) {
-        await testNotification(currentNotification);
+        await testMutation.mutateAsync(currentNotification);
       }
       else {
         formRef?.current.scrollToError()

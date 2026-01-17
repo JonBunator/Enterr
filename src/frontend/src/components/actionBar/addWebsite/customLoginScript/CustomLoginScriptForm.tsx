@@ -1,4 +1,4 @@
-import type { ChangeWebsite } from "../../../activity/activityRequests.ts";
+import type { ChangeWebsite } from "../../../activity/model.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { keymap } from "@codemirror/view";
@@ -6,7 +6,7 @@ import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import FormGrouping from "../../FormGrouping.tsx";
 import "./CustomLoginScriptForm.scss";
 import { Button, FormHelperText } from "@mui/material";
-import { checkCustomLoginScript } from "../../../../api/apiRequests.ts";
+import { useCheckCustomLoginScript } from "../../../../api/hooks";
 import {
   CheckIcon,
 } from "@heroicons/react/24/outline";
@@ -37,6 +37,7 @@ export default function CustomLoginScriptForm(
   const codeEditorLintingErrors = useRef<Diagnostic[]>([]);
   const [ scriptCorrect, setScriptCorrect ] = useState<boolean>(false);
   const { subscribe, unsubscribe } = useForm();
+  const checkScriptMutation = useCheckCustomLoginScript();
 
 
   function handleEnabledChange(enabled: boolean) {
@@ -104,7 +105,7 @@ export default function CustomLoginScriptForm(
       return false;
     }
     try {
-      const error = await checkCustomLoginScript(script ?? "") ?? "";
+      const error = await checkScriptMutation.mutateAsync(script ?? "") ?? "";
       setError(error);
       const valid = error === "";
       setScriptCorrect(valid);
@@ -115,7 +116,7 @@ export default function CustomLoginScriptForm(
       setScriptCorrect(false);
       return false;
     }
-  }, [value, customAccessEnabled]);
+  }, [value, customAccessEnabled, checkScriptMutation]);
 
   useEffect(() => {
     const identifier = "custom-login-script";

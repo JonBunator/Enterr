@@ -1,4 +1,4 @@
-import type { ChangeWebsite } from '../../activity/activityRequests.ts'
+import type { ChangeWebsite } from '../../activity/model.ts'
 import { useState } from 'react'
 import TimeTextfields from '../../form/TimeTextfields.tsx'
 import FormGrouping from '../FormGrouping.tsx'

@@ -1,15 +1,16 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import * as api from '../apiRequests'
 import type { Website } from '../apiModels'
-import type { ChangeWebsite } from '../../components/activity/activityRequests'
+import type { ChangeWebsite } from '../../components/activity/model.ts'
+import { queryClient } from '../queryClient'
 
 // Query hooks
 export function useWebsites(
   options?: Omit<UseQueryOptions<Website[], AxiosError>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery<Website[], AxiosError>({
-    queryKey: ['websites', 'list'],
+    queryKey: ['websites'],
     queryFn: api.getWebsites,
     ...options,
   })
@@ -20,7 +21,7 @@ export function useWebsite(
   options?: Omit<UseQueryOptions<Website, AxiosError>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery<Website, AxiosError>({
-    queryKey: ['websites', 'detail', websiteId],
+    queryKey: ['websites', websiteId],
     queryFn: () => api.getWebsite(websiteId),
     ...options,
   })
@@ -28,38 +29,33 @@ export function useWebsite(
 
 // Mutation hooks
 export function useAddWebsite() {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: api.addWebsite,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['websites'] }).then();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['websites'] })
     },
   })
 }
 
 export function useEditWebsite() {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: ({ id, website }: { id: number; website: ChangeWebsite }) =>
       api.editWebsite(id, website),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["websites"] }).then();
-      queryClient
-        .invalidateQueries({ queryKey: ["websites", "detail", variables.id] })
-        .then();
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["websites"] }),
+          queryClient.invalidateQueries({ queryKey: ["websites", variables.id] })
+        ]
+      )
     },
   });
 }
 
 export function useDeleteWebsite() {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: api.deleteWebsite,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["websites"] }).then();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["websites"] })
     },
   })
 }
@@ -71,27 +67,16 @@ export function useCheckCustomLoginScript() {
 }
 
 export function useAddManualLogin() {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: api.addManualLogin,
-    onSuccess: (_data, variables) => {
-      queryClient
-        .invalidateQueries({ queryKey: ["actionHistory", variables] })
-        .then();
+    onSuccess: async (_data, websiteId) => {
+      await queryClient.invalidateQueries({ queryKey: ["actionHistory", websiteId] })
     },
-  });
+  })
 }
 
 export function useTriggerAutomaticLogin() {
-  const queryClient = useQueryClient()
-  
   return useMutation({
     mutationFn: api.triggerAutomaticLogin,
-    onSuccess: (_data, variables) => {
-      queryClient
-        .invalidateQueries({ queryKey: ["actionHistory", variables] })
-        .then();
-    },
-  });
+  })
 }

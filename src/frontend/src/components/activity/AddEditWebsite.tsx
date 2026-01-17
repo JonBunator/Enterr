@@ -1,5 +1,5 @@
 import type { FormProviderRef } from '../form/FormProvider.tsx'
-import type { ChangeWebsite } from './activityRequests.ts'
+import type { ChangeWebsite } from './model.ts'
 import {
   Button,
   Dialog,
