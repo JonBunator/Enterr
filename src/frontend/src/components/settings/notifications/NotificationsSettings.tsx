@@ -12,45 +12,27 @@ import {
 import "./NotificationsSettings.scss";
 import { EditNotification, Notification } from "../../../api/apiModels.ts";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Triggers from "./Triggers.tsx";
 import {
-  addNotification,
-  deleteNotification,
-  editNotification,
-  getNotifications
-} from "../../../api/apiRequests.ts";
+  useNotifications,
+  useAddNotification,
+  useEditNotification,
+  useDeleteNotification
+} from "../../../api/hooks";
 import AddEditNotification from "./AddEditNotification.tsx";
 import { useSnackbar } from "../../provider/SnackbarProvider.tsx";
-import { useWebSocket } from "../../provider/WebSocketProvider.tsx";
 import EmptyState from "../../activity/EmptyState.tsx";
 
 export default function NotificationsSettings() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [editCreateNotification, setEditCreateNotification] = useState<Notification | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { error, success, loading } = useSnackbar();
-  const { on } = useWebSocket();
-
-  function fetchData(initialFetch: boolean = true) {
-    if(notifications.length === 0 && initialFetch) {
-      setIsLoading(true);
-    }
-    getNotifications()
-      .then(data => {setNotifications(data); setIsLoading(false);})
-      .catch(error => {console.error(error); setIsLoading(false);});
-  }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    on("notifications_changed", (_d) => {
-      fetchData(false);
-    });
-  }, [on]);
+  
+  const { data: notifications = [], isLoading } = useNotifications();
+  const addMutation = useAddNotification();
+  const editMutation = useEditNotification();
+  const deleteMutation = useDeleteNotification();
 
 
   function openEditNotificationDrawer(notification: Notification) {
@@ -64,17 +46,13 @@ export default function NotificationsSettings() {
   }
 
   async function create(notification: Notification) {
-    setNotifications((prev) => [...prev, notification]);
     setDrawerOpen(false);
     loading('Adding notification...')
     try {
-      await addNotification(notification);
+      await addMutation.mutateAsync(notification);
       success('Notification added successfully');
     } catch (e) {
       error("Failed to add notification", (e as Error).message);
-      setNotifications((prev) =>
-        prev.filter((n) => n !== notification)
-      );
     }
   }
 
@@ -82,7 +60,7 @@ export default function NotificationsSettings() {
     setDrawerOpen(false);
     loading('Editing notification...')
     try {
-      await editNotification(notification as EditNotification);
+      await editMutation.mutateAsync(notification as EditNotification);
       success('Notification edited successfully');
     } catch (e) {
       error("Failed to edit notification", (e as Error).message);
@@ -93,7 +71,7 @@ export default function NotificationsSettings() {
     setDrawerOpen(false);
     loading('Deleting notification...')
     try {
-      await deleteNotification(notification.id!);
+      await deleteMutation.mutateAsync(notification.id!);
       success('Notification deleted successfully');
     } catch (e) {
       error("Failed to delete notification", (e as Error).message);
