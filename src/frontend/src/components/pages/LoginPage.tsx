@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { loginUser } from '../../api/apiRequests'
+import { useLoginUser } from '../../api/hooks/useUser'
 import Content from '../layout/Content.tsx'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
 import ProtectedPage from './ProtectedPage.tsx'
@@ -21,12 +21,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [loggingIn, setLoggingIn] = useState(false)
   const [usernameError, setUsernameError] = useState(false)
   const [passwordError, setPasswordError] = useState(false)
 
   const navigate = useNavigate()
   const { loading, error, clear } = useSnackbar()
+  const loginMutation = useLoginUser()
 
   const handleClickShowPassword = () => setShowPassword(show => !show)
 
@@ -63,8 +63,7 @@ export default function LoginPage() {
     }
     loading('Logging in...')
     try {
-      setLoggingIn(true)
-      const successful = await loginUser(username, password)
+      const successful = await loginMutation.mutateAsync({ username, password })
       if (successful) {
         await navigate('/')
       }
@@ -72,9 +71,6 @@ export default function LoginPage() {
     }
     catch {
       error('Invalid username or password')
-    }
-    finally {
-      setLoggingIn(false)
     }
   }
 
@@ -91,7 +87,7 @@ export default function LoginPage() {
           <img src="/images/logo.svg" alt="enterr logo"/>
           <Paper className="login-card">
             <TextField
-              disabled={loggingIn}
+              disabled={loginMutation.isPending}
               label="Username"
               variant="filled"
               fullWidth
@@ -102,7 +98,7 @@ export default function LoginPage() {
               helperText={usernameError ? 'Username is required' : ''}
             />
             <TextField
-              disabled={loggingIn}
+              disabled={loginMutation.isPending}
               required
               value={password}
               variant="filled"
@@ -136,7 +132,7 @@ export default function LoginPage() {
             />
             <Button
               variant="contained"
-              disabled={loggingIn}
+              disabled={loginMutation.isPending}
               fullWidth
               onClick={() => void login()}
             >

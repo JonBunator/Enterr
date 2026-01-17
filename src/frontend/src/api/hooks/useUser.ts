@@ -5,10 +5,10 @@ import type { UserData } from '../apiModels'
 
 // Query hooks
 export function useUserData(
-  options?: Omit<UseQueryOptions<UserData, AxiosError>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<UserData | null, AxiosError>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery<UserData, AxiosError>({
-    queryKey: ['user', 'data'],
+  return useQuery<UserData | null, AxiosError>({
+    queryKey: ['user'],
     queryFn: api.getUserData,
     ...options,
   })
@@ -21,8 +21,8 @@ export function useLoginUser() {
   return useMutation({
     mutationFn: ({ username, password }: { username: string; password: string }) =>
       api.loginUser(username, password),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] }).then();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['user'] })
     },
   })
 }
@@ -33,7 +33,7 @@ export function useLogoutUser() {
   return useMutation({
     mutationFn: api.logoutUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] }).then();
+      queryClient.removeQueries();
     },
   })
 }

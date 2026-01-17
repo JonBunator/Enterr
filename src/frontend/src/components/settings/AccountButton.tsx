@@ -1,23 +1,17 @@
-import type { UserData } from '../../api/apiModels.ts'
 import { AdjustmentsHorizontalIcon, ArrowRightEndOnRectangleIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { Chip, ListItemIcon, ListItemText, MenuItem, Popover } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { getUserData, logoutUser } from '../../api/apiRequests.ts'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
 import './AccountButton.scss'
+import { useLogoutUser, useUserData } from "../../api/hooks";
 
 export default function AccountButton() {
-  const [userData, setUserData] = useState<UserData | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const navigate = useNavigate()
-  const { clear, error, loading } = useSnackbar()
-
-  useEffect(() => {
-    getUserData()
-      .then(data => setUserData(data))
-      .catch(error => console.error(error))
-  }, [])
+  const { clear, error, loading } = useSnackbar();
+  const logoutMutation = useLogoutUser()
+  const { data: userData, isLoading: userDataLoading, error: userDataError } = useUserData();
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -35,7 +29,7 @@ export default function AccountButton() {
     handleClose()
     loading('Logging out...')
     try {
-      await logoutUser()
+      await logoutMutation.mutateAsync();
       clear()
       await navigate('/login')
     }
@@ -44,11 +38,19 @@ export default function AccountButton() {
     }
   }
 
+  let chipLabel = "";
+  if (userDataLoading) {
+    chipLabel = "Loading...";
+  } else if (userDataError || userData == null) {
+    chipLabel = "Unknown";
+  } else {
+    chipLabel = userData.username;
+  }
+
   return (
     <div className="account-settings-button">
       <Chip
-
-        label={userData?.username ?? 'Unknown'}
+        label={chipLabel}
         icon={<UserCircleIcon className="icon" />}
         onClick={handleOpen}
         variant="outlined"
@@ -59,12 +61,12 @@ export default function AccountButton() {
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         style={{ marginTop: 8 }}
       >
@@ -82,5 +84,5 @@ export default function AccountButton() {
         </MenuItem>
       </Popover>
     </div>
-  )
+  );
 }

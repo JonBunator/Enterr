@@ -25,9 +25,16 @@ export async function getLoginHistory(website_id: number): Promise<ActionHistory
   return data.data as ActionHistory[]
 }
 
-export async function getUserData(): Promise<UserData> {
-  const data = await apiClient.get(`/user/data`)
-  return data.data as UserData;
+export async function getUserData(): Promise<UserData | null> {
+  try {
+    const data = await apiClient.get(`/user/data`)
+    return data.data as UserData;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function addWebsite(website: ChangeWebsite) {
