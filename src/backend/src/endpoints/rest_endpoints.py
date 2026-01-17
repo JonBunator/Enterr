@@ -22,7 +22,8 @@ from endpoints.models.website_model import (
     GetWebsite,
     AddWebsite,
     EditWebsite,
-    DeleteWebsite, CheckCustomLoginScript,
+    DeleteWebsite,
+    CheckCustomLoginScript,
 )
 from execution.notifications.notification_manager import NotificationManager
 from utils.exceptions import NotFoundException
@@ -63,16 +64,23 @@ def register_rest_endpoints(
 
     @app.post("/api/websites/check_custom_login_script")
     async def check_custom_login_script(
-            check_custom_login_script_request: CheckCustomLoginScript,
+        check_custom_login_script_request: CheckCustomLoginScript,
     ):
         return DataAccess.check_custom_login_script(check_custom_login_script_request)
 
-    @app.get("/api/action_history/{website_id}", response_model=List[GetActionHistory])
-    def get_action_history(
+    @app.get("/api/action_history", response_model=List[GetActionHistory])
+    def get_action_histories(
         website_id: int, current_user=Depends(DataAccess.get_current_user)
     ):
-        action_histories = DataBase.get_action_history(website_id, current_user)
+        action_histories = DataBase.get_action_histories(website_id, current_user)
         return [GetActionHistory.from_sql_model(d) for d in action_histories]
+
+    @app.get("/api/action_history/{action_history_id}", response_model=GetActionHistory)
+    def get_action_history(
+        action_history_id: int, current_user=Depends(DataAccess.get_current_user)
+    ):
+        action_history = DataBase.get_action_history(action_history_id, current_user)
+        return GetActionHistory.from_sql_model(action_history)
 
     @app.post("/api/action_history/manual_add")
     async def add_manual_action_history(

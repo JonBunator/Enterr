@@ -42,11 +42,7 @@ export function useEditWebsite() {
     mutationFn: ({ id, website }: { id: number; website: ChangeWebsite }) =>
       api.editWebsite(id, website),
     onSuccess: async (_data, variables) => {
-      await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["websites"] }),
-          queryClient.invalidateQueries({ queryKey: ["websites", variables.id] })
-        ]
-      )
+        await queryClient.invalidateQueries({ queryKey: ["websites", variables.id] })
     },
   });
 }
@@ -54,10 +50,12 @@ export function useEditWebsite() {
 export function useDeleteWebsite() {
   return useMutation({
     mutationFn: api.deleteWebsite,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["websites"] })
+    onSuccess: async (_data, websiteId) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["websites", websiteId],
+      });
     },
-  })
+  });
 }
 
 export function useCheckCustomLoginScript() {
@@ -69,8 +67,8 @@ export function useCheckCustomLoginScript() {
 export function useAddManualLogin() {
   return useMutation({
     mutationFn: api.addManualLogin,
-    onSuccess: async (_data, websiteId) => {
-      await queryClient.invalidateQueries({ queryKey: ["actionHistory", websiteId] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["actionHistory"] })
     },
   })
 }
