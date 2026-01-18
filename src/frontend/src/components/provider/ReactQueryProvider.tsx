@@ -32,7 +32,7 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
     on('notifications_changed', async () => {
       await queryClient.invalidateQueries({ queryKey: ['notifications'] })
     })
-  }, [on])
+  }, [on, queryClient])
 
   return (
     <QueryClientProvider client={queryClient}>
