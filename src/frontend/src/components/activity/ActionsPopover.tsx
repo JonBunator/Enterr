@@ -47,7 +47,9 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const editMutation = useEditWebsite()
   const addManualLoginMutation = useAddManualLogin()
   const triggerLoginMutation = useTriggerAutomaticLogin()
-  const { data: website, isLoading: loadingEditData } = useWebsite(websiteId)
+  const { data: website, isLoading: loadingEditData } = useWebsite(websiteId, {
+    enabled: editDialogOpen,
+  })
   
   // Transform Website to ChangeWebsite by removing id and next_schedule
   const editWebsiteValue = useMemo(() => {
