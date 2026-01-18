@@ -5,13 +5,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useWebSocket } from './WebSocketProvider'
 import { QueryClient } from '@tanstack/react-query'
 
+const queryClient = new QueryClient()
+
 interface ReactQueryProviderProps {
   children: ReactNode
 }
 
 export default function ReactQueryProvider({ children }: ReactQueryProviderProps) {
   const { on } = useWebSocket()
-  const queryClient = new QueryClient()
 
   useEffect(() => {
     // Invalidate queries when socket.io events occur
