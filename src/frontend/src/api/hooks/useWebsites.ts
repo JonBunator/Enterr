@@ -53,9 +53,10 @@ export function useDeleteWebsite() {
   return useMutation({
     mutationFn: api.deleteWebsite,
     onSuccess: async (_data, websiteId) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["websites", websiteId],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["websites", websiteId] }),
+        queryClient.invalidateQueries({ queryKey: ["websites"] }),
+      ]);
     },
   });
 }
