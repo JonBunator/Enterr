@@ -1,9 +1,8 @@
-import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import * as api from '../apiRequests'
 import type { Website } from '../apiModels'
 import type { ChangeWebsite } from '../../components/activity/model.ts'
-import { queryClient } from '../queryClient'
 
 // Query hooks
 export function useWebsites(
@@ -29,6 +28,7 @@ export function useWebsite(
 
 // Mutation hooks
 export function useAddWebsite() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.addWebsite,
     onSuccess: async () => {
@@ -38,6 +38,7 @@ export function useAddWebsite() {
 }
 
 export function useEditWebsite() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, website }: { id: number; website: ChangeWebsite }) =>
       api.editWebsite(id, website),
@@ -48,6 +49,7 @@ export function useEditWebsite() {
 }
 
 export function useDeleteWebsite() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.deleteWebsite,
     onSuccess: async (_data, websiteId) => {
@@ -65,6 +67,7 @@ export function useCheckCustomLoginScript() {
 }
 
 export function useAddManualLogin() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.addManualLogin,
     onSuccess: async () => {

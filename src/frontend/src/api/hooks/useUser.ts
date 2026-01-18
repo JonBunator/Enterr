@@ -1,8 +1,7 @@
-import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import * as api from '../apiRequests'
 import type { UserData } from '../apiModels'
-import { queryClient } from '../queryClient'
 
 // Query hooks
 export function useUserData(
@@ -17,6 +16,7 @@ export function useUserData(
 
 // Mutation hooks
 export function useLoginUser() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ username, password }: { username: string; password: string }) =>
       api.loginUser(username, password),
@@ -27,6 +27,7 @@ export function useLoginUser() {
 }
 
 export function useLogoutUser() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.logoutUser,
     onSuccess: () => {
