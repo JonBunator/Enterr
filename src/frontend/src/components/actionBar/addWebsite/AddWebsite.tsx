@@ -1,9 +1,9 @@
-import type { ChangeWebsite } from '../../activity/activityRequests.ts'
+import type { ChangeWebsite } from '../../activity/model.ts'
 import type { AddEditWebsiteRef } from '../../activity/AddEditWebsite.tsx'
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { Button } from '@mui/material'
 import { useRef, useState } from 'react'
-import { addWebsite } from '../../../api/apiRequests.ts'
+import { useAddWebsite } from '../../../api/hooks'
 import AddEditWebsite from '../../activity/AddEditWebsite.tsx'
 import { useSnackbar } from '../../provider/SnackbarProvider.tsx'
 import './AddWebsite.scss'
@@ -13,12 +13,13 @@ export default function AddWebsite() {
 
   const { success, error, loading } = useSnackbar()
   const ref = useRef<AddEditWebsiteRef | null>(null)
+  const addMutation = useAddWebsite()
 
   async function handleAdd(website: ChangeWebsite) {
     setOpen(false)
     loading('Adding website...')
     try {
-      await addWebsite(website)
+      await addMutation.mutateAsync(website)
       success('Website added successfully')
     }
     catch (e) {

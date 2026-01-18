@@ -119,7 +119,7 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def get_action_history(website_id: int, current_user: User) -> List[ActionHistory]:
+    def get_action_histories(website_id: int, current_user: User) -> List[ActionHistory]:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
@@ -129,6 +129,18 @@ class DataBase:
                 key=lambda ah: ah.execution_started,
                 reverse=True,
             )
+
+    @staticmethod
+    def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
+        with get_session() as session:
+            action_history = (
+                session.query(ActionHistory)
+                .filter_by(id=action_history_id, user=current_user.id)
+                .first()
+            )
+            if action_history:
+                return action_history
+            raise NotFoundException(f"ActionHistory {action_history_id} not found")
 
     @staticmethod
     def add_manual_action_history(

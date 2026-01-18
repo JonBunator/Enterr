@@ -1,4 +1,4 @@
-import type { ChangeWebsite } from '../../activity/activityRequests.ts'
+import type { ChangeWebsite } from '../../activity/model.ts'
 import { Checkbox, FormControlLabel, FormHelperText, Grid } from '@mui/material'
 import TextFieldForm from '../../form/TextFieldForm.tsx'
 import FormGrouping from '../FormGrouping.tsx'

@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'react'
-import type { ActivityData } from './activityRequests.ts'
+import type { ActivityData } from './model.ts'
 import {
   Card,
   CardContent,
@@ -14,10 +14,9 @@ import {
   Typography
 } from "@mui/material";
 import { motion } from 'framer-motion'
-import React, { useEffect, useState } from 'react'
-import { useWebSocket } from '../provider/WebSocketProvider.tsx'
+import React, { useMemo, useState } from 'react'
 import ActionsPopover from './ActionsPopover.tsx'
-import { getActivity } from './activityRequests.ts'
+import { useActivity } from '../../api/hooks'
 import ActivityStatus from './ActivityStatus.tsx'
 import EmptyState from './EmptyState.tsx'
 import LoginHistoryDetails from './LoginHistoryDetails.tsx'
@@ -44,38 +43,7 @@ export default function Activity(props: ActivityProps) {
     = useState<keyof ActivityData>('lastLoginAttempt')
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
-  const [rawData, setRawData] = useState<ActivityData[]>([])
-  const [processedData, setProcessedData] = useState<ActivityData[]>([])
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { on } = useWebSocket()
-
-  function fetchData(initialFetch: boolean = true) {
-    if(rawData.length === 0 && initialFetch) {
-      setIsLoading(true);
-    }
-    getActivity()
-      .then((data) => {
-        {setRawData(data); setIsLoading(false);}
-      })
-      .catch(error => {console.error(error); setIsLoading(false);});
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  useEffect(() => {
-    on('login_data_changed', (_d) => {
-      fetchData(false)
-    })
-  }, [on])
-
-  useEffect(() => {
-    on('action_history_changed', (_d) => {
-      fetchData(false)
-    })
-  }, [on])
+  const { data: rawData = [], isLoading } = useActivity()
 
   const handleSortRequest = async (property: keyof ActivityData) => {
     const isAsc = orderBy === property && order === Order.ASC
@@ -109,7 +77,7 @@ export default function Activity(props: ActivityProps) {
     return order === Order.ASC ? bTime - aTime : aTime - bTime
   }
 
-  useEffect(() => {
+  const processedData = useMemo(() => {
     const sortedData = rawData.slice().sort((a, b) => {
       if (orderBy === 'status') {
         const statusOrder = [
@@ -145,11 +113,10 @@ export default function Activity(props: ActivityProps) {
           )
         : sortedData
 
-    const paginatedData = filteredData.slice(
+    return filteredData.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,
     )
-    setProcessedData(paginatedData)
   }, [rawData, order, orderBy, page, rowsPerPage, searchTerm])
 
   return (

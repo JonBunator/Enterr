@@ -65,3 +65,4 @@ export interface EditNotification {
   body?: string
   triggers?: ActionStatusCode[]
 }
+

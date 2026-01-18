@@ -1,4 +1,4 @@
-import type { ChangeWebsite } from './activityRequests.ts'
+import type { ChangeWebsite } from './model.ts'
 import {
   CheckCircleIcon,
   GlobeAltIcon,
@@ -18,12 +18,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { addManualLogin, deleteWebsite, editWebsite, triggerAutomaticLogin } from '../../api/apiRequests.ts'
+import React, { useMemo, useRef, useState } from 'react'
+import { useDeleteWebsite, useEditWebsite, useAddManualLogin, useTriggerAutomaticLogin, useWebsite } from '../../api/hooks'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
-import { useWebSocket } from '../provider/WebSocketProvider.tsx'
-import { getChangeWebsite } from './activityRequests.ts'
 import AddEditWebsite, { type AddEditWebsiteRef } from './AddEditWebsite.tsx'
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
 
@@ -40,13 +38,25 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const [saveWebsiteVisitDialogOpen, setSaveWebsiteVisitDialogOpen] = useState<boolean>(false)
 
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false)
-  const [editWebsiteValue, setEditWebsiteValue] = useState<ChangeWebsite | undefined>(undefined)
-  const [loadingEditData, setLoadingEditData] = useState<boolean>(false)
 
   const editWebsiteDialogRef = useRef<AddEditWebsiteRef | null>(null)
 
   const { success, error, loading } = useSnackbar()
-  const { on } = useWebSocket()
+  
+  const deleteMutation = useDeleteWebsite()
+  const editMutation = useEditWebsite()
+  const addManualLoginMutation = useAddManualLogin()
+  const triggerLoginMutation = useTriggerAutomaticLogin()
+  const { data: website, isLoading: loadingEditData } = useWebsite(websiteId, {
+    enabled: editDialogOpen,
+  })
+  
+  // Transform Website to ChangeWebsite by removing id and next_schedule
+  const editWebsiteValue = useMemo(() => {
+    if (!website) return undefined
+    const { next_schedule, id, ...rest } = website
+    return rest
+  }, [website])
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -70,7 +80,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   async function handleDelete() {
     loading('Deleting website...')
     try {
-      await deleteWebsite(websiteId)
+      await deleteMutation.mutateAsync(websiteId)
       success('Website deleted successfully')
     }
     catch (e) {
@@ -82,33 +92,13 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     handleClose()
     loading('Saving manual pages...')
     try {
-      await addManualLogin(websiteId)
+      await addManualLoginMutation.mutateAsync(websiteId)
       success('Manual pages saved successfully')
     }
     catch (e) {
       error('Failed to save manual pages', (e as Error).message)
     }
   }
-
-  const fetchData = useCallback(() => {
-    setLoadingEditData(true)
-    getChangeWebsite(websiteId)
-      .then((result) => {
-        setEditWebsiteValue(result)
-        setLoadingEditData(false)
-      })
-      .catch(console.error)
-  }, [websiteId])
-
-  useEffect(() => {
-    on('login_data_changed', (_d) => {
-      fetchData()
-    })
-  }, [on, fetchData])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData, websiteId])
 
   async function handleOpenEditDialog() {
     handleClose()
@@ -119,7 +109,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     setEditDialogOpen(false)
     loading('Editing website...')
     try {
-      await editWebsite(websiteId, value)
+      await editMutation.mutateAsync({ id: websiteId, website: value })
       success('Website edited successfully')
     }
     catch (e) {
@@ -134,10 +124,9 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
       return
     }
     const paused = !editWebsiteValue.paused
-    setEditWebsiteValue(prev => ({ ...prev, paused }))
     loading(`${paused ? 'Pausing' : 'Resuming'} website login...`)
     try {
-      await editWebsite(websiteId, { paused })
+      await editMutation.mutateAsync({ id: websiteId, website: { paused } })
       success(`Website login successfully ${paused ? 'paused' : 'resumed'}`)
     }
     catch (e) {
@@ -150,7 +139,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
 
     loading(`Triggering login...`)
     try {
-      await triggerAutomaticLogin(websiteId)
+      await triggerLoginMutation.mutateAsync(websiteId)
       success(`Website login successfully started`)
     }
     catch (e) {

@@ -1,5 +1,5 @@
 import type { Dayjs } from 'dayjs'
-import type { ActionInterval, ChangeWebsite } from '../../activity/activityRequests.ts'
+import type { ActionInterval, ChangeWebsite } from '../../activity/model.ts'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import TimeFieldForm from '../../form/TimeFieldForm.tsx'
