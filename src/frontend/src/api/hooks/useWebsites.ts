@@ -43,7 +43,10 @@ export function useEditWebsite() {
     mutationFn: ({ id, website }: { id: number; website: ChangeWebsite }) =>
       api.editWebsite(id, website),
     onSuccess: async (_data, variables) => {
-        await queryClient.invalidateQueries({ queryKey: ["websites", variables.id] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['websites'] }),
+        queryClient.invalidateQueries({ queryKey: ['websites', variables.id] }),
+      ])
     },
   });
 }
