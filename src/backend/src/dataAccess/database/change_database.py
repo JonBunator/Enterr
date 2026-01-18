@@ -134,13 +134,13 @@ class DataBase:
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
         with get_session() as session:
             action_history = (
-                session.query(Notification)
+                session.query(ActionHistory)
                 .filter_by(id=action_history_id, user=current_user.id)
                 .first()
             )
             if action_history:
                 return action_history
-            raise NotFoundException(f"Notification {action_history_id} not found")
+            raise NotFoundException(f"ActionHistory {action_history_id} not found")
 
     @staticmethod
     def add_manual_action_history(
