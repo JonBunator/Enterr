@@ -42,12 +42,23 @@ def get_database_uri() -> str:
 database_uri = get_database_uri()
 
 if dev_mode:
-    engine = create_engine(database_uri)
+    engine = create_engine(
+        database_uri,
+        connect_args={
+            "check_same_thread": False,
+        },
+    )
 else:
     # Encrypted database in production
     if sqlcipher3 is None:
         raise ImportError("sqlcipher3 is required for encrypted database in production")
-    engine = create_engine(database_uri, module=sqlcipher3)
+    engine = create_engine(
+        database_uri,
+        module=sqlcipher3,
+        connect_args={
+            "check_same_thread": False,
+        }
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

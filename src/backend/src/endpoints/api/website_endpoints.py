@@ -24,14 +24,14 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/websites")
-    async def add_website(
+    def add_website(
         website_request: AddWebsite, current_user=Depends(DataAccess.get_current_user)
     ):
         data_access.add_website(website_request, current_user)
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/websites/{website_id}")
-    async def edit_website(
+    def edit_website(
         website_id: int,
         website_request: EditWebsite,
         current_user=Depends(DataAccess.get_current_user),
@@ -40,7 +40,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- DELETE ----------------------------
     @app.delete("/api/websites/{website_id}")
-    async def delete_website(
+    def delete_website(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
     ):
@@ -48,7 +48,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- OTHER ----------------------------
     @app.post("/api/websites/check_custom_login_script")
-    async def check_custom_login_script(
+    def check_custom_login_script(
         check_custom_login_script_request: CheckCustomLoginScript,
     ):
         return DataAccess.check_custom_login_script(check_custom_login_script_request)

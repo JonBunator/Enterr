@@ -22,7 +22,7 @@ def register_notification_endpoints(
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/notifications")
-    async def add_notification(
+    def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
     ):
@@ -30,7 +30,7 @@ def register_notification_endpoints(
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/notifications/{notification_id}")
-    async def edit_notification(
+    def edit_notification(
             notification_id: int,
             notification_request: EditNotification,
             current_user=Depends(DataAccess.get_current_user),
@@ -39,7 +39,7 @@ def register_notification_endpoints(
 
     # ---------------------------- DELETE ----------------------------
     @app.delete("/api/notifications/{notification_id}")
-    async def delete_notification(
+    def delete_notification(
         notification_id: int,
         current_user=Depends(DataAccess.get_current_user),
     ):
