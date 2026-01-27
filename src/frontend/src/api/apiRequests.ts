@@ -47,17 +47,15 @@ export async function getUserData(): Promise<UserData | null> {
 }
 
 export async function addWebsite(website: ChangeWebsite) {
-  await apiClient.post('/websites/add', website);
+  await apiClient.post('/websites', website);
 }
 
 export async function deleteWebsite(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/websites/delete', body);
+  await apiClient.delete(`/websites/${websiteId}`);
 }
 
 export async function editWebsite(websiteId: number, website: ChangeWebsite) {
-  const body = { id: websiteId, ...website };
-  await apiClient.post("/websites/edit", body);
+  await apiClient.put(`/websites/${websiteId}`, website);
 }
 
 export async function checkCustomLoginScript(customLoginScript: string): Promise<string | null> {
@@ -75,8 +73,7 @@ export async function addManualLogin(websiteId: number) {
 }
 
 export async function triggerAutomaticLogin(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/trigger_login', body);
+  await apiClient.post(`/trigger_login/${websiteId}`);
 }
 
 export async function loginUser(username: string, password: string): Promise<boolean> {
@@ -100,7 +97,7 @@ export async function getNotifications(): Promise<Notification[]> {
 }
 
 export async function addNotification(notification: Notification) {
-  await apiClient.post('/notifications/add', notification);
+  await apiClient.post('/notifications', notification);
 }
 
 export async function testNotification(notification: Notification) {
@@ -108,10 +105,9 @@ export async function testNotification(notification: Notification) {
 }
 
 export async function deleteNotification(notificationId: number) {
-  const body = { id: notificationId }
-  await apiClient.post('/notifications/delete', body);
+  await apiClient.delete(`/notifications/${notificationId}`);
 }
 
 export async function editNotification(notification: EditNotification) {
-  await apiClient.post('/notifications/edit', notification);
+  await apiClient.put(`/notifications/${notification.id}`, notification);
 }

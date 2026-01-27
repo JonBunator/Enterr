@@ -24,14 +24,3 @@ class GetActionHistory(GetRequestBaseModel):
             custom_failed_details_message=action_history.custom_failed_details_message,
             screenshot_id=action_history.screenshot_id
         )
-
-
-class AddManualActionHistory(PostRequestBaseModel):
-    id: int
-
-    def to_sql_model(self) -> ActionHistory:
-        return ActionHistory(
-            execution_started=datetime.now(),
-            execution_ended=datetime.now(),
-            execution_status=ActionStatusCode.SUCCESS,
-        )

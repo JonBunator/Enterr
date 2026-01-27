@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from dataAccess.database.database import Notification, ActionStatusCode
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
+
 class AddNotification(PostRequestBaseModel):
     name: str
     apprise_token: str
@@ -23,7 +24,6 @@ class AddNotification(PostRequestBaseModel):
 
 
 class EditNotification(BaseModel):
-    id: int
     name: Optional[str] = None
     apprise_token: Optional[str] = None
     title: Optional[str] = None
@@ -43,10 +43,6 @@ class EditNotification(BaseModel):
             existing_notification.triggers = [ActionStatusCode(trigger) for trigger in self.triggers]
 
         return existing_notification
-
-
-class DeleteNotification(BaseModel):
-    id: int
 
 
 class GetNotification(GetRequestBaseModel):

@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional, Any
 
+
 class ApiPostResponse(BaseModel):
     success: bool
     message: str
     error: Optional[str] = None
+
 
 class ApiGetResponse(BaseModel):
     success: bool

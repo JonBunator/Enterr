@@ -1,7 +1,6 @@
 import asyncio
 import socketio
 import os
-import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
@@ -15,7 +14,7 @@ from dataAccess.data_access import DataAccess
 from dataAccess.database.database import init_db
 from dotenv import load_dotenv
 from dataAccess.database.database_events import register_database_events
-from endpoints.rest_endpoints import register_rest_endpoints
+from endpoints.api.rest_endpoints import register_rest_endpoints
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.scheduler import Scheduler
 

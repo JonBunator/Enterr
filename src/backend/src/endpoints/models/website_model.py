@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime, timezone
 from typing import Optional
 from pydantic import BaseModel
-
 from dataAccess.database.database import Website
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
@@ -60,7 +59,6 @@ class AddWebsite(PostRequestBaseModel):
 
 
 class EditWebsite(BaseModel):
-    id: int
     url: Optional[str] = None
     success_url: Optional[str] = None
     name: Optional[str] = None
@@ -102,10 +100,6 @@ class EditWebsite(BaseModel):
             existing_website.next_schedule = existing_website.action_interval.get_random_action_datetime()
 
         return existing_website
-
-
-class DeleteWebsite(BaseModel):
-    id: int
 
 
 class GetWebsite(GetRequestBaseModel):

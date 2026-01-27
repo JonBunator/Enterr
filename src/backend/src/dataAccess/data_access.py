@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Annotated
 
 from fastapi import Depends
@@ -7,15 +8,13 @@ from dataAccess.database.database import (
     Website,
     ActionHistory,
     User,
-    Notification,
+    Notification, ActionStatusCode,
 )
-from endpoints.models.action_history_model import AddManualActionHistory
 from endpoints.models.notification_model import (
     AddNotification,
     EditNotification,
-    DeleteNotification,
 )
-from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite, CheckCustomLoginScript, \
+from endpoints.models.website_model import AddWebsite, EditWebsite, CheckCustomLoginScript, \
     CheckCustomLoginScriptResponse
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.login.custom_login.parser import CustomLoginScriptParser
@@ -47,22 +46,26 @@ class DataAccess:
         DataBase.add_website(website, current_user)
         self.webhook_endpoints.login_data_changed()
 
-    def edit_website(self, request: EditWebsite, current_user: User):
-        existing_website = DataBase.get_website(request.id, current_user)
+    def edit_website(self, website_id: int, request: EditWebsite, current_user: User):
+        existing_website = DataBase.get_website(website_id, current_user)
         website = request.edit_existing_model(existing_website)
         DataBase.edit_website(website, current_user)
         self.webhook_endpoints.login_data_changed()
 
-    def delete_website(self, request: DeleteWebsite, current_user: User):
-        DataBase.delete_website(request.id, current_user)
+    def delete_website(self, website_id: int, current_user: User):
+        DataBase.delete_website(website_id, current_user)
         self.webhook_endpoints.login_data_changed()
 
     def add_manual_action_history(
-        self, action_history_request: AddManualActionHistory, current_user: User
+        self, website_id: int, current_user: User
     ):
-        action_history = action_history_request.to_sql_model()
+        action_history = ActionHistory(
+            execution_started=datetime.now(),
+            execution_ended=datetime.now(),
+            execution_status=ActionStatusCode.SUCCESS,
+        )
         DataBase.add_manual_action_history(
-            action_history_request.id, action_history, current_user
+            website_id, action_history, current_user
         )
         self.webhook_endpoints.action_history_changed(
             action_history_id=action_history.id
@@ -73,14 +76,14 @@ class DataAccess:
         DataBase.add_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
 
-    def edit_notification(self, request: EditNotification, current_user: User):
-        existing_notification = DataBase.get_notification(request.id, current_user)
+    def edit_notification(self, notification_id: int, request: EditNotification, current_user: User):
+        existing_notification = DataBase.get_notification(notification_id, current_user)
         notification = request.edit_existing_model(existing_notification)
         DataBase.edit_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
 
-    def delete_notification(self, request: DeleteNotification, current_user: User):
-        notification = DataBase.get_notification(request.id, current_user)
+    def delete_notification(self, notification_id: int, current_user: User):
+        notification = DataBase.get_notification(notification_id, current_user)
         DataBase.delete_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
 
