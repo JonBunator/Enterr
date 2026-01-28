@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Annotated
+from fastapi_pagination import Page
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 from dataAccess.database.database import (
     Website,
@@ -42,16 +42,20 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User) -> List[Website]:
+    def get_websites(current_user: User, website_filter=None) -> Page[Website]:
+        """Get websites for the current user with optional filtering and pagination."""
         with get_session() as session:
-            user = (
-                session.query(User)
-                .options(
-                    joinedload(User.websites).joinedload(Website.action_interval),
-                )
-                .get(current_user.id)
+            query = (
+                select(Website)
+                .where(Website.user == current_user.id)
+                .options(joinedload(Website.action_interval))
             )
-            return user.websites
+
+            if website_filter:
+                query = website_filter.filter(query)
+                query = website_filter.sort(query)
+
+            return paginate(session, query)
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
@@ -59,9 +63,7 @@ class DataBase:
             query = session.query(Website).filter_by(
                 id=website_id, user=current_user.id
             )
-            query = query.options(
-                joinedload(Website.action_interval)
-            )
+            query = query.options(joinedload(Website.action_interval))
             website = query.first()
 
             if website:
@@ -119,7 +121,9 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def get_action_histories(website_id: int, current_user: User) -> List[ActionHistory]:
+    def get_action_histories(
+        website_id: int, current_user: User
+    ) -> List[ActionHistory]:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
@@ -285,7 +289,9 @@ class DataBase:
             existing_action_history.execution_ended = datetime.now()
             existing_action_history.execution_status = execution_status
             existing_action_history.failed_details = failed_details
-            existing_action_history.custom_failed_details_message = custom_failed_details_message
+            existing_action_history.custom_failed_details_message = (
+                custom_failed_details_message
+            )
             existing_action_history.screenshot_id = screenshot_id
             session.commit()
 

@@ -1,9 +1,17 @@
 from datetime import timedelta, datetime, timezone
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+from fastapi_filter.contrib.sqlalchemy import Filter
 from dataAccess.database.database import Website
-from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
-from endpoints.models.action_interval_model import AddActionInterval, GetActionInterval, EditActionInterval
+from endpoints.decorators.request_validator import (
+    GetRequestBaseModel,
+    PostRequestBaseModel,
+)
+from endpoints.models.action_interval_model import (
+    AddActionInterval,
+    GetActionInterval,
+    EditActionInterval,
+)
 from utils.utils import timedelta_to_parts
 
 
@@ -17,11 +25,7 @@ class DateTime(BaseModel):
     @staticmethod
     def from_datetime(dt: datetime) -> "DateTime":
         return DateTime(
-            day=dt.day,
-            month=dt.month,
-            year=dt.year,
-            hour=dt.hour,
-            minute=dt.minute
+            day=dt.day, month=dt.month, year=dt.year, hour=dt.hour, minute=dt.minute
         )
 
 
@@ -86,18 +90,23 @@ class EditWebsite(BaseModel):
         if self.paused is not None:
             existing_website.paused = self.paused
         if self.expiration_interval_minutes is not None:
-            existing_website.expiration_interval = timedelta(minutes=self.expiration_interval_minutes)
+            existing_website.expiration_interval = timedelta(
+                minutes=self.expiration_interval_minutes
+            )
         else:
             existing_website.expiration_interval = None
         existing_website.custom_login_script = self.custom_login_script
         if self.action_interval is not None:
             existing_website.action_interval = self.action_interval.edit_existing_model(
-                existing_website.action_interval)
+                existing_website.action_interval
+            )
 
         if self.paused:
             existing_website.next_schedule = None
         else:
-            existing_website.next_schedule = existing_website.action_interval.get_random_action_datetime()
+            existing_website.next_schedule = (
+                existing_website.action_interval.get_random_action_datetime()
+            )
 
         return existing_website
 
@@ -122,7 +131,11 @@ class GetWebsite(GetRequestBaseModel):
             expiration_interval_minutes = None
         else:
             expiration_interval_parts = timedelta_to_parts(website.expiration_interval)
-            expiration_interval_minutes = expiration_interval_parts.days * 24 * 60 + expiration_interval_parts.hours * 60 + expiration_interval_parts.minutes
+            expiration_interval_minutes = (
+                expiration_interval_parts.days * 24 * 60
+                + expiration_interval_parts.hours * 60
+                + expiration_interval_parts.minutes
+            )
 
         return GetWebsite(
             id=website.id,
@@ -135,8 +148,11 @@ class GetWebsite(GetRequestBaseModel):
             paused=website.paused,
             expiration_interval_minutes=expiration_interval_minutes,
             custom_login_script=website.custom_login_script,
-            action_interval=GetActionInterval.from_sql_model(
-                website.action_interval) if website.action_interval else None,
+            action_interval=(
+                GetActionInterval.from_sql_model(website.action_interval)
+                if website.action_interval
+                else None
+            ),
             next_schedule=website.next_schedule,
         )
 
@@ -147,3 +163,28 @@ class CheckCustomLoginScript(BaseModel):
 
 class CheckCustomLoginScriptResponse(BaseModel):
     error: str | None
+
+
+class WebsiteFilter(Filter):
+    search: Optional[str] = None
+    order_by: Optional[list[str]] = None
+
+    class Constants(Filter.Constants):
+        model = Website
+        search_model_fields = ["name", "url"]
+
+    @field_validator("order_by")
+    def restrict_sortable_fields(cls, value):
+        if value is None:
+            return None
+
+        allowed_field_names = ["name", "next_schedule"]
+
+        for field_name in value:
+            field_name = field_name.replace("+", "").replace("-", "")
+            if field_name not in allowed_field_names:
+                raise ValueError(
+                    f"You may only sort by: {', '.join(allowed_field_names)}"
+                )
+
+        return value

@@ -1,5 +1,6 @@
-from typing import List
 from fastapi import FastAPI, Depends
+from fastapi_pagination import Page
+from fastapi_filter import FilterDepends
 from dataAccess.data_access import DataAccess
 from dataAccess.database.change_database import DataBase
 from endpoints.models.website_model import (
@@ -7,15 +8,18 @@ from endpoints.models.website_model import (
     AddWebsite,
     EditWebsite,
     CheckCustomLoginScript,
+    WebsiteFilter,
 )
 
 
 def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/websites", response_model=List[GetWebsite])
-    def get_websites(current_user=Depends(DataAccess.get_current_user)):
-        websites = DataBase.get_websites(current_user)
-        return [GetWebsite.from_sql_model(d) for d in websites]
+    @app.get("/api/websites", response_model=Page[GetWebsite])
+    def get_websites(
+        current_user=Depends(DataAccess.get_current_user),
+        website_filter: WebsiteFilter = FilterDepends(WebsiteFilter),
+    ):
+        return DataBase.get_websites(current_user, website_filter)
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite)
     def get_website(website_id: int, current_user=Depends(DataAccess.get_current_user)):

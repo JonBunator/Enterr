@@ -12,7 +12,7 @@ import apiClient from "./apiClient.ts";
 
 export async function getWebsites(): Promise<Website[]> {
   const data = await apiClient.get('/websites')
-  return data.data as Website[]
+  return data.data.items as Website[]
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {
@@ -68,8 +68,7 @@ export async function checkCustomLoginScript(customLoginScript: string): Promise
 }
 
 export async function addManualLogin(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/action_history/manual_add', body);
+  await apiClient.post(`/action_history/manual_add/${websiteId}`);
 }
 
 export async function triggerAutomaticLogin(websiteId: number) {

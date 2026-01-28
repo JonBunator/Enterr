@@ -3,6 +3,7 @@ import socketio
 import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
@@ -67,6 +68,8 @@ app.add_websocket_route("/socket.io/", sio_asgi_app)
 register_rest_endpoints(
     app=app, data_access=data_access, notification_manager=notification_manager
 )
+
+add_pagination(app)
 
 # Serve React frontend in production
 if not dev_mode:
