@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Annotated
 
 from fastapi import Depends
+from fastapi_pagination import Page
 
 from dataAccess.database.change_database import DataBase, oauth2_scheme
 from dataAccess.database.database import (
@@ -100,5 +101,5 @@ class DataAccess:
         return DataBase.get_user(username)
 
     @staticmethod
-    def get_notifications(current_user: User) -> List[Notification]:
+    def get_notifications(current_user: User) -> Page[Notification]:
         return DataBase.get_notifications(current_user)

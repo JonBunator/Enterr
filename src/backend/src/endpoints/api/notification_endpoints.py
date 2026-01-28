@@ -1,5 +1,5 @@
-from typing import List
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi_pagination import Page
 from starlette import status
 from dataAccess.data_access import DataAccess
 from dataAccess.database.change_database import DataBase
@@ -15,10 +15,11 @@ def register_notification_endpoints(
     app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
 ):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/notifications", response_model=List[GetNotification])
-    def get_notifications(current_user=Depends(DataAccess.get_current_user)):
-        notifications = DataBase.get_notifications(current_user)
-        return [GetNotification.from_sql_model(d) for d in notifications]
+    @app.get("/api/notifications", response_model=Page[GetNotification])
+    def get_notifications(
+        current_user=Depends(DataAccess.get_current_user),
+    ):
+        return DataBase.get_notifications(current_user)
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/notifications")

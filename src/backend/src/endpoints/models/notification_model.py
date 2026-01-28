@@ -45,21 +45,10 @@ class EditNotification(BaseModel):
         return existing_notification
 
 
-class GetNotification(GetRequestBaseModel):
+class GetNotification(BaseModel):
     id: int
     name: str
     apprise_token: str
     title: str
     body: str
     triggers: List[str]
-
-    @staticmethod
-    def from_sql_model(notification: Notification) -> "GetNotification":
-        return GetNotification(
-            id=notification.id,
-            name=notification.name,
-            apprise_token=notification.apprise_token,
-            title=notification.title,
-            body=notification.body,
-            triggers=[trigger.value for trigger in notification.triggers],
-        )

@@ -92,7 +92,7 @@ export async function logoutUser() {
 
 export async function getNotifications(): Promise<Notification[]> {
   const data = await apiClient.get('/notifications')
-  return data.data as Notification[]
+  return data.data.items as Notification[]
 }
 
 export async function addNotification(notification: Notification) {

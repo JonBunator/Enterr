@@ -205,12 +205,11 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def get_notifications(current_user: User) -> List[Notification]:
+    def get_notifications(current_user: User) -> Page[Notification]:
         with get_session() as session:
-            notifications = (
-                session.query(Notification).filter_by(user=current_user.id).all()
-            )
-            return notifications
+            query = select(Notification).where(Notification.user == current_user.id)
+
+            return paginate(session, query)
 
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 
