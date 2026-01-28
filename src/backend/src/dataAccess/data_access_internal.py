@@ -40,13 +40,13 @@ class DataAccessInternal:
 
 
     def add_action_history(self, website_id: int, action_history: ActionHistory):
-        action_history_id = DataBase.add_action_history(website_id, action_history)
+        created_action_history = DataBase.add_action_history(website_id, action_history)
 
         self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history_id
+            action_history_id=created_action_history.id
         )
 
-        return action_history_id
+        return created_action_history.id
 
     def action_history_finish_execution(
         self,

@@ -15,22 +15,22 @@ def register_notification_endpoints(
     app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
 ):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/notifications", response_model=Page[GetNotification])
+    @app.get("/api/notifications", response_model=Page[GetNotification], tags=["Notifications"])
     def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
     ):
         return DataBase.get_notifications(current_user)
 
     # ---------------------------- ADD ----------------------------
-    @app.post("/api/notifications")
+    @app.post("/api/notifications", response_model=GetNotification, tags=["Notifications"])
     def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
     ):
-        data_access.add_notification(notification_request, current_user)
+        return data_access.add_notification(notification_request, current_user)
 
     # ---------------------------- EDIT ----------------------------
-    @app.put("/api/notifications/{notification_id}")
+    @app.put("/api/notifications/{notification_id}", tags=["Notifications"])
     def edit_notification(
             notification_id: int,
             notification_request: EditNotification,
@@ -39,7 +39,7 @@ def register_notification_endpoints(
         data_access.edit_notification(notification_id, notification_request, current_user)
 
     # ---------------------------- DELETE ----------------------------
-    @app.delete("/api/notifications/{notification_id}")
+    @app.delete("/api/notifications/{notification_id}", tags=["Notifications"])
     def delete_notification(
         notification_id: int,
         current_user=Depends(DataAccess.get_current_user),
@@ -47,7 +47,7 @@ def register_notification_endpoints(
         data_access.delete_notification(notification_id, current_user)
 
     # ---------------------------- OTHER ----------------------------
-    @app.post("/api/notifications/test")
+    @app.post("/api/notifications/test", tags=["Notifications"])
     def test_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),

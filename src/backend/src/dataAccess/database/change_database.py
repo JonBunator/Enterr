@@ -15,6 +15,7 @@ from dataAccess.database.database import (
     Notification,
     get_session,
 )
+from endpoints.models.website_model import GetWebsite
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -71,12 +72,15 @@ class DataBase:
             raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def add_website(website: Website, current_user: User):
+    def add_website(website: Website, current_user: User) -> Website:
         with get_session() as session:
             website.user = current_user.id
             website.next_schedule = datetime.now()
             session.add(website)
             session.commit()
+            session.refresh(website)
+            _ = website.action_interval
+            return website
 
     @staticmethod
     def edit_website(website: Website, current_user: User):
@@ -149,20 +153,24 @@ class DataBase:
     @staticmethod
     def add_manual_action_history(
         website_id: int, action_history: ActionHistory, current_user: User
-    ):
+    ) -> ActionHistory:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException("Website not found")
             else:
-                DataBase.add_action_history(website_id, action_history)
+                return DataBase.add_action_history(website_id, action_history)
 
     @staticmethod
-    def add_notification(notification: Notification, current_user: User):
+    def add_notification(
+        notification: Notification, current_user: User
+    ) -> Notification:
         with get_session() as session:
             notification.user = current_user.id
             session.add(notification)
             session.commit()
+            session.refresh(notification)
+            return notification
 
     @staticmethod
     def get_notification(notification_id: int, current_user: User) -> Notification:
@@ -316,7 +324,7 @@ class DataBase:
                 )
                 action_history_ids.append(action_history.id)
             if len(running_action_histories) == 0:
-                action_history_id = DataBase.add_action_history(
+                created_action_history = DataBase.add_action_history(
                     website_id,
                     ActionHistory(
                         execution_status=ActionStatusCode.FAILED,
@@ -325,12 +333,14 @@ class DataBase:
                         failed_details=ActionFailedDetails.UNKNOWN_EXECUTION_ERROR,
                     ),
                 )
-                action_history_ids.append(action_history_id)
+                action_history_ids.append(created_action_history.id)
             session.commit()
             return action_history_ids
 
     @staticmethod
-    def add_action_history(website_id: int, action_history: ActionHistory) -> int:
+    def add_action_history(
+        website_id: int, action_history: ActionHistory
+    ) -> ActionHistory:
         with get_session() as session:
             website = session.get(Website, website_id)
             website.action_histories.append(action_history)
@@ -341,4 +351,5 @@ class DataBase:
                     website.action_interval.get_random_action_datetime()
                 )
             session.commit()
-            return action_history.id
+            session.refresh(action_history)
+            return action_history

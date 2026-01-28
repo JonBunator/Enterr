@@ -7,7 +7,7 @@ from dataAccess.database.change_database import DataBase
 
 
 def register_utility_endpoints(app: FastAPI):
-    @app.get("/api/screenshot/{screenshot_id}")
+    @app.get("/api/screenshot/{screenshot_id}", tags=["Other"])
     def get_screenshot(
         screenshot_id: str, current_user=Depends(DataAccess.get_current_user)
     ):
@@ -30,11 +30,11 @@ def register_utility_endpoints(app: FastAPI):
                 detail=f"Image with id {screenshot_id} was not found",
             )
 
-    @app.get("/api/health")
+    @app.get("/api/health", tags=["Other"])
     def health_check():
         return {"status": "healthy"}
 
-    @app.post("/api/trigger_login/{website_id}")
+    @app.post("/api/trigger_login/{website_id}", tags=["Other"])
     def trigger_login(
             website_id: int,
             current_user=Depends(DataAccess.get_current_user),

@@ -16,7 +16,7 @@ from endpoints.models.notification_model import (
     EditNotification,
 )
 from endpoints.models.website_model import AddWebsite, EditWebsite, CheckCustomLoginScript, \
-    CheckCustomLoginScriptResponse
+    CheckCustomLoginScriptResponse, GetWebsite
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.login.custom_login.parser import CustomLoginScriptParser
 
@@ -30,7 +30,7 @@ class DataAccess:
         return DataBase.get_current_user(token)
 
     @staticmethod
-    def get_websites(current_user: User) -> List[Website]:
+    def get_websites(current_user: User) -> Page[Website]:
         return DataBase.get_websites(current_user)
 
     @staticmethod
@@ -42,10 +42,11 @@ class DataAccess:
         error = CustomLoginScriptParser.check_syntax(request.script)
         return CheckCustomLoginScriptResponse(error=error)
 
-    def add_website(self, request: AddWebsite, current_user: User):
+    def add_website(self, request: AddWebsite, current_user: User) -> GetWebsite:
         website = request.to_sql_model()
-        DataBase.add_website(website, current_user)
+        created_website = DataBase.add_website(website, current_user)
         self.webhook_endpoints.login_data_changed()
+        return GetWebsite.from_sql_model(created_website)
 
     def edit_website(self, website_id: int, request: EditWebsite, current_user: User):
         existing_website = DataBase.get_website(website_id, current_user)
@@ -65,17 +66,19 @@ class DataAccess:
             execution_ended=datetime.now(),
             execution_status=ActionStatusCode.SUCCESS,
         )
-        DataBase.add_manual_action_history(
+        created_action_history = DataBase.add_manual_action_history(
             website_id, action_history, current_user
         )
         self.webhook_endpoints.action_history_changed(
             action_history_id=action_history.id
         )
+        return created_action_history
 
-    def add_notification(self, request: AddNotification, current_user: User):
+    def add_notification(self, request: AddNotification, current_user: User) -> Notification:
         notification = request.to_sql_model()
-        DataBase.add_notification(notification, current_user)
+        notification = DataBase.add_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
+        return notification
 
     def edit_notification(self, notification_id: int, request: EditNotification, current_user: User):
         existing_notification = DataBase.get_notification(notification_id, current_user)

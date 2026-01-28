@@ -9,11 +9,11 @@ from utils.security import create_access_token
 
 
 def register_user_endpoints(app: FastAPI, data_access: DataAccess):
-    @app.get("/api/user/data", response_model=GetUserData)
+    @app.get("/api/user/data", response_model=GetUserData, tags=["User"])
     def get_user_data(current_user=Depends(DataAccess.get_current_user)):
         return GetUserData.from_sql_model(current_user)
 
-    @app.post("/api/user/login")
+    @app.post("/api/user/login", tags=["User"])
     def login(
         response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
     ) -> Token:
@@ -41,7 +41,7 @@ def register_user_endpoints(app: FastAPI, data_access: DataAccess):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-    @app.post("/api/user/logout")
+    @app.post("/api/user/logout", tags=["User"])
     def logout(response: Response):
         response.delete_cookie(
             key="access_token", path="/", httponly=True, secure=False, samesite="strict"
