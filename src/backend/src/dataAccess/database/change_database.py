@@ -15,6 +15,9 @@ from dataAccess.database.database import (
     Notification,
     get_session,
 )
+from endpoints.models.action_history_model import GetActionHistory
+from endpoints.models.notification_model import GetNotification
+from endpoints.models.website_model import GetWebsite
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -42,7 +45,7 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User, website_filter=None) -> Page[Website]:
+    def get_websites(current_user: User, website_filter=None) -> Page[GetWebsite]:
         """Get websites for the current user with optional filtering and pagination."""
         with get_session() as session:
             query = (
@@ -55,7 +58,7 @@ class DataBase:
                 query = website_filter.filter(query)
                 query = website_filter.sort(query)
 
-            return paginate(session, query)
+            return paginate(session, query, transformer=lambda items: [GetWebsite.from_sql_model(item) for item in items])
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
@@ -127,7 +130,7 @@ class DataBase:
     @staticmethod
     def get_action_histories(
         website_id: int, current_user: User
-    ) -> Page[ActionHistory]:
+    ) -> Page[GetActionHistory]:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
@@ -139,7 +142,7 @@ class DataBase:
                 .order_by(ActionHistory.execution_started.desc())
             )
 
-            return paginate(session, query)
+            return paginate(session, query, transformer=lambda items: [GetActionHistory.from_sql_model(item) for item in items])
 
     @staticmethod
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
@@ -152,6 +155,26 @@ class DataBase:
             if action_history:
                 return action_history
             raise NotFoundException(f"ActionHistory {action_history_id} not found")
+
+    @staticmethod
+    def get_last_successful_login(
+        website_id: int, current_user: User
+    ) -> ActionHistory | None:
+        with get_session() as session:
+            website = session.get(Website, website_id)
+            if website is None or website.user != current_user.id:
+                raise NotFoundException(f"Website {website_id} not found")
+
+            action_history = (
+                session.query(ActionHistory)
+                .filter_by(
+                    website=website_id, execution_status=ActionStatusCode.SUCCESS
+                )
+                .order_by(ActionHistory.execution_started.desc())
+                .first()
+            )
+
+            return action_history
 
     @staticmethod
     def add_manual_action_history(
@@ -216,11 +239,11 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def get_notifications(current_user: User) -> Page[Notification]:
+    def get_notifications(current_user: User) -> Page[GetNotification]:
         with get_session() as session:
             query = select(Notification).where(Notification.user == current_user.id)
 
-            return paginate(session, query)
+            return paginate(session, query, transformer=lambda items: [GetNotification.from_sql_model(item) for item in items])
 
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 

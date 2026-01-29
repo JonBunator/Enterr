@@ -1,9 +1,7 @@
 from datetime import datetime
-from typing import List, Annotated
-
+from typing import Annotated
 from fastapi import Depends
 from fastapi_pagination import Page
-
 from dataAccess.database.change_database import DataBase, oauth2_scheme
 from dataAccess.database.database import (
     Website,
@@ -11,9 +9,10 @@ from dataAccess.database.database import (
     User,
     Notification, ActionStatusCode,
 )
+from endpoints.models.action_history_model import GetActionHistory
 from endpoints.models.notification_model import (
     AddNotification,
-    EditNotification,
+    EditNotification, GetNotification,
 )
 from endpoints.models.website_model import AddWebsite, EditWebsite, CheckCustomLoginScript, \
     CheckCustomLoginScriptResponse, GetWebsite
@@ -30,8 +29,8 @@ class DataAccess:
         return DataBase.get_current_user(token)
 
     @staticmethod
-    def get_websites(current_user: User) -> Page[Website]:
-        return DataBase.get_websites(current_user)
+    def get_websites(current_user: User, website_filter=None) -> Page[GetWebsite]:
+        return DataBase.get_websites(current_user, website_filter)
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
@@ -96,13 +95,23 @@ class DataAccess:
         DataBase.trigger_login(website_id, current_user)
 
     @staticmethod
+    def get_action_histories(
+            website_id: int, current_user: User
+    ) -> Page[GetActionHistory]:
+        return DataBase.get_action_histories(website_id, current_user)
+
+    @staticmethod
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
         return DataBase.get_action_history(action_history_id, current_user)
+
+    @staticmethod
+    def get_last_successful_login(website_id: int, current_user: User) -> ActionHistory | None:
+        return DataBase.get_last_successful_login(website_id, current_user)
 
     @staticmethod
     def get_user(username: str):
         return DataBase.get_user(username)
 
     @staticmethod
-    def get_notifications(current_user: User) -> Page[Notification]:
+    def get_notifications(current_user: User) -> Page[GetNotification]:
         return DataBase.get_notifications(current_user)

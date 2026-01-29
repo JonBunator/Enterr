@@ -3,7 +3,6 @@ from fastapi import FastAPI, Depends, HTTPException
 from starlette import status
 from starlette.responses import FileResponse
 from dataAccess.data_access import DataAccess
-from dataAccess.database.change_database import DataBase
 
 
 def register_utility_endpoints(app: FastAPI):
@@ -39,4 +38,4 @@ def register_utility_endpoints(app: FastAPI):
             website_id: int,
             current_user=Depends(DataAccess.get_current_user),
     ):
-        DataBase.trigger_login(website_id, current_user)
+        DataAccess.trigger_login(website_id, current_user)

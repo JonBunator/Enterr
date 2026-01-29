@@ -2,8 +2,6 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi_pagination import Page
 from starlette import status
 from dataAccess.data_access import DataAccess
-from dataAccess.database.change_database import DataBase
-from dataAccess.database.database import Notification
 from endpoints.models.notification_model import (
     AddNotification,
     GetNotification,
@@ -16,13 +14,11 @@ def register_notification_endpoints(
     app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
 ):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/notifications", response_model=Page[Notification], tags=["Notifications"])
+    @app.get("/api/notifications", response_model=Page[GetNotification], tags=["Notifications"])
     def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
     ):
-        notification = DataBase.get_notifications(current_user)
-        notification.items = [GetNotification.from_sql_model(notification) for notification in notification.items]
-        return notification
+        return DataAccess.get_notifications(current_user)
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/notifications", response_model=GetNotification, tags=["Notifications"])

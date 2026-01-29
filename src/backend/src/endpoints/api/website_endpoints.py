@@ -2,7 +2,6 @@ from fastapi import FastAPI, Depends
 from fastapi_pagination import Page
 from fastapi_filter import FilterDepends
 from dataAccess.data_access import DataAccess
-from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import Website
 from endpoints.models.website_model import (
     GetWebsite,
@@ -16,18 +15,16 @@ from endpoints.models.website_model import (
 
 def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/websites", response_model=Page[Website], tags=["Websites"])
+    @app.get("/api/websites", response_model=Page[GetWebsite], tags=["Websites"])
     def get_websites(
         current_user=Depends(DataAccess.get_current_user),
         website_filter: WebsiteFilter = FilterDepends(WebsiteFilter),
     ):
-        websites = DataBase.get_websites(current_user, website_filter)
-        websites.items = [GetWebsite.from_sql_model(website) for website in websites.items]
-        return websites
+        return DataAccess.get_websites(current_user, website_filter)
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite, tags=["Websites"])
     def get_website(website_id: int, current_user=Depends(DataAccess.get_current_user)):
-        website = DataBase.get_website(website_id, current_user)
+        website = DataAccess.get_website(website_id, current_user)
         return GetWebsite.from_sql_model(website)
 
     # ---------------------------- ADD ----------------------------
