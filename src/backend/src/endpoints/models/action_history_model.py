@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
+
+from pydantic import BaseModel
+
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
@@ -24,3 +27,7 @@ class GetActionHistory(GetRequestBaseModel):
             custom_failed_details_message=action_history.custom_failed_details_message,
             screenshot_id=action_history.screenshot_id
         )
+
+
+class GetLastSuccessfulLogin(BaseModel):
+    action_history: Optional[GetActionHistory]

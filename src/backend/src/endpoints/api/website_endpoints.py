@@ -2,7 +2,6 @@ from fastapi import FastAPI, Depends
 from fastapi_pagination import Page
 from fastapi_filter import FilterDepends
 from dataAccess.data_access import DataAccess
-from dataAccess.database.database import Website
 from endpoints.models.website_model import (
     GetWebsite,
     AddWebsite,

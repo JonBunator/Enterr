@@ -69,7 +69,7 @@ class DataAccess:
             website_id, action_history, current_user
         )
         self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history.id
+            action_history_id=created_action_history.id
         )
         return created_action_history
 

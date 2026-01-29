@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from typing import Optional
 from pydantic import BaseModel, field_validator
 from fastapi_filter.contrib.sqlalchemy import Filter
@@ -101,7 +101,7 @@ class EditWebsite(BaseModel):
                 existing_website.action_interval
             )
 
-        if self.paused:
+        if existing_website.paused:
             existing_website.next_schedule = None
         else:
             existing_website.next_schedule = (
