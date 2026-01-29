@@ -23,8 +23,10 @@ export async function getWebsite(websiteId: number): Promise<Website> {
 export async function getActionHistories(
   websiteId: number,
 ): Promise<ActionHistory[]> {
-  const data = await apiClient.get(`/action_history?website_id=${websiteId}`);
-  return data.data as ActionHistory[];
+  const data = await apiClient.get(
+    `/action_history?website_id=${websiteId}&page=1&size=4`,
+  );
+  return data.data.items as ActionHistory[];
 }
 
 export async function getActionHistory(

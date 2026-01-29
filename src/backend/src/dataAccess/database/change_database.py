@@ -127,16 +127,19 @@ class DataBase:
     @staticmethod
     def get_action_histories(
         website_id: int, current_user: User
-    ) -> List[ActionHistory]:
+    ) -> Page[ActionHistory]:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException(f"Website {website_id} not found")
-            return sorted(
-                website.action_histories,
-                key=lambda ah: ah.execution_started,
-                reverse=True,
+
+            query = (
+                select(ActionHistory)
+                .where(ActionHistory.website == website_id)
+                .order_by(ActionHistory.execution_started.desc())
             )
+
+            return paginate(session, query)
 
     @staticmethod
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:

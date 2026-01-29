@@ -8,7 +8,8 @@ from endpoints.models.website_model import (
     AddWebsite,
     EditWebsite,
     CheckCustomLoginScript,
-    WebsiteFilter, CheckCustomLoginScriptResponse,
+    WebsiteFilter,
+    CheckCustomLoginScriptResponse,
 )
 
 
@@ -51,7 +52,11 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
         data_access.delete_website(website_id, current_user)
 
     # ---------------------------- OTHER ----------------------------
-    @app.post("/api/websites/check_custom_login_script", response_model=CheckCustomLoginScriptResponse, tags=["Websites"])
+    @app.post(
+        "/api/websites/check_custom_login_script",
+        response_model=CheckCustomLoginScriptResponse,
+        tags=["Websites"],
+    )
     def check_custom_login_script(
         check_custom_login_script_request: CheckCustomLoginScript,
     ):
