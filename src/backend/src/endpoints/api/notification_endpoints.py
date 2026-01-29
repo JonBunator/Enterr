@@ -3,6 +3,7 @@ from fastapi_pagination import Page
 from starlette import status
 from dataAccess.data_access import DataAccess
 from dataAccess.database.change_database import DataBase
+from dataAccess.database.database import Notification
 from endpoints.models.notification_model import (
     AddNotification,
     GetNotification,
@@ -15,11 +16,13 @@ def register_notification_endpoints(
     app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
 ):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/notifications", response_model=Page[GetNotification], tags=["Notifications"])
+    @app.get("/api/notifications", response_model=Page[Notification], tags=["Notifications"])
     def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
     ):
-        return DataBase.get_notifications(current_user)
+        notification = DataBase.get_notifications(current_user)
+        notification.items = [GetNotification.from_sql_model(notification) for notification in notification.items]
+        return notification
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/notifications", response_model=GetNotification, tags=["Notifications"])
@@ -27,7 +30,8 @@ def register_notification_endpoints(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
     ):
-        return data_access.add_notification(notification_request, current_user)
+        notification = data_access.add_notification(notification_request, current_user)
+        return GetNotification.from_sql_model(notification)
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/notifications/{notification_id}", tags=["Notifications"])

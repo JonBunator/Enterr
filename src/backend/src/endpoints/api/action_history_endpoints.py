@@ -40,4 +40,5 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
     ):
-        return data_access.add_manual_action_history(website_id, current_user)
+        action_history = data_access.add_manual_action_history(website_id, current_user)
+        return GetActionHistory.from_sql_model(action_history)

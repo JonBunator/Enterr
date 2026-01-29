@@ -96,8 +96,8 @@ class DataAccess:
         DataBase.trigger_login(website_id, current_user)
 
     @staticmethod
-    def get_action_history(website_id: int, current_user: User) -> List[ActionHistory]:
-        return DataBase.get_action_history(website_id, current_user)
+    def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
+        return DataBase.get_action_history(action_history_id, current_user)
 
     @staticmethod
     def get_user(username: str):

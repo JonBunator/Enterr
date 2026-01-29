@@ -15,7 +15,6 @@ from dataAccess.database.database import (
     Notification,
     get_session,
 )
-from endpoints.models.website_model import GetWebsite
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -75,7 +74,8 @@ class DataBase:
     def add_website(website: Website, current_user: User) -> Website:
         with get_session() as session:
             website.user = current_user.id
-            website.next_schedule = datetime.now()
+            if not website.paused:
+                website.next_schedule = datetime.now()
             session.add(website)
             session.commit()
             session.refresh(website)
