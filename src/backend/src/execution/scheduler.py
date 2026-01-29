@@ -3,14 +3,11 @@ import uuid
 from datetime import datetime
 from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.date import DateTrigger
 from dataAccess.data_access_internal import DataAccessInternal
-from dataAccess.database.database import ActionHistory, ActionStatusCode, get_session
+from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
-from execution.login.find_form_automatically import XPaths, XPath
 from execution.login.login import LoginStatusCode, login
 
 

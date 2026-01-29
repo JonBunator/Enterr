@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Annotated
+from fastapi_pagination import Page
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 from dataAccess.database.database import (
     Website,
@@ -15,6 +15,9 @@ from dataAccess.database.database import (
     Notification,
     get_session,
 )
+from endpoints.models.action_history_model import GetActionHistory
+from endpoints.models.notification_model import GetNotification
+from endpoints.models.website_model import GetWebsite
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -42,16 +45,20 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User) -> List[Website]:
+    def get_websites(current_user: User, website_filter=None) -> Page[GetWebsite]:
+        """Get websites for the current user with optional filtering and pagination."""
         with get_session() as session:
-            user = (
-                session.query(User)
-                .options(
-                    joinedload(User.websites).joinedload(Website.action_interval),
-                )
-                .get(current_user.id)
+            query = (
+                select(Website)
+                .where(Website.user == current_user.id)
+                .options(joinedload(Website.action_interval))
             )
-            return user.websites
+
+            if website_filter:
+                query = website_filter.filter(query)
+                query = website_filter.sort(query)
+
+            return paginate(session, query, transformer=lambda items: [GetWebsite.from_sql_model(item) for item in items])
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
@@ -59,9 +66,7 @@ class DataBase:
             query = session.query(Website).filter_by(
                 id=website_id, user=current_user.id
             )
-            query = query.options(
-                joinedload(Website.action_interval)
-            )
+            query = query.options(joinedload(Website.action_interval))
             website = query.first()
 
             if website:
@@ -69,12 +74,16 @@ class DataBase:
             raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def add_website(website: Website, current_user: User):
+    def add_website(website: Website, current_user: User) -> Website:
         with get_session() as session:
             website.user = current_user.id
-            website.next_schedule = datetime.now()
+            if not website.paused:
+                website.next_schedule = datetime.now()
             session.add(website)
             session.commit()
+            session.refresh(website)
+            _ = website.action_interval
+            return website
 
     @staticmethod
     def edit_website(website: Website, current_user: User):
@@ -119,16 +128,21 @@ class DataBase:
                 raise NotFoundException(f"Website {website_id} not found")
 
     @staticmethod
-    def get_action_histories(website_id: int, current_user: User) -> List[ActionHistory]:
+    def get_action_histories(
+        website_id: int, current_user: User
+    ) -> Page[GetActionHistory]:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException(f"Website {website_id} not found")
-            return sorted(
-                website.action_histories,
-                key=lambda ah: ah.execution_started,
-                reverse=True,
+
+            query = (
+                select(ActionHistory)
+                .where(ActionHistory.website == website_id)
+                .order_by(ActionHistory.execution_started.desc())
             )
+
+            return paginate(session, query, transformer=lambda items: [GetActionHistory.from_sql_model(item) for item in items])
 
     @staticmethod
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
@@ -143,22 +157,46 @@ class DataBase:
             raise NotFoundException(f"ActionHistory {action_history_id} not found")
 
     @staticmethod
+    def get_last_successful_login(
+        website_id: int, current_user: User
+    ) -> ActionHistory | None:
+        with get_session() as session:
+            website = session.get(Website, website_id)
+            if website is None or website.user != current_user.id:
+                raise NotFoundException(f"Website {website_id} not found")
+
+            action_history = (
+                session.query(ActionHistory)
+                .filter_by(
+                    website=website_id, execution_status=ActionStatusCode.SUCCESS
+                )
+                .order_by(ActionHistory.execution_started.desc())
+                .first()
+            )
+
+            return action_history
+
+    @staticmethod
     def add_manual_action_history(
         website_id: int, action_history: ActionHistory, current_user: User
-    ):
+    ) -> ActionHistory:
         with get_session() as session:
             website = session.get(Website, website_id)
             if website is None or website.user != current_user.id:
                 raise NotFoundException("Website not found")
             else:
-                DataBase.add_action_history(website_id, action_history)
+                return DataBase.add_action_history(website_id, action_history)
 
     @staticmethod
-    def add_notification(notification: Notification, current_user: User):
+    def add_notification(
+        notification: Notification, current_user: User
+    ) -> Notification:
         with get_session() as session:
             notification.user = current_user.id
             session.add(notification)
             session.commit()
+            session.refresh(notification)
+            return notification
 
     @staticmethod
     def get_notification(notification_id: int, current_user: User) -> Notification:
@@ -201,12 +239,11 @@ class DataBase:
                 raise NotFoundException(f"Notification {notification.id} not found")
 
     @staticmethod
-    def get_notifications(current_user: User) -> List[Notification]:
+    def get_notifications(current_user: User) -> Page[GetNotification]:
         with get_session() as session:
-            notifications = (
-                session.query(Notification).filter_by(user=current_user.id).all()
-            )
-            return notifications
+            query = select(Notification).where(Notification.user == current_user.id)
+
+            return paginate(session, query, transformer=lambda items: [GetNotification.from_sql_model(item) for item in items])
 
     """--------------------------- INTERNAL ACCESS ---------------------------"""
 
@@ -285,7 +322,9 @@ class DataBase:
             existing_action_history.execution_ended = datetime.now()
             existing_action_history.execution_status = execution_status
             existing_action_history.failed_details = failed_details
-            existing_action_history.custom_failed_details_message = custom_failed_details_message
+            existing_action_history.custom_failed_details_message = (
+                custom_failed_details_message
+            )
             existing_action_history.screenshot_id = screenshot_id
             session.commit()
 
@@ -311,7 +350,7 @@ class DataBase:
                 )
                 action_history_ids.append(action_history.id)
             if len(running_action_histories) == 0:
-                action_history_id = DataBase.add_action_history(
+                created_action_history = DataBase.add_action_history(
                     website_id,
                     ActionHistory(
                         execution_status=ActionStatusCode.FAILED,
@@ -320,12 +359,14 @@ class DataBase:
                         failed_details=ActionFailedDetails.UNKNOWN_EXECUTION_ERROR,
                     ),
                 )
-                action_history_ids.append(action_history_id)
+                action_history_ids.append(created_action_history.id)
             session.commit()
             return action_history_ids
 
     @staticmethod
-    def add_action_history(website_id: int, action_history: ActionHistory) -> int:
+    def add_action_history(
+        website_id: int, action_history: ActionHistory
+    ) -> ActionHistory:
         with get_session() as session:
             website = session.get(Website, website_id)
             website.action_histories.append(action_history)
@@ -336,4 +377,5 @@ class DataBase:
                     website.action_interval.get_random_action_datetime()
                 )
             session.commit()
-            return action_history.id
+            session.refresh(action_history)
+            return action_history

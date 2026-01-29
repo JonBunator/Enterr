@@ -1,9 +1,9 @@
 import asyncio
 import socketio
 import os
-import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
@@ -15,7 +15,7 @@ from dataAccess.data_access import DataAccess
 from dataAccess.database.database import init_db
 from dotenv import load_dotenv
 from dataAccess.database.database_events import register_database_events
-from endpoints.rest_endpoints import register_rest_endpoints
+from endpoints.api.rest_endpoints import register_rest_endpoints
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.scheduler import Scheduler
 
@@ -68,6 +68,8 @@ app.add_websocket_route("/socket.io/", sio_asgi_app)
 register_rest_endpoints(
     app=app, data_access=data_access, notification_manager=notification_manager
 )
+
+add_pagination(app)
 
 # Serve React frontend in production
 if not dev_mode:

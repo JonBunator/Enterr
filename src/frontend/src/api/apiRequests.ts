@@ -12,7 +12,7 @@ import apiClient from "./apiClient.ts";
 
 export async function getWebsites(): Promise<Website[]> {
   const data = await apiClient.get('/websites')
-  return data.data as Website[]
+  return data.data.items as Website[]
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {
@@ -23,8 +23,10 @@ export async function getWebsite(websiteId: number): Promise<Website> {
 export async function getActionHistories(
   websiteId: number,
 ): Promise<ActionHistory[]> {
-  const data = await apiClient.get(`/action_history?website_id=${websiteId}`);
-  return data.data as ActionHistory[];
+  const data = await apiClient.get(
+    `/action_history?website_id=${websiteId}&page=1&size=4`,
+  );
+  return data.data.items as ActionHistory[];
 }
 
 export async function getActionHistory(
@@ -47,17 +49,15 @@ export async function getUserData(): Promise<UserData | null> {
 }
 
 export async function addWebsite(website: ChangeWebsite) {
-  await apiClient.post('/websites/add', website);
+  await apiClient.post('/websites', website);
 }
 
 export async function deleteWebsite(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/websites/delete', body);
+  await apiClient.delete(`/websites/${websiteId}`);
 }
 
 export async function editWebsite(websiteId: number, website: ChangeWebsite) {
-  const body = { id: websiteId, ...website };
-  await apiClient.post("/websites/edit", body);
+  await apiClient.put(`/websites/${websiteId}`, website);
 }
 
 export async function checkCustomLoginScript(customLoginScript: string): Promise<string | null> {
@@ -70,13 +70,11 @@ export async function checkCustomLoginScript(customLoginScript: string): Promise
 }
 
 export async function addManualLogin(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/action_history/manual_add', body);
+  await apiClient.post(`/action_history/manual_add/${websiteId}`);
 }
 
 export async function triggerAutomaticLogin(websiteId: number) {
-  const body = { id: websiteId }
-  await apiClient.post('/trigger_login', body);
+  await apiClient.post(`/trigger_login/${websiteId}`);
 }
 
 export async function loginUser(username: string, password: string): Promise<boolean> {
@@ -96,11 +94,11 @@ export async function logoutUser() {
 
 export async function getNotifications(): Promise<Notification[]> {
   const data = await apiClient.get('/notifications')
-  return data.data as Notification[]
+  return data.data.items as Notification[]
 }
 
 export async function addNotification(notification: Notification) {
-  await apiClient.post('/notifications/add', notification);
+  await apiClient.post('/notifications', notification);
 }
 
 export async function testNotification(notification: Notification) {
@@ -108,10 +106,9 @@ export async function testNotification(notification: Notification) {
 }
 
 export async function deleteNotification(notificationId: number) {
-  const body = { id: notificationId }
-  await apiClient.post('/notifications/delete', body);
+  await apiClient.delete(`/notifications/${notificationId}`);
 }
 
 export async function editNotification(notification: EditNotification) {
-  await apiClient.post('/notifications/edit', notification);
+  await apiClient.put(`/notifications/${notification.id}`, notification);
 }

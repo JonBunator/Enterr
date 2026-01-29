@@ -1,22 +1,21 @@
-from typing import List, Annotated
-
+from datetime import datetime
+from typing import Annotated
 from fastapi import Depends
-
+from fastapi_pagination import Page
 from dataAccess.database.change_database import DataBase, oauth2_scheme
 from dataAccess.database.database import (
     Website,
     ActionHistory,
     User,
-    Notification,
+    Notification, ActionStatusCode,
 )
-from endpoints.models.action_history_model import AddManualActionHistory
+from endpoints.models.action_history_model import GetActionHistory
 from endpoints.models.notification_model import (
     AddNotification,
-    EditNotification,
-    DeleteNotification,
+    EditNotification, GetNotification,
 )
-from endpoints.models.website_model import AddWebsite, EditWebsite, DeleteWebsite, CheckCustomLoginScript, \
-    CheckCustomLoginScriptResponse
+from endpoints.models.website_model import AddWebsite, EditWebsite, CheckCustomLoginScript, \
+    CheckCustomLoginScriptResponse, GetWebsite
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.login.custom_login.parser import CustomLoginScriptParser
 
@@ -30,8 +29,8 @@ class DataAccess:
         return DataBase.get_current_user(token)
 
     @staticmethod
-    def get_websites(current_user: User) -> List[Website]:
-        return DataBase.get_websites(current_user)
+    def get_websites(current_user: User, website_filter=None) -> Page[GetWebsite]:
+        return DataBase.get_websites(current_user, website_filter)
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
@@ -42,45 +41,52 @@ class DataAccess:
         error = CustomLoginScriptParser.check_syntax(request.script)
         return CheckCustomLoginScriptResponse(error=error)
 
-    def add_website(self, request: AddWebsite, current_user: User):
+    def add_website(self, request: AddWebsite, current_user: User) -> GetWebsite:
         website = request.to_sql_model()
-        DataBase.add_website(website, current_user)
+        created_website = DataBase.add_website(website, current_user)
         self.webhook_endpoints.login_data_changed()
+        return GetWebsite.from_sql_model(created_website)
 
-    def edit_website(self, request: EditWebsite, current_user: User):
-        existing_website = DataBase.get_website(request.id, current_user)
+    def edit_website(self, website_id: int, request: EditWebsite, current_user: User):
+        existing_website = DataBase.get_website(website_id, current_user)
         website = request.edit_existing_model(existing_website)
         DataBase.edit_website(website, current_user)
         self.webhook_endpoints.login_data_changed()
 
-    def delete_website(self, request: DeleteWebsite, current_user: User):
-        DataBase.delete_website(request.id, current_user)
+    def delete_website(self, website_id: int, current_user: User):
+        DataBase.delete_website(website_id, current_user)
         self.webhook_endpoints.login_data_changed()
 
     def add_manual_action_history(
-        self, action_history_request: AddManualActionHistory, current_user: User
+        self, website_id: int, current_user: User
     ):
-        action_history = action_history_request.to_sql_model()
-        DataBase.add_manual_action_history(
-            action_history_request.id, action_history, current_user
+        action_history = ActionHistory(
+            execution_started=datetime.now(),
+            execution_ended=datetime.now(),
+            execution_status=ActionStatusCode.SUCCESS,
+        )
+        created_action_history = DataBase.add_manual_action_history(
+            website_id, action_history, current_user
         )
         self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history.id
+            action_history_id=created_action_history.id
         )
+        return created_action_history
 
-    def add_notification(self, request: AddNotification, current_user: User):
+    def add_notification(self, request: AddNotification, current_user: User) -> Notification:
         notification = request.to_sql_model()
-        DataBase.add_notification(notification, current_user)
+        notification = DataBase.add_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
+        return notification
 
-    def edit_notification(self, request: EditNotification, current_user: User):
-        existing_notification = DataBase.get_notification(request.id, current_user)
+    def edit_notification(self, notification_id: int, request: EditNotification, current_user: User):
+        existing_notification = DataBase.get_notification(notification_id, current_user)
         notification = request.edit_existing_model(existing_notification)
         DataBase.edit_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
 
-    def delete_notification(self, request: DeleteNotification, current_user: User):
-        notification = DataBase.get_notification(request.id, current_user)
+    def delete_notification(self, notification_id: int, current_user: User):
+        notification = DataBase.get_notification(notification_id, current_user)
         DataBase.delete_notification(notification, current_user)
         self.webhook_endpoints.notifications_changed()
 
@@ -89,13 +95,23 @@ class DataAccess:
         DataBase.trigger_login(website_id, current_user)
 
     @staticmethod
-    def get_action_history(website_id: int, current_user: User) -> List[ActionHistory]:
-        return DataBase.get_action_history(website_id, current_user)
+    def get_action_histories(
+            website_id: int, current_user: User
+    ) -> Page[GetActionHistory]:
+        return DataBase.get_action_histories(website_id, current_user)
+
+    @staticmethod
+    def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
+        return DataBase.get_action_history(action_history_id, current_user)
+
+    @staticmethod
+    def get_last_successful_login(website_id: int, current_user: User) -> ActionHistory | None:
+        return DataBase.get_last_successful_login(website_id, current_user)
 
     @staticmethod
     def get_user(username: str):
         return DataBase.get_user(username)
 
     @staticmethod
-    def get_notifications(current_user: User) -> List[Notification]:
+    def get_notifications(current_user: User) -> Page[GetNotification]:
         return DataBase.get_notifications(current_user)

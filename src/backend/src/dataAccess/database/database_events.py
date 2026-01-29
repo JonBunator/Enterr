@@ -15,7 +15,8 @@ def register_database_events(scheduler: Scheduler, notification_manager: Notific
         if session:
             @listens_for(session, "after_commit")
             def after_commit(_session):
-                scheduler.add_task(target.id)
+                if not target.paused:
+                    scheduler.add_task(target.id)
 
     @listens_for(Website, "after_update")
     def _website_paused_changed(_mapper, _connection, target):

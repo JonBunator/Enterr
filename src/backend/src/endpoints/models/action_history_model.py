@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
+
+from pydantic import BaseModel
+
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.decorators.request_validator import GetRequestBaseModel, PostRequestBaseModel
 
@@ -26,12 +29,5 @@ class GetActionHistory(GetRequestBaseModel):
         )
 
 
-class AddManualActionHistory(PostRequestBaseModel):
-    id: int
-
-    def to_sql_model(self) -> ActionHistory:
-        return ActionHistory(
-            execution_started=datetime.now(),
-            execution_ended=datetime.now(),
-            execution_status=ActionStatusCode.SUCCESS,
-        )
+class GetLastSuccessfulLogin(BaseModel):
+    action_history: Optional[GetActionHistory]

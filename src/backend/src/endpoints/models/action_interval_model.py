@@ -16,6 +16,7 @@ class AddActionInterval(PostRequestBaseModel):
                               allowed_time_minutes_start=self.allowed_time_minutes_start,
                               allowed_time_minutes_end=self.allowed_time_minutes_end)
 
+
 class EditActionInterval(BaseModel):
     date_minutes_start: Optional[int] = None
     date_minutes_end: Optional[int] = None
@@ -30,12 +31,13 @@ class EditActionInterval(BaseModel):
         existing_action_interval.allowed_time_minutes_end = self.allowed_time_minutes_end
         return existing_action_interval
 
+
 class GetActionInterval(GetRequestBaseModel):
     id: int
     date_minutes_start: int
-    date_minutes_end:  Optional[int] = None
-    allowed_time_minutes_start:  Optional[int] = None
-    allowed_time_minutes_end:  Optional[int] = None
+    date_minutes_end: Optional[int] = None
+    allowed_time_minutes_start: Optional[int] = None
+    allowed_time_minutes_end: Optional[int] = None
 
     @staticmethod
     def from_sql_model(action_interval: ActionInterval) -> "GetActionInterval":
