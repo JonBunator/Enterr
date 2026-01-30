@@ -19,9 +19,15 @@ export function useWebsite(
   websiteId: number,
   options?: Omit<UseQueryOptions<Website, AxiosError>, 'queryKey' | 'queryFn'>
 ) {
+  const queryClient = useQueryClient()
   return useQuery<Website, AxiosError>({
     queryKey: ['websites', websiteId],
     queryFn: () => api.getWebsite(websiteId),
+    initialData: () => {
+      return queryClient.getQueryData<Website[]>(['websites'])?.find((w) => w.id === websiteId);
+    },
+    initialDataUpdatedAt: () =>
+      queryClient.getQueryState(['websites'])?.dataUpdatedAt,
     ...options,
   })
 }
