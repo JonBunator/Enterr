@@ -27,7 +27,6 @@ def register_user_endpoints(app: FastAPI, data_access: DataAccess):
         session: Session = Depends(get_db),
     ) -> Token:
         db_session.set(session)
-        print(db_session.get())
         user = data_access.get_user(form_data.username)
 
         if user and user.check_password(form_data.password):

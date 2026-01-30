@@ -18,7 +18,7 @@ from endpoints.models.website_model import (
 def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     # ---------------------------- GET ----------------------------
     @app.get("/api/websites", response_model=Page[GetWebsite], tags=["Websites"])
-    async def get_websites(
+    def get_websites(
         website_filter: WebsiteFilter = FilterDepends(WebsiteFilter),
         session: Session = Depends(get_db),
         current_user=Depends(DataAccess.get_current_user),
@@ -27,7 +27,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
         return DataAccess.get_websites(current_user, website_filter)
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite, tags=["Websites"])
-    async def get_website(
+    def get_website(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -38,7 +38,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- ADD ----------------------------
     @app.post("/api/websites", response_model=GetWebsite, tags=["Websites"])
-    async def add_website(
+    def add_website(
         website_request: AddWebsite,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -48,7 +48,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/websites/{website_id}", tags=["Websites"])
-    async def edit_website(
+    def edit_website(
         website_id: int,
         website_request: EditWebsite,
         current_user=Depends(DataAccess.get_current_user),
@@ -59,7 +59,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
 
     # ---------------------------- DELETE ----------------------------
     @app.delete("/api/websites/{website_id}", tags=["Websites"])
-    async def delete_website(
+    def delete_website(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),

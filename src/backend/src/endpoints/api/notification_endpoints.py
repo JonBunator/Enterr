@@ -22,7 +22,7 @@ def register_notification_endpoints(
         response_model=Page[GetNotification],
         tags=["Notifications"],
     )
-    async def get_notifications(
+    def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
     ):
@@ -33,7 +33,7 @@ def register_notification_endpoints(
     @app.post(
         "/api/notifications", response_model=GetNotification, tags=["Notifications"]
     )
-    async def add_notification(
+    def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -44,7 +44,7 @@ def register_notification_endpoints(
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/notifications/{notification_id}", tags=["Notifications"])
-    async def edit_notification(
+    def edit_notification(
         notification_id: int,
         notification_request: EditNotification,
         current_user=Depends(DataAccess.get_current_user),
@@ -57,7 +57,7 @@ def register_notification_endpoints(
 
     # ---------------------------- DELETE ----------------------------
     @app.delete("/api/notifications/{notification_id}", tags=["Notifications"])
-    async def delete_notification(
+    def delete_notification(
         notification_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -70,9 +70,7 @@ def register_notification_endpoints(
     async def test_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
-        session: Session = Depends(get_db),
     ):
-        db_session.set(session)
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
