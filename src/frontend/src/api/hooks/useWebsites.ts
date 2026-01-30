@@ -8,15 +8,20 @@ import { PaginatedResponse } from '../apiRequests'
 // Query hooks
 export function useWebsites(
   page: number,
-  pageSize: number = 10,
+  pageSize: number,
+  searchTerm?: string,
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
+  const queryKey = ["websites", `pageSize=${pageSize}`, `page=${page}`];
+  if(searchTerm !== undefined || searchTerm === '') {
+    queryKey.push(`searchTerm=${searchTerm}`)
+  }
   return useQuery<PaginatedResponse<Website>, AxiosError>({
-    queryKey: ['websites', `pageSize=${pageSize}`, `page=${page}`],
-    queryFn: () => api.getWebsites(page, pageSize),
+    queryKey: queryKey,
+    queryFn: () => api.getWebsites(page, pageSize, searchTerm),
     placeholderData: keepPreviousData,
     ...options,
-  })
+  });
 }
 
 export function useWebsite(

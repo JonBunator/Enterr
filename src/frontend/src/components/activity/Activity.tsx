@@ -16,16 +16,21 @@ interface ActivityProps {
 }
 
 export default function Activity(props: ActivityProps) {
-  const { searchTerm: _searchTerm } = props
+  const { searchTerm } = props
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
   })
 
-  const { data: rows = [], rowCount, isLoading } = useActivity(
+  const {
+    data: rows = [],
+    rowCount,
+    isLoading,
+  } = useActivity(
     paginationModel.page + 1,
-    paginationModel.pageSize
-  )
+    paginationModel.pageSize,
+    searchTerm,
+  );
 
   const columns: GridColDef<ActivityData>[] = useMemo(
     () => [
@@ -112,9 +117,7 @@ export default function Activity(props: ActivityProps) {
   )
 
   return (
-    <Card
-      className="activity"
-    >
+    <Card className="activity">
       <CardContent className="activity-card">
         <DataGrid
           className="data-grid"

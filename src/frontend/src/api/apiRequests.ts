@@ -15,12 +15,20 @@ export interface PaginatedResponse<T> {
   total: number
 }
 
-export async function getWebsites(page: number, pageSize: number): Promise<PaginatedResponse<Website>> {
-  const data = await apiClient.get(`/websites?page=${page}&size=${pageSize}`);
+export async function getWebsites(
+  page: number,
+  pageSize: number,
+  searchTerm?: string,
+): Promise<PaginatedResponse<Website>> {
+  let url = `/websites?page=${page}&size=${pageSize}`;
+  if(searchTerm !== undefined && searchTerm !== '') {
+    url += `&search=${searchTerm}`;
+  }
+  const data = await apiClient.get(url);
   return {
     items: data.data.items as Website[],
     total: data.data.total as number,
-  }
+  };
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {
