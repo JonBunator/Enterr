@@ -2,7 +2,8 @@ from fastapi import FastAPI, Depends
 from fastapi_pagination import Page
 from dataAccess.data_access import DataAccess
 from endpoints.models.action_history_model import (
-    GetActionHistory, GetLastSuccessfulLogin,
+    GetActionHistory,
+    GetLastSuccessfulLogin,
 )
 
 
@@ -13,7 +14,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=Page[GetActionHistory],
         tags=["Action History"],
     )
-    def get_action_histories(
+    async def get_action_histories(
         website_id: int, current_user=Depends(DataAccess.get_current_user)
     ):
         return DataAccess.get_action_histories(website_id, current_user)
@@ -23,7 +24,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetActionHistory,
         tags=["Action History"],
     )
-    def get_action_history(
+    async def get_action_history(
         action_history_id: int, current_user=Depends(DataAccess.get_current_user)
     ):
         action_history = DataAccess.get_action_history(action_history_id, current_user)
@@ -34,9 +35,8 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetLastSuccessfulLogin,
         tags=["Action History"],
     )
-    def get_last_successful_login(
-        website_id: int,
-        current_user=Depends(DataAccess.get_current_user)
+    async def get_last_successful_login(
+        website_id: int, current_user=Depends(DataAccess.get_current_user)
     ):
         action_history = DataAccess.get_last_successful_login(website_id, current_user)
         action_history_result = None
@@ -51,7 +51,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetActionHistory,
         tags=["Action History"],
     )
-    def add_manual_action_history(
+    async def add_manual_action_history(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
     ):

@@ -14,15 +14,21 @@ def register_notification_endpoints(
     app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
 ):
     # ---------------------------- GET ----------------------------
-    @app.get("/api/notifications", response_model=Page[GetNotification], tags=["Notifications"])
-    def get_notifications(
+    @app.get(
+        "/api/notifications",
+        response_model=Page[GetNotification],
+        tags=["Notifications"],
+    )
+    async def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
     ):
         return DataAccess.get_notifications(current_user)
 
     # ---------------------------- ADD ----------------------------
-    @app.post("/api/notifications", response_model=GetNotification, tags=["Notifications"])
-    def add_notification(
+    @app.post(
+        "/api/notifications", response_model=GetNotification, tags=["Notifications"]
+    )
+    async def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
     ):
@@ -31,16 +37,18 @@ def register_notification_endpoints(
 
     # ---------------------------- EDIT ----------------------------
     @app.put("/api/notifications/{notification_id}", tags=["Notifications"])
-    def edit_notification(
-            notification_id: int,
-            notification_request: EditNotification,
-            current_user=Depends(DataAccess.get_current_user),
+    async def edit_notification(
+        notification_id: int,
+        notification_request: EditNotification,
+        current_user=Depends(DataAccess.get_current_user),
     ):
-        data_access.edit_notification(notification_id, notification_request, current_user)
+        data_access.edit_notification(
+            notification_id, notification_request, current_user
+        )
 
     # ---------------------------- DELETE ----------------------------
     @app.delete("/api/notifications/{notification_id}", tags=["Notifications"])
-    def delete_notification(
+    async def delete_notification(
         notification_id: int,
         current_user=Depends(DataAccess.get_current_user),
     ):
@@ -48,7 +56,7 @@ def register_notification_endpoints(
 
     # ---------------------------- OTHER ----------------------------
     @app.post("/api/notifications/test", tags=["Notifications"])
-    def test_notification(
+    async def test_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
     ):
@@ -57,7 +65,3 @@ def register_notification_endpoints(
                 status_code=status.HTTP_401_UNAUTHORIZED,
             )
         notification_manager.test_notification(notification_request.to_sql_model())
-
-
-
-
