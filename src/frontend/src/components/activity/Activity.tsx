@@ -2,7 +2,6 @@ import type { ActivityData } from './model.ts'
 import type { GridColDef, GridPaginationModel } from '@mui/x-data-grid'
 import { Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { useActivity } from '../../api/hooks'
 import ActionsPopover from './ActionsPopover.tsx'
@@ -115,12 +114,8 @@ export default function Activity(props: ActivityProps) {
   return (
     <Card
       className="activity"
-      component={motion.div}
-      layout
-      initial={{ height: 0 }}
-      animate={{ height: "auto" }}
     >
-      <CardContent className="activity-card" component={motion.div} layout>
+      <CardContent className="activity-card">
         <DataGrid
           className="data-grid"
           rows={rows}

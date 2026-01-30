@@ -6,7 +6,7 @@ import * as api from '../apiRequests'
 import { ActivityStatusCode } from '../../components/activity/StatusIcon'
 
 export function useActivity(page: number, pageSize: number) {
-  const { data: websitesData, isLoading: isLoadingWebsites, isFetching: isFetchingWebsites } = useWebsites(page, pageSize)
+  const { data: websitesData, isLoading: isLoadingWebsites } = useWebsites(page, pageSize)
   const websites = websitesData?.items ?? []
   const rowCount = websitesData?.total ?? 0
   
@@ -14,11 +14,11 @@ export function useActivity(page: number, pageSize: number) {
     queries: websites.map(website => ({
       queryKey: ['actionHistory', website.id],
       queryFn: () => api.getActionHistories(website.id),
-      enabled: !isLoadingWebsites && !isFetchingWebsites,
+      enabled: !isLoadingWebsites,
     })),
   })
 
-  const isLoading = isLoadingWebsites || isFetchingWebsites || loginHistoryQueries.some(q => q.isLoading)
+  const isLoading = isLoadingWebsites || loginHistoryQueries.some(q => q.isLoading)
   const error = loginHistoryQueries.find(q => q.error)?.error as AxiosError | undefined
 
   const data: ActivityData[] = websites.map((website, index) => {
