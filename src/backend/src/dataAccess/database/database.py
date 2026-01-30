@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
@@ -11,6 +12,7 @@ from sqlalchemy.orm import (
     relationship,
     declarative_base,
     sessionmaker,
+    Session,
 )
 from sqlalchemy import ForeignKey
 from enum import Enum
@@ -57,7 +59,7 @@ else:
         module=sqlcipher3,
         connect_args={
             "check_same_thread": False,
-        }
+        },
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -87,10 +89,23 @@ def init_db():
     command.upgrade(alembic_cfg, "head", sql=False)
 
 
-@contextmanager
-def get_session():
-    with SessionLocal() as session:
+def get_db():
+    session: Session = SessionLocal()
+    try:
         yield session
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+db_session: ContextVar[Session] = ContextVar("db_session")
+
+
+@contextmanager
+def get_db_session():
+    return get_db()
 
 
 class ActionStatusCode(Enum):

@@ -5,7 +5,13 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useWebSocket } from './WebSocketProvider'
 import { QueryClient } from '@tanstack/react-query'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 3 * 60 * 1000, // 3 minutes
+    },
+  },
+})
 
 interface ReactQueryProviderProps {
   children: ReactNode
