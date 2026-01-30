@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi_pagination import Page
 from starlette import status
+from sqlalchemy.orm import Session
+
 from dataAccess.data_access import DataAccess
+from dataAccess.database.database import get_db, db_session
 from endpoints.models.notification_model import (
     AddNotification,
     GetNotification,
@@ -21,7 +24,9 @@ def register_notification_endpoints(
     )
     async def get_notifications(
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         return DataAccess.get_notifications(current_user)
 
     # ---------------------------- ADD ----------------------------
@@ -31,7 +36,9 @@ def register_notification_endpoints(
     async def add_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         notification = data_access.add_notification(notification_request, current_user)
         return GetNotification.from_sql_model(notification)
 
@@ -41,7 +48,9 @@ def register_notification_endpoints(
         notification_id: int,
         notification_request: EditNotification,
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         data_access.edit_notification(
             notification_id, notification_request, current_user
         )
@@ -51,7 +60,9 @@ def register_notification_endpoints(
     async def delete_notification(
         notification_id: int,
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         data_access.delete_notification(notification_id, current_user)
 
     # ---------------------------- OTHER ----------------------------
@@ -59,7 +70,9 @@ def register_notification_endpoints(
     async def test_notification(
         notification_request: AddNotification,
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

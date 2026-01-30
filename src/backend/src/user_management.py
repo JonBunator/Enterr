@@ -1,15 +1,13 @@
 import sys
 import argparse
-from dataAccess.database.database import init_db, User, get_session
+from dataAccess.database.database import init_db, User, get_db_session
 
 
-def create_user(
-    username: str, password: str, create_db: bool = True
-):
+def create_user(username: str, password: str, create_db: bool = True):
 
     if create_db:
         init_db()
-    with get_session() as session:
+    with get_db_session() as session:
         if session.query(User).filter_by(username=username).first():
             print("User already exists.")
             if create_db:
@@ -25,7 +23,7 @@ def create_user(
 
 def set_password(username: str, new_password: str):
     init_db()
-    with get_session() as session:
+    with get_db_session() as session:
         user = session.query(User).filter_by(username=username).first()
         if user:
             user.set_password(new_password)
@@ -38,7 +36,7 @@ def set_password(username: str, new_password: str):
 
 def delete_user(username: str):
     init_db()
-    with get_session() as session:
+    with get_db_session() as session:
         user = session.query(User).filter_by(username=username).first()
         if user:
             session.delete(user)

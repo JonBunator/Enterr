@@ -2,14 +2,20 @@ import os
 from fastapi import FastAPI, Depends, HTTPException
 from starlette import status
 from starlette.responses import FileResponse
+from sqlalchemy.orm import Session
+
 from dataAccess.data_access import DataAccess
+from dataAccess.database.database import get_db, db_session
 
 
 def register_utility_endpoints(app: FastAPI):
     @app.get("/api/screenshot/{screenshot_id}", tags=["Other"])
     async def get_screenshot(
-        screenshot_id: str, current_user=Depends(DataAccess.get_current_user)
+        screenshot_id: str,
+        current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -37,5 +43,7 @@ def register_utility_endpoints(app: FastAPI):
     async def trigger_login(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
+        session: Session = Depends(get_db),
     ):
+        db_session.set(session)
         DataAccess.trigger_login(website_id, current_user)
