@@ -15,18 +15,14 @@ def register_user_endpoints(app: FastAPI, data_access: DataAccess):
     @app.get("/api/user/data", response_model=GetUserData, tags=["User"])
     async def get_user_data(
         current_user=Depends(DataAccess.get_current_user),
-        session: Session = Depends(get_db),
     ):
-        db_session.set(session)
         return GetUserData.from_sql_model(current_user)
 
     @app.post("/api/user/login", tags=["User"])
     def login(
         response: Response,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        session: Session = Depends(get_db),
     ) -> Token:
-        db_session.set(session)
         user = data_access.get_user(form_data.username)
 
         if user and user.check_password(form_data.password):

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Annotated
 from fastapi_pagination import Page
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, Session
 from fastapi import Depends, HTTPException, status
 from fastapi_pagination.ext.sqlalchemy import paginate
 
@@ -194,7 +194,7 @@ class DataBase:
         if website is None or website.user != current_user.id:
             raise NotFoundException("Website not found")
         else:
-            return DataBase.add_action_history(website_id, action_history)
+            return DataBase.add_action_history(website_id, action_history, session)
 
     @staticmethod
     def add_notification(
@@ -380,9 +380,9 @@ class DataBase:
 
     @staticmethod
     def add_action_history(
-        website_id: int, action_history: ActionHistory
+        website_id: int, action_history: ActionHistory, session: Session = None
     ) -> ActionHistory:
-        with get_db_session() as session:
+        def _add_action_history(session: Session) -> ActionHistory:
             website = session.get(Website, website_id)
             website.action_histories.append(action_history)
             if website.paused:
@@ -394,3 +394,9 @@ class DataBase:
             session.commit()
             session.refresh(action_history)
             return action_history
+
+        if session is not None:
+            return _add_action_history(session)
+        else:
+            with get_db_session() as session:
+                return _add_action_history(session)
