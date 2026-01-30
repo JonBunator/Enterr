@@ -11,22 +11,13 @@
     }
   }
 
-  .activity-table {
-    td {
-      padding-top: 10px;
-      padding-bottom: 10px;
-      &:last-child {
-        padding-right: 0;
-      }
-
-      &.empty-state-cell {
-        border: none;
-      }
+  .data-grid {
+    border: none;
+    .MuiDataGrid-cell {
+      display: flex;
+      align-items: center;
+      height: 55px;
     }
-  }
-
-  .activity-empty-pagination-spacer {
-    height: 52px;
   }
 
   .activity-status {

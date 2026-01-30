@@ -5,18 +5,20 @@ import { useWebsites } from './useWebsites'
 import * as api from '../apiRequests'
 import { ActivityStatusCode } from '../../components/activity/StatusIcon'
 
-export function useActivity() {
-  const { data: websites = [], isLoading: isLoadingWebsites } = useWebsites()
+export function useActivity(page: number, pageSize: number) {
+  const { data: websitesData, isLoading: isLoadingWebsites, isFetching: isFetchingWebsites } = useWebsites(page, pageSize)
+  const websites = websitesData?.items ?? []
+  const rowCount = websitesData?.total ?? 0
   
   const loginHistoryQueries = useQueries({
     queries: websites.map(website => ({
       queryKey: ['actionHistory', website.id],
       queryFn: () => api.getActionHistories(website.id),
-      enabled: !isLoadingWebsites,
+      enabled: !isLoadingWebsites && !isFetchingWebsites,
     })),
   })
 
-  const isLoading = isLoadingWebsites || loginHistoryQueries.some(q => q.isLoading)
+  const isLoading = isLoadingWebsites || isFetchingWebsites || loginHistoryQueries.some(q => q.isLoading)
   const error = loginHistoryQueries.find(q => q.error)?.error as AxiosError | undefined
 
   const data: ActivityData[] = websites.map((website, index) => {
@@ -50,6 +52,7 @@ export function useActivity() {
 
   return {
     data,
+    rowCount,
     isLoading,
     error,
     isError: !!error,

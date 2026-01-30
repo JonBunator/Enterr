@@ -10,9 +10,17 @@ import {
 } from "./apiModels.ts";
 import apiClient from "./apiClient.ts";
 
-export async function getWebsites(): Promise<Website[]> {
-  const data = await apiClient.get('/websites')
-  return data.data.items as Website[]
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+}
+
+export async function getWebsites(page: number, pageSize: number): Promise<PaginatedResponse<Website>> {
+  const data = await apiClient.get(`/websites?page=${page}&size=${pageSize}`);
+  return {
+    items: data.data.items as Website[],
+    total: data.data.total as number,
+  }
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {

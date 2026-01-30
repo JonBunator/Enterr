@@ -1,16 +1,20 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions, keepPreviousData } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import * as api from '../apiRequests'
 import type { Website } from '../apiModels'
 import type { ChangeWebsite } from '../../components/activity/model.ts'
+import { PaginatedResponse } from '../apiRequests'
 
 // Query hooks
 export function useWebsites(
-  options?: Omit<UseQueryOptions<Website[], AxiosError>, 'queryKey' | 'queryFn'>
+  page: number,
+  pageSize: number = 10,
+  options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
-  return useQuery<Website[], AxiosError>({
-    queryKey: ['websites'],
-    queryFn: api.getWebsites,
+  return useQuery<PaginatedResponse<Website>, AxiosError>({
+    queryKey: ['websites', `pageSize=${pageSize}`, `page=${page}`],
+    queryFn: () => api.getWebsites(page, pageSize),
+    placeholderData: keepPreviousData,
     ...options,
   })
 }
