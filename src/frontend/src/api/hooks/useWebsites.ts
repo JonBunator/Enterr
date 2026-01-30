@@ -13,7 +13,7 @@ export function useWebsites(
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
   const queryKey = ["websites", `pageSize=${pageSize}`, `page=${page}`];
-  if(searchTerm !== undefined || searchTerm === '') {
+  if(searchTerm !== undefined && searchTerm !== '') {
     queryKey.push(`searchTerm=${searchTerm}`)
   }
   return useQuery<PaginatedResponse<Website>, AxiosError>({
