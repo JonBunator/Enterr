@@ -5,11 +5,12 @@ import { useWebsites } from './useWebsites'
 import * as api from '../apiRequests'
 import { ActivityStatusCode } from '../../components/activity/StatusIcon'
 
-export function useActivity(page: number, pageSize: number, searchTerm?: string) {
+export function useActivity(page: number, pageSize: number, searchTerm?: string, orderBy?: string) {
   const { data: websitesData, isLoading: isLoadingWebsites } = useWebsites(
     page,
     pageSize,
     searchTerm,
+    orderBy,
   );
   const websites = websitesData?.items ?? []
   const rowCount = websitesData?.total ?? 0

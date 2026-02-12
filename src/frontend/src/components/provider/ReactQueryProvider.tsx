@@ -29,10 +29,15 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
 
     on("action_history_changed", async (data: { id: number }) => {
       if (data.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["actionHistory"],
-        });
-      }
+        await Promise.all(
+          [queryClient.invalidateQueries({
+            queryKey: ["websites"],
+          }),
+            queryClient.invalidateQueries({
+              queryKey: ["actionHistory"],
+            })
+          ]);
+       }
     });
 
     on('notifications_changed', async () => {

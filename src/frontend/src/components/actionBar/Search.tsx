@@ -1,4 +1,3 @@
-import type { ChangeEvent } from 'react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Autocomplete, InputAdornment, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -18,36 +17,36 @@ export default function Search(props: SearchProps) {
     if (value !== inputValue) {
       setInputValue(value)
     }
-  }, [value, inputValue])
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value
-    setInputValue(newValue)
-
-    if (timer) {
-      clearTimeout(timer)
-    }
-
-    const newTimer = setTimeout(() => {
-      onChange?.(newValue)
-    }, 200)
-
-    setTimer(newTimer)
-  }
+  }, [value])
 
   return (
     <Autocomplete
       className="search"
       disablePortal
+      freeSolo
       options={[]}
+      inputValue={inputValue ?? ''}
+      onInputChange={(_event, newValue, reason) => {
+        if (reason === 'reset') return
+        setInputValue(newValue)
+
+        if (timer) {
+          clearTimeout(timer)
+        }
+
+        const newTimer = setTimeout(() => {
+          onChange?.(newValue)
+        }, 200)
+
+        setTimer(newTimer)
+      }}
       renderInput={params => (
         <TextField
           {...params}
           placeholder="Search..."
-          value={inputValue}
-          onChange={handleChange}
           slotProps={{
             input: {
+              ...params.InputProps,
               startAdornment: (
                 <InputAdornment position="start">
                   <MagnifyingGlassIcon className="icon" />

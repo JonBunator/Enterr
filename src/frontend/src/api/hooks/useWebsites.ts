@@ -10,15 +10,19 @@ export function useWebsites(
   page: number,
   pageSize: number,
   searchTerm?: string,
+  orderBy?: string,
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
   const queryKey = ["websites", `pageSize=${pageSize}`, `page=${page}`];
   if(searchTerm !== undefined && searchTerm !== '') {
-    queryKey.push(`searchTerm=${searchTerm}`)
+    queryKey.push(`search=${searchTerm}`)
+  }
+  if(orderBy !== undefined && orderBy !== '') {
+    queryKey.push(`sort=${orderBy}`)
   }
   return useQuery<PaginatedResponse<Website>, AxiosError>({
     queryKey: queryKey,
-    queryFn: () => api.getWebsites(page, pageSize, searchTerm),
+    queryFn: () => api.getWebsites(page, pageSize, searchTerm, orderBy),
     placeholderData: keepPreviousData,
     ...options,
   });

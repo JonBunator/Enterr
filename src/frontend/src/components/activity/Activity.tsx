@@ -1,8 +1,8 @@
 import type { ActivityData } from './model.ts'
-import type { GridColDef, GridPaginationModel } from '@mui/x-data-grid'
+import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import { Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useActivity } from '../../api/hooks'
 import ActionsPopover from './ActionsPopover.tsx'
 import ActivityStatus from './ActivityStatus.tsx'
@@ -15,12 +15,30 @@ interface ActivityProps {
   searchTerm?: string
 }
 
+const fieldMapping: Record<string, string> = {
+  status: "status",
+  name: "name",
+  nextLogin: "next_schedule",
+  lastLoginAttempt: "last_login_attempt",
+};
+
 export default function Activity(props: ActivityProps) {
   const { searchTerm } = props
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
   })
+  const [sortModel, setSortModel] = useState<GridSortModel>([])
+
+  // Convert sort model to backend format
+  const orderBy = useMemo(() => {
+    if (sortModel.length === 0) return undefined
+    const sort = sortModel[0]
+    const backendField = fieldMapping[sort.field]
+    if (!backendField) return undefined
+    const prefix = sort.sort === 'desc' ? '-' : '+'
+    return `${prefix}${backendField}`
+  }, [sortModel])
 
   const {
     data: rows = [],
@@ -30,17 +48,22 @@ export default function Activity(props: ActivityProps) {
     paginationModel.page + 1,
     paginationModel.pageSize,
     searchTerm,
+    orderBy,
   );
+
+  const handleSortModelChange = useCallback((newSortModel: GridSortModel) => {
+    setSortModel(newSortModel)
+  }, [])
 
   const columns: GridColDef<ActivityData>[] = useMemo(
     () => [
       {
-        field: 'status',
-        headerName: 'Status',
+        field: "status",
+        headerName: "Status",
         flex: 1,
         minWidth: 250,
         sortable: true,
-        renderCell: params => (
+        renderCell: (params) => (
           <ActivityStatus
             status={params.row.status}
             expirationDate={params.row.expirationDate}
@@ -48,19 +71,19 @@ export default function Activity(props: ActivityProps) {
         ),
       },
       {
-        field: 'name',
-        headerName: 'Name',
+        field: "name",
+        headerName: "Name",
         flex: 1,
         minWidth: 150,
         sortable: true,
       },
       {
-        field: 'nextLogin',
-        headerName: 'Next Login',
+        field: "nextLogin",
+        headerName: "Next Login",
         flex: 1,
         minWidth: 150,
         sortable: true,
-        renderCell: params => (
+        renderCell: (params) => (
           <TimeDifference
             prefix=""
             datetime={params.row.nextLogin}
@@ -70,12 +93,12 @@ export default function Activity(props: ActivityProps) {
         ),
       },
       {
-        field: 'lastLoginAttempt',
-        headerName: 'Last Login Attempt',
+        field: "lastLoginAttempt",
+        headerName: "Last Login Attempt",
         flex: 1,
         minWidth: 150,
         sortable: true,
-        renderCell: params =>
+        renderCell: (params) =>
           params.row.lastLoginAttempt !== undefined ? (
             <TimeDifference
               prefix=""
@@ -83,16 +106,16 @@ export default function Activity(props: ActivityProps) {
               datetime={params.row.lastLoginAttempt}
             />
           ) : (
-            'No logins yet'
+            "No logins yet"
           ),
       },
       {
-        field: 'loginHistory',
-        headerName: 'Login History',
+        field: "loginHistory",
+        headerName: "Login History",
         flex: 1,
         minWidth: 150,
         sortable: false,
-        renderCell: params =>
+        renderCell: (params) =>
           params.row.loginHistory !== null && (
             <div className="login-history">
               {params.row.loginHistory.slice(0, 3).map((lh, index) => (
@@ -105,16 +128,27 @@ export default function Activity(props: ActivityProps) {
           ),
       },
       {
-        field: 'actions',
-        type: 'actions',
+        field: "actions",
+        type: "actions",
+        hideable: false,
         resizable: false,
-        renderCell: params => (
-          <ActionsPopover websiteId={params.row.id} websiteURL={params.row.url} />
+        renderCell: (params) => (
+          <ActionsPopover
+            websiteId={params.row.id}
+            websiteURL={params.row.url}
+          />
         ),
       },
     ],
-    []
-  )
+    [],
+  );
+
+  const getTogglableColumns = (columns: GridColDef[]) => {
+    // hide the column with field `actions` from list of togglable columns
+    return columns
+      .filter((column) => column.field !== "actions")
+      .map((column) => column.field);
+  };
 
   return (
     <Card className="activity">
@@ -128,17 +162,25 @@ export default function Activity(props: ActivityProps) {
           paginationMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          sortingMode="server"
+          sortModel={sortModel}
+          disableColumnFilter
+          onSortModelChange={handleSortModelChange}
           pageSizeOptions={[10, 20, 50]}
-          disableColumnMenu
           disableRowSelectionOnClick
           getRowHeight={() => "auto"}
           slots={{
             noRowsOverlay: () => (
               <EmptyState
-                noData
+                noData={searchTerm === undefined || searchTerm === ''}
                 noDataHelperText="Add a website to get started"
               />
             ),
+          }}
+          slotProps={{
+            columnsManagement: {
+              getTogglableColumns,
+            },
           }}
         />
       </CardContent>

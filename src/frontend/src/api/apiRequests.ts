@@ -19,10 +19,14 @@ export async function getWebsites(
   page: number,
   pageSize: number,
   searchTerm?: string,
+  orderBy?: string,
 ): Promise<PaginatedResponse<Website>> {
   let url = `/websites?page=${page}&size=${pageSize}`;
   if(searchTerm !== undefined && searchTerm !== '') {
-    url += `&search=${searchTerm}`;
+    url += `&search=${encodeURIComponent(searchTerm)}`;
+  }
+  if(orderBy !== undefined && orderBy !== '') {
+    url += `&sort=${encodeURIComponent(orderBy)}`;
   }
   const data = await apiClient.get(url);
   return {
