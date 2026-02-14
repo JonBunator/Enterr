@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 from typing import Optional
-from pydantic import BaseModel, field_validator
-from dataAccess.database.database import Website, ActionHistory
+from pydantic import BaseModel
+from dataAccess.database.database import Website
 from endpoints.decorators.request_validator import (
     GetRequestBaseModel,
     PostRequestBaseModel,

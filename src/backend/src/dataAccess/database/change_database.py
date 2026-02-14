@@ -93,9 +93,9 @@ class DataBase:
 
         if sorting:
             status_sort_col = case(
+                (Website.paused == True, 3),
                 (action_alias.execution_status == ActionStatusCode.IN_PROGRESS, 1),
                 (action_alias.execution_status == ActionStatusCode.FAILED, 2),
-                (Website.paused == True, 3),
                 (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
                 else_=5,
             )

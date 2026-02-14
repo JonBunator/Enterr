@@ -1,11 +1,8 @@
-from datetime import datetime
 from typing import Optional
-
 from fastapi import FastAPI, Depends, Query
 from fastapi_filters import SortingValues, create_sorting
 from fastapi_pagination import Page
 from sqlalchemy.orm import Session
-
 from dataAccess.data_access import DataAccess
 from dataAccess.database.database import get_db, db_session
 from endpoints.models.website_model import (

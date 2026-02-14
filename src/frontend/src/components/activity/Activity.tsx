@@ -168,7 +168,6 @@ export default function Activity(props: ActivityProps) {
           onSortModelChange={handleSortModelChange}
           pageSizeOptions={[10, 20, 50]}
           disableRowSelectionOnClick
-          getRowHeight={() => "auto"}
           slots={{
             noRowsOverlay: () => (
               <EmptyState
