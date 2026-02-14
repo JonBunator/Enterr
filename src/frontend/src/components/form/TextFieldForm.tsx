@@ -67,7 +67,6 @@ export default function TextFieldForm(props: TextFieldFormProps) {
       error = onValidate(valueToValidate)
     }
     if (required && (valueToValidate === '' || valueToValidate === undefined || valueToValidate === null)) {
-      console.log(valueToValidate)
       error = 'This field is required'
     }
     setErrorMessage(error)

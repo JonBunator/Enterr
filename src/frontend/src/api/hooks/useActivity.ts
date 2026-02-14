@@ -5,8 +5,15 @@ import { useWebsites } from './useWebsites'
 import * as api from '../apiRequests'
 import { ActivityStatusCode } from '../../components/activity/StatusIcon'
 
-export function useActivity() {
-  const { data: websites = [], isLoading: isLoadingWebsites } = useWebsites()
+export function useActivity(page: number, pageSize: number, searchTerm?: string, orderBy?: string) {
+  const { data: websitesData, isLoading: isLoadingWebsites } = useWebsites(
+    page,
+    pageSize,
+    searchTerm,
+    orderBy,
+  );
+  const websites = websitesData?.items ?? []
+  const rowCount = websitesData?.total ?? 0
   
   const loginHistoryQueries = useQueries({
     queries: websites.map(website => ({
@@ -50,6 +57,7 @@ export function useActivity() {
 
   return {
     data,
+    rowCount,
     isLoading,
     error,
     isError: !!error,

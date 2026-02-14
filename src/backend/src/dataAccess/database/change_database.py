@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List, Annotated
 from fastapi_pagination import Page
-from sqlalchemy import select
-from sqlalchemy.orm import joinedload, selectinload, Session
+from sqlalchemy import select, func, and_, case
+from sqlalchemy.orm import joinedload, selectinload, Session, aliased
 from fastapi import Depends, HTTPException, status
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_filters.ext.sqlalchemy import apply_sorting
 
 from dataAccess.database.database import (
     Website,
@@ -46,24 +47,72 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User, website_filter=None) -> Page[GetWebsite]:
-        """Get websites for the current user with optional filtering and pagination."""
+    def get_websites(current_user: User, search=None, sorting=None) -> Page[GetWebsite]:
+        """Get websites for the current user with optional filtering."""
         session = db_session.get()
+
+        latest_action_subquery = (
+            select(
+                ActionHistory.website,
+                func.max(ActionHistory.execution_started).label(
+                    "max_execution_started"
+                ),
+            )
+            .group_by(ActionHistory.website)
+            .subquery()
+        )
+
+        action_alias = aliased(ActionHistory)
+
+        last_login_col = action_alias.execution_started.label("last_login_attempt")
+        status_col = action_alias.execution_status.label("status")
+
         query = (
-            select(Website)
+            select(Website, last_login_col, status_col)
             .where(Website.user == current_user.id)
+            .outerjoin(
+                latest_action_subquery,
+                Website.id == latest_action_subquery.c.website,
+            )
+            .outerjoin(
+                action_alias,
+                and_(
+                    action_alias.website == Website.id,
+                    action_alias.execution_started
+                    == latest_action_subquery.c.max_execution_started,
+                ),
+            )
             .options(joinedload(Website.action_interval))
         )
 
-        if website_filter:
-            query = website_filter.filter(query)
-            query = website_filter.sort(query)
+        if search:
+            search_term = f"%{search}%"
+            query = query.where(
+                Website.name.ilike(search_term) | Website.url.ilike(search_term)
+            )
+
+        if sorting:
+            status_sort_col = case(
+                (Website.paused == True, 3),
+                (action_alias.execution_status == ActionStatusCode.IN_PROGRESS, 1),
+                (action_alias.execution_status == ActionStatusCode.FAILED, 2),
+                (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
+                else_=5,
+            )
+            query = apply_sorting(
+                query,
+                sorting,
+                additional={
+                    "last_login_attempt": last_login_col,
+                    "status": status_sort_col,
+                },
+            )
 
         return paginate(
             session,
             query,
             transformer=lambda items: [
-                GetWebsite.from_sql_model(item) for item in items
+                GetWebsite.from_sql_model(item[0], item[1], item[2]) for item in items
             ],
         )
 

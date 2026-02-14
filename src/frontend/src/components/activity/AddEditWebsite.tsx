@@ -99,6 +99,7 @@ const AddEditWebsite = forwardRef<AddEditWebsiteRef, AddEditWebsiteProps>((props
           onClose()
         }
       }}
+      onKeyDown={(e) => e.stopPropagation()}
       maxWidth="lg"
       fullWidth
     >

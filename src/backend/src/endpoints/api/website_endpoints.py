@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends
+from typing import Optional
+from fastapi import FastAPI, Depends, Query
+from fastapi_filters import SortingValues, create_sorting
 from fastapi_pagination import Page
-from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
-
 from dataAccess.data_access import DataAccess
 from dataAccess.database.database import get_db, db_session
 from endpoints.models.website_model import (
@@ -10,7 +10,6 @@ from endpoints.models.website_model import (
     AddWebsite,
     EditWebsite,
     CheckCustomLoginScript,
-    WebsiteFilter,
     CheckCustomLoginScriptResponse,
 )
 
@@ -19,12 +18,15 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     # ---------------------------- GET ----------------------------
     @app.get("/api/websites", response_model=Page[GetWebsite], tags=["Websites"])
     def get_websites(
-        website_filter: WebsiteFilter = FilterDepends(WebsiteFilter),
+        search: Optional[str] = Query(None),
+        sorting: SortingValues = Depends(
+            create_sorting("name", "next_schedule", "last_login_attempt", "status")
+        ),
         session: Session = Depends(get_db),
         current_user=Depends(DataAccess.get_current_user),
     ):
         db_session.set(session)
-        return DataAccess.get_websites(current_user, website_filter)
+        return DataAccess.get_websites(current_user, search, sorting)
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite, tags=["Websites"])
     def get_website(

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from random import randint
 from typing import List, Optional
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import (
     Mapped,
@@ -49,6 +50,7 @@ if dev_mode:
         connect_args={
             "check_same_thread": False,
         },
+        poolclass=NullPool,
     )
 else:
     # Encrypted database in production
@@ -60,6 +62,7 @@ else:
         connect_args={
             "check_same_thread": False,
         },
+        poolclass=NullPool,
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

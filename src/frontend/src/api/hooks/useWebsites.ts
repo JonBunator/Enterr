@@ -1,18 +1,31 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions, keepPreviousData } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import * as api from '../apiRequests'
 import type { Website } from '../apiModels'
 import type { ChangeWebsite } from '../../components/activity/model.ts'
+import { PaginatedResponse } from '../apiRequests'
 
 // Query hooks
 export function useWebsites(
-  options?: Omit<UseQueryOptions<Website[], AxiosError>, 'queryKey' | 'queryFn'>
+  page: number,
+  pageSize: number,
+  searchTerm?: string,
+  orderBy?: string,
+  options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
-  return useQuery<Website[], AxiosError>({
-    queryKey: ['websites'],
-    queryFn: api.getWebsites,
+  const queryKey = ["websites", "all", `pageSize=${pageSize}`, `page=${page}`];
+  if(searchTerm !== undefined && searchTerm !== '') {
+    queryKey.push(`search=${searchTerm}`)
+  }
+  if(orderBy !== undefined && orderBy !== '') {
+    queryKey.push(`sort=${orderBy}`)
+  }
+  return useQuery<PaginatedResponse<Website>, AxiosError>({
+    queryKey: queryKey,
+    queryFn: () => api.getWebsites(page, pageSize, searchTerm, orderBy),
+    placeholderData: keepPreviousData,
     ...options,
-  })
+  });
 }
 
 export function useWebsite(
@@ -24,10 +37,28 @@ export function useWebsite(
     queryKey: ['websites', websiteId],
     queryFn: () => api.getWebsite(websiteId),
     initialData: () => {
-      return queryClient.getQueryData<Website[]>(['websites'])?.find((w) => w.id === websiteId);
+      // Search through paginated website caches for this website
+      const queries = queryClient.getQueriesData<PaginatedResponse<Website>>({
+        queryKey: ['websites', 'all'],
+      })
+      for (const [_queryKey, data] of queries) {
+        const website = data?.items?.find((w) => w.id === websiteId)
+        if (website) return website
+      }
+      return undefined
     },
-    initialDataUpdatedAt: () =>
-      queryClient.getQueryState(['websites'])?.dataUpdatedAt,
+    initialDataUpdatedAt: () => {
+      // Find the most recent update time from any paginated cache containing this website
+      const queries = queryClient.getQueriesData<PaginatedResponse<Website>>({
+        queryKey: ['websites', 'all'],
+      })
+      for (const [queryKey, data] of queries) {
+        if (data?.items?.some((w) => w.id === websiteId)) {
+          return queryClient.getQueryState(queryKey)?.dataUpdatedAt
+        }
+      }
+      return undefined
+    },
     ...options,
   })
 }
@@ -62,10 +93,8 @@ export function useDeleteWebsite() {
   return useMutation({
     mutationFn: api.deleteWebsite,
     onSuccess: async (_data, websiteId) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["websites", websiteId] }),
-        queryClient.invalidateQueries({ queryKey: ["websites"] }),
-      ]);
+        queryClient.removeQueries({ queryKey: ["websites", websiteId] })
+        await queryClient.invalidateQueries({ queryKey: ["websites"] })
     },
   });
 }

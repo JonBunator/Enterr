@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime
 from typing import Optional
-from pydantic import BaseModel, field_validator
-from fastapi_filter.contrib.sqlalchemy import Filter
+from pydantic import BaseModel
 from dataAccess.database.database import Website
 from endpoints.decorators.request_validator import (
     GetRequestBaseModel,
@@ -124,9 +123,15 @@ class GetWebsite(GetRequestBaseModel):
     custom_login_script: Optional[str] = None
     action_interval: Optional[GetActionInterval] = None
     next_schedule: Optional[datetime] = None
+    last_login_attempt: Optional[datetime] = None
+    status: Optional[str] = None
 
     @staticmethod
-    def from_sql_model(website: Website) -> "GetWebsite":
+    def from_sql_model(
+        website: Website,
+        last_login_attempt: datetime = None,
+        status=None,
+    ) -> "GetWebsite":
         if website.expiration_interval is None:
             expiration_interval_minutes = None
         else:
@@ -154,6 +159,8 @@ class GetWebsite(GetRequestBaseModel):
                 else None
             ),
             next_schedule=website.next_schedule,
+            last_login_attempt=last_login_attempt,
+            status=status.value if status else None,
         )
 
 
@@ -163,28 +170,3 @@ class CheckCustomLoginScript(BaseModel):
 
 class CheckCustomLoginScriptResponse(BaseModel):
     error: str | None
-
-
-class WebsiteFilter(Filter):
-    search: Optional[str] = None
-    order_by: Optional[list[str]] = None
-
-    class Constants(Filter.Constants):
-        model = Website
-        search_model_fields = ["name", "url"]
-
-    @field_validator("order_by")
-    def restrict_sortable_fields(cls, value):
-        if value is None:
-            return None
-
-        allowed_field_names = ["name", "next_schedule"]
-
-        for field_name in value:
-            field_name = field_name.replace("+", "").replace("-", "")
-            if field_name not in allowed_field_names:
-                raise ValueError(
-                    f"You may only sort by: {', '.join(allowed_field_names)}"
-                )
-
-        return value
