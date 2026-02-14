@@ -13,7 +13,7 @@ export function useWebsites(
   orderBy?: string,
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>
 ) {
-  const queryKey = ["websites", `pageSize=${pageSize}`, `page=${page}`];
+  const queryKey = ["websites", "all", `pageSize=${pageSize}`, `page=${page}`];
   if(searchTerm !== undefined && searchTerm !== '') {
     queryKey.push(`search=${searchTerm}`)
   }
@@ -37,10 +37,28 @@ export function useWebsite(
     queryKey: ['websites', websiteId],
     queryFn: () => api.getWebsite(websiteId),
     initialData: () => {
-      return queryClient.getQueryData<Website[]>(['websites'])?.find((w) => w.id === websiteId);
+      // Search through paginated website caches for this website
+      const queries = queryClient.getQueriesData<PaginatedResponse<Website>>({
+        queryKey: ['websites', 'all'],
+      })
+      for (const [_queryKey, data] of queries) {
+        const website = data?.items?.find((w) => w.id === websiteId)
+        if (website) return website
+      }
+      return undefined
     },
-    initialDataUpdatedAt: () =>
-      queryClient.getQueryState(['websites'])?.dataUpdatedAt,
+    initialDataUpdatedAt: () => {
+      // Find the most recent update time from any paginated cache containing this website
+      const queries = queryClient.getQueriesData<PaginatedResponse<Website>>({
+        queryKey: ['websites', 'all'],
+      })
+      for (const [queryKey, data] of queries) {
+        if (data?.items?.some((w) => w.id === websiteId)) {
+          return queryClient.getQueryState(queryKey)?.dataUpdatedAt
+        }
+      }
+      return undefined
+    },
     ...options,
   })
 }
