@@ -17,7 +17,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=Page[GetActionHistory],
         tags=["Action History"],
     )
-    async def get_action_histories(
+    def get_action_histories(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -30,7 +30,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetActionHistory,
         tags=["Action History"],
     )
-    async def get_action_history(
+    def get_action_history(
         action_history_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -44,7 +44,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetLastSuccessfulLogin,
         tags=["Action History"],
     )
-    async def get_last_successful_login(
+    def get_last_successful_login(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
@@ -63,7 +63,7 @@ def register_action_history_endpoints(app: FastAPI, data_access: DataAccess):
         response_model=GetActionHistory,
         tags=["Action History"],
     )
-    async def add_manual_action_history(
+    def add_manual_action_history(
         website_id: int,
         current_user=Depends(DataAccess.get_current_user),
         session: Session = Depends(get_db),
