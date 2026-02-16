@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 from fastapi import Depends
 from fastapi_pagination import Page
@@ -68,8 +68,8 @@ class DataAccess:
 
     def add_manual_action_history(self, website_id: int, current_user: User):
         action_history = ActionHistory(
-            execution_started=datetime.now(),
-            execution_ended=datetime.now(),
+            execution_started=datetime.now(timezone.utc),
+            execution_ended=datetime.now(timezone.utc),
             execution_status=ActionStatusCode.SUCCESS,
         )
         created_action_history = DataBase.add_manual_action_history(

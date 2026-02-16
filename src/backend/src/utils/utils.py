@@ -1,5 +1,16 @@
 from collections import namedtuple
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+
+def to_utc_time(dt: Optional[datetime]) -> Optional[datetime]:
+    """Convert naive datetime to UTC-aware for proper JSON serialization."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
 
 def timedelta_to_parts(td: timedelta):
     """
@@ -31,4 +42,3 @@ def compare_urls(url1: str, url2: str) -> bool:
     if url2.endswith("/"):
         url2 = url2[:-1]
     return url1 == url2
-

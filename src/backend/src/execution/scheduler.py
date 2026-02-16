@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import JobLookupError
@@ -45,7 +45,7 @@ class Scheduler:
         website = DataAccessInternal.get_website_all_users(website_id)
         if website.take_screenshot:
             screenshot_id = str(uuid.uuid4())
-        start_time = datetime.now()
+        start_time = datetime.now(timezone.utc)
         url = website.url
         success_url = website.success_url
         username = website.username
@@ -89,8 +89,9 @@ class Scheduler:
         if website.next_schedule is None:
             return
 
-        if website.next_schedule < datetime.now():
-            run_date = datetime.now()
+        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        if website.next_schedule < now_utc:
+            run_date = now_utc
         else:
             run_date = website.next_schedule
         self.scheduler.add_job(

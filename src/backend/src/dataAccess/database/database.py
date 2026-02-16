@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 from sqlalchemy import create_engine, inspect
@@ -27,6 +27,7 @@ try:
     import sqlcipher3
 except ImportError:
     sqlcipher3 = None
+
 
 Base = declarative_base()
 
@@ -302,13 +303,15 @@ class ActionInterval(Base):
         """
         Gets random datetime between interval_minutes_start to interval_minutes_end date offset
         and interval_minutes_min to interval_minutes_max time offset.
-        @return: Random datetime.
+        Returns naive UTC datetime for SQLite compatibility.
+        @return: Random datetime in UTC (naive).
         """
 
         random_date_delta = randint(
             self.date_minutes_start, self.date_minutes_end_not_none
         )
-        random_date = datetime.now() + timedelta(minutes=random_date_delta)
+        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        random_date = now_utc + timedelta(minutes=random_date_delta)
         if (
             self.date_minutes_start % 1440 == 0
             and self.date_minutes_end_not_none % 1440 == 0
