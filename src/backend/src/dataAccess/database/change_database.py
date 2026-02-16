@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Annotated
 from fastapi_pagination import Page
 from sqlalchemy import select, func, and_, case
@@ -132,7 +132,7 @@ class DataBase:
         session = db_session.get()
         website.user = current_user.id
         if not website.paused:
-            website.next_schedule = datetime.now()
+            website.next_schedule = datetime.now(timezone.utc)
         session.add(website)
         session.commit()
         session.refresh(website)
@@ -176,7 +176,7 @@ class DataBase:
             .first()
         )
         if website:
-            website.next_schedule = datetime.now()
+            website.next_schedule = datetime.now(timezone.utc)
             session.commit()
         else:
             raise NotFoundException(f"Website {website_id} not found")
@@ -383,7 +383,7 @@ class DataBase:
             existing_action_history = session.get(ActionHistory, action_history_id)
             if existing_action_history is None:
                 return
-            existing_action_history.execution_ended = datetime.now()
+            existing_action_history.execution_ended = datetime.now(timezone.utc)
             existing_action_history.execution_status = execution_status
             existing_action_history.failed_details = failed_details
             existing_action_history.custom_failed_details_message = (
@@ -408,7 +408,7 @@ class DataBase:
             action_history_ids = []
             for action_history in running_action_histories:
                 action_history.execution_status = ActionStatusCode.FAILED
-                action_history.execution_ended = datetime.now()
+                action_history.execution_ended = datetime.now(timezone.utc)
                 action_history.failed_details = (
                     ActionFailedDetails.UNKNOWN_EXECUTION_ERROR
                 )
@@ -419,7 +419,7 @@ class DataBase:
                     ActionHistory(
                         execution_status=ActionStatusCode.FAILED,
                         execution_started=execution_started,
-                        execution_ended=datetime.now(),
+                        execution_ended=datetime.now(timezone.utc),
                         failed_details=ActionFailedDetails.UNKNOWN_EXECUTION_ERROR,
                     ),
                 )

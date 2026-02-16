@@ -1,8 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import apprise
 from enum import Enum
 from dataAccess.data_access_internal import DataAccessInternal
-from dataAccess.database.database import ActionHistory, Notification, ActionStatusCode, ActionFailedDetails
+from dataAccess.database.database import (
+    ActionHistory,
+    Notification,
+    ActionStatusCode,
+    ActionFailedDetails,
+)
 
 
 class NotificationVariable(Enum):
@@ -37,9 +42,7 @@ class NotificationManager:
         self.notifier.add(notification.apprise_token, tag=str(notification.id))
         title = NotificationManager._replace_fake_variables(notification.title)
         body = NotificationManager._replace_fake_variables(notification.body)
-        self.notifier.notify(title=title,
-                             body=body,
-                             tag=str(notification.id))
+        self.notifier.notify(title=title, body=body, tag=str(notification.id))
         self.updated_notifications()
 
     def updated_notifications(self):
@@ -48,8 +51,12 @@ class NotificationManager:
 
     def notify(self, action_history: ActionHistory):
         for notification in self.data_access.get_notifications_for_user(action_history):
-            title = NotificationManager._replace_variables(notification.title, action_history)
-            body = NotificationManager._replace_variables(notification.body, action_history)
+            title = NotificationManager._replace_variables(
+                notification.title, action_history
+            )
+            body = NotificationManager._replace_variables(
+                notification.body, action_history
+            )
             self.notifier.notify(
                 title=title,
                 body=body,
@@ -74,21 +81,17 @@ class NotificationManager:
             return "No error details available"
 
         failed_details_messages = {
-            ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED:
-                "Automatic form detection failed",
-            ActionFailedDetails.USERNAME_FIELD_NOT_FOUND:
-                "Username field not found",
-            ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND:
-                "Password field not found",
-            ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND:
-                "Submit button not found",
-            ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH:
-                "The success URL did not match after login attempt",
-            ActionFailedDetails.UNKNOWN_EXECUTION_ERROR:
-                "An unknown error occurred while executing task"
+            ActionFailedDetails.AUTOMATIC_FORM_DETECTION_FAILED: "Automatic form detection failed",
+            ActionFailedDetails.USERNAME_FIELD_NOT_FOUND: "Username field not found",
+            ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND: "Password field not found",
+            ActionFailedDetails.SUBMIT_BUTTON_NOT_FOUND: "Submit button not found",
+            ActionFailedDetails.SUCCESS_URL_DID_NOT_MATCH: "The success URL did not match after login attempt",
+            ActionFailedDetails.UNKNOWN_EXECUTION_ERROR: "An unknown error occurred while executing task",
         }
 
-        main_message = failed_details_messages.get(action_history.failed_details, "Unknown error")
+        main_message = failed_details_messages.get(
+            action_history.failed_details, "Unknown error"
+        )
         if action_history.custom_failed_details_message is not None:
             main_message += " " + action_history.custom_failed_details_message
         return main_message
@@ -99,89 +102,180 @@ class NotificationManager:
 
     @staticmethod
     def _replace_variables(value: str, action_history: ActionHistory) -> str:
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS),
-                              action_history.execution_status.value)
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
-                              NotificationManager._get_status_message(action_history))
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.STATUS),
+            action_history.execution_status.value,
+        )
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
+            NotificationManager._get_status_message(action_history),
+        )
 
         # Execution time replacements
         # Datetimes
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATETIME),
-                              str(action_history.execution_started))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_STARTED_DATETIME
+            ),
+            str(action_history.execution_started),
+        )
 
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATETIME),
-                              str(action_history.execution_ended) if action_history.execution_ended else "null")
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_ENDED_DATETIME
+            ),
+            (
+                str(action_history.execution_ended)
+                if action_history.execution_ended
+                else "null"
+            ),
+        )
 
         # Started
 
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE),
-                              action_history.execution_started.strftime("%H:%M:%S"))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE
+            ),
+            action_history.execution_started.strftime("%H:%M:%S"),
+        )
 
         # Ended
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE),
-                              action_history.execution_ended.strftime(
-                                  "%H:%M:%S") if action_history.execution_ended else "Not ended yet")
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE
+            ),
+            (
+                action_history.execution_ended.strftime("%H:%M:%S")
+                if action_history.execution_ended
+                else "Not ended yet"
+            ),
+        )
 
         # Date
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_DATE_MESSAGE),
-                              action_history.execution_started.strftime("%Y-%m-%d"))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_DATE_MESSAGE
+            ),
+            action_history.execution_started.strftime("%Y-%m-%d"),
+        )
 
         # Failed details replacements
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
-                              str(action_history.failed_details.value) if action_history.failed_details else "null")
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS_MESSAGE),
-                              NotificationManager._get_failed_details_message(action_history))
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
+            (
+                str(action_history.failed_details.value)
+                if action_history.failed_details
+                else "null"
+            ),
+        )
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.FAILED_DETAILS_MESSAGE
+            ),
+            NotificationManager._get_failed_details_message(action_history),
+        )
 
         # Screenshot replacement
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID),
-                              str(action_history.screenshot_id) if action_history.screenshot_id else "null")
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID),
+            (
+                str(action_history.screenshot_id)
+                if action_history.screenshot_id
+                else "null"
+            ),
+        )
 
         # Website info replacements
         website = DataAccessInternal.get_website_by_id(action_history.website)
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), website.name)
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), website.url)
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME),
+            website.name,
+        )
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.WEBSITE_URL),
+            website.url,
+        )
         return value
 
     @staticmethod
     def _replace_fake_variables(value: str) -> str:
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS),
-                              "FAILED")
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
-                              "Login failed")
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.STATUS), "FAILED"
+        )
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.STATUS_MESSAGE),
+            "Login failed",
+        )
 
         # Execution time replacements
-        start_time = datetime.now()
+        start_time = datetime.now(timezone.utc)
         end_time = start_time + timedelta(seconds=30)
 
         # Datetimes
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_DATETIME),
-                              str(start_time))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_STARTED_DATETIME
+            ),
+            str(start_time),
+        )
 
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_DATETIME),
-                              str(end_time))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_ENDED_DATETIME
+            ),
+            str(end_time),
+        )
 
         # Started
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE),
-                              start_time.strftime("%H:%M:%S"))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_STARTED_TIME_MESSAGE
+            ),
+            start_time.strftime("%H:%M:%S"),
+        )
 
         # Ended
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE),
-                              end_time.strftime("%H:%M:%S"))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_ENDED_TIME_MESSAGE
+            ),
+            end_time.strftime("%H:%M:%S"),
+        )
 
         # Date
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.EXECUTION_DATE_MESSAGE),
-                              start_time.strftime("%Y-%m-%d"))
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.EXECUTION_DATE_MESSAGE
+            ),
+            start_time.strftime("%Y-%m-%d"),
+        )
 
         # Failed details replacements
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
-                              "PASSWORD_FIELD_NOT_FOUND")
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS_MESSAGE),
-                              "Password field not found")
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.FAILED_DETAILS),
+            "PASSWORD_FIELD_NOT_FOUND",
+        )
+        value = value.replace(
+            NotificationManager._get_variable(
+                NotificationVariable.FAILED_DETAILS_MESSAGE
+            ),
+            "Password field not found",
+        )
 
         # Screenshot replacement
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID), "17d0b186-790a-4f4a-93d5-80524d05019a")
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.SCREENSHOT_ID),
+            "17d0b186-790a-4f4a-93d5-80524d05019a",
+        )
 
         # Website info replacements
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME), "My awesome website")
-        value = value.replace(NotificationManager._get_variable(NotificationVariable.WEBSITE_URL), "https://www.example.com/login")
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.WEBSITE_NAME),
+            "My awesome website",
+        )
+        value = value.replace(
+            NotificationManager._get_variable(NotificationVariable.WEBSITE_URL),
+            "https://www.example.com/login",
+        )
         return value

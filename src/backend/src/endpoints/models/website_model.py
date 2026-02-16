@@ -1,7 +1,8 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from typing import Optional
 from pydantic import BaseModel
 from dataAccess.database.database import Website
+from utils.utils import to_utc_time
 from endpoints.decorators.request_validator import (
     GetRequestBaseModel,
     PostRequestBaseModel,
@@ -53,7 +54,7 @@ class AddWebsite(PostRequestBaseModel):
             custom_login_script=self.custom_login_script,
             take_screenshot=self.take_screenshot,
             paused=self.paused if self.paused is not None else False,
-            added_at=datetime.now(),
+            added_at=datetime.now(timezone.utc),
             expiration_interval=expiration_interval,
         )
 
@@ -158,8 +159,8 @@ class GetWebsite(GetRequestBaseModel):
                 if website.action_interval
                 else None
             ),
-            next_schedule=website.next_schedule,
-            last_login_attempt=last_login_attempt,
+            next_schedule=to_utc_time(website.next_schedule),
+            last_login_attempt=to_utc_time(last_login_attempt),
             status=status.value if status else None,
         )
 
