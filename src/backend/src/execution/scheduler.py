@@ -40,7 +40,7 @@ class Scheduler:
         for website in DataAccessInternal.get_websites_all_users():
             self.add_task(website.id)
 
-    def _login_task(self, website_id: int):
+    async def _login_task(self, website_id: int):
         screenshot_id = None
         website = DataAccessInternal.get_website_all_users(website_id)
         if website.take_screenshot:
@@ -63,7 +63,7 @@ class Scheduler:
         )
 
         # login
-        status, custom_failed_details_message = login(
+        status, custom_failed_details_message = await login(
             url=url,
             success_url=success_url,
             username=username,

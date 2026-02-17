@@ -11,7 +11,7 @@ from .dom_interaction.dom_interaction_driver import DomInteractionDriver
 from .find_form_automatically import XPaths, LoginFormFinder
 
 
-def login(
+async def login(
     url: str,
     success_url: str,
     username: str,
@@ -20,35 +20,35 @@ def login(
     screenshot_id: str | None = None,
 ) -> Tuple[LoginStatusCode, CustomFailedDetailsMessage]:
     try:
-        with DomInteractionDriver(url=url) as driver:
+        async with DomInteractionDriver(url=url) as driver:
             try:
-                status = _execute_interaction(
+                status = await _execute_interaction(
                     driver, custom_login_script, username, password
                 )
 
                 if status is not None:
-                    driver.save_screenshot(screenshot_id)
+                    await driver.save_screenshot(screenshot_id)
                     return status
 
                 # Redirect to success url
-                driver.open_url(success_url)
+                await driver.open_url(success_url)
 
                 # Wait for expected url
                 for i in range(TIMEOUT):
-                    driver.solve_captcha()
-                    driver.wait(1000)
-                    if compare_urls(driver.get_current_url(), success_url):
-                        driver.save_screenshot(screenshot_id)
+                    await driver.solve_captcha()
+                    await driver.wait(1000)
+                    if compare_urls(await driver.get_current_url(), success_url):
+                        await driver.save_screenshot(screenshot_id)
                         return LoginStatusCode.SUCCESS, None
-                driver.save_screenshot(screenshot_id)
+                await driver.save_screenshot(screenshot_id)
 
             except Exception:
                 traceback.print_exc()
-                driver.save_screenshot(screenshot_id)
-                driver.disconnect_driver()
+                await driver.save_screenshot(screenshot_id)
+                await driver.disconnect_driver()
                 return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
 
-            current_url = driver.get_current_url()
+            current_url = await driver.get_current_url()
             success_url_not_matching_custom_failed_details_message = (
                 f'Expected: "{success_url}", Found: "{current_url}"'
             )
@@ -61,7 +61,7 @@ def login(
         return LoginStatusCode.UNKNOWN_EXECUTION_ERROR, None
 
 
-def _execute_interaction(
+async def _execute_interaction(
     driver: DomInteractionInterface,
     custom_login_script: str | None,
     username: str,
@@ -77,21 +77,21 @@ def _execute_interaction(
         """
         # Wait for all elements to be visible when no custom login script found
         for i in range(0, TIMEOUT, 5):
-            driver.solve_captcha()
-            xpaths = _find_elements(driver=driver)
+            await driver.solve_captcha()
+            xpaths = await _find_elements(driver=driver)
             xpath_not_found_error = _xpath_not_found_error(xpaths)
             if xpath_not_found_error is None:
                 break
-            driver.wait(5000)
+            await driver.wait(5000)
         if xpath_not_found_error is not None:
             return xpath_not_found_error, None
     else:
-        xpaths = _find_elements(driver=driver)
-    custom_login_seleniumbase = CustomLoginMethodsDriver(
+        xpaths = await _find_elements(driver=driver)
+    custom_login_driver = CustomLoginMethodsDriver(
         driver=driver, x_paths=xpaths, username=username, password=password
     )
-    parser = CustomLoginScriptParser(custom_login_seleniumbase)
-    exception = parser.execute(custom_login_script)
+    parser = CustomLoginScriptParser(custom_login_driver)
+    exception = await parser.execute(custom_login_script)
     if exception is not None:
         return exception.status, exception.message
     return None
@@ -107,9 +107,9 @@ def _xpath_not_found_error(xpaths: XPaths) -> LoginStatusCode | None:
     return None
 
 
-def _find_elements(driver: DomInteractionInterface) -> XPaths:
+async def _find_elements(driver: DomInteractionInterface) -> XPaths:
     login_form_finder = LoginFormFinder(driver=driver)
-    x_paths_automatic = login_form_finder.find_login_automatically()
+    x_paths_automatic = await login_form_finder.find_login_automatically()
 
     if x_paths_automatic is None:
         return XPaths(None, None, None)
@@ -118,12 +118,14 @@ def _find_elements(driver: DomInteractionInterface) -> XPaths:
     password_xpath = x_paths_automatic.password
     submit_button_xpath = x_paths_automatic.submit_button
 
-    if username_xpath is None or not driver.find_element(username_xpath):
+    if username_xpath is None or not await driver.find_element(username_xpath):
         username_xpath = None
 
-    if password_xpath is None or not driver.find_element(password_xpath):
+    if password_xpath is None or not await driver.find_element(password_xpath):
         password_xpath = None
 
-    if submit_button_xpath is None or not driver.find_element(submit_button_xpath):
+    if submit_button_xpath is None or not await driver.find_element(
+        submit_button_xpath
+    ):
         submit_button_xpath = None
     return XPaths(username_xpath, password_xpath, submit_button_xpath)

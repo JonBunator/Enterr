@@ -1,62 +1,67 @@
 import os
 
-from seleniumbase import SB
-from execution.login.dom_interaction.interfaces.dom_interaction_interface import DomInteractionInterface
+from camoufox.async_api import AsyncCamoufox
+from execution.login.dom_interaction.interfaces.dom_interaction_interface import (
+    DomInteractionInterface,
+)
 
 
 class DomInteractionDriver(DomInteractionInterface):
 
-    def __enter__(self):
-        self._sb_instance = SB(uc=True, headed=True, window_size="1920,953")
-        self._sb = self._sb_instance.__enter__()
-
-        self._sb.activate_cdp_mode(self._url)
-        self._sb.uc_gui_handle_captcha()
+    async def __aenter__(self):
+        is_production = os.getenv("RUN_MODE") == "production"
+        headless_mode = "virtual" if is_production else False
+        self._camoufox = AsyncCamoufox(headless=headless_mode)
+        self._browser = await self._camoufox.__aenter__()
+        self._page = await self._browser.new_page()
+        await self._page.goto(self._url)
         return self
 
-    def __exit__(self, exc_type, exc, tb):
-        self._sb_instance.__exit__(exc_type, exc, tb)
+    async def __aexit__(self, exc_type, exc, tb):
+        await self._camoufox.__aexit__(exc_type, exc, tb)
         return False
 
-    def disconnect_driver(self):
-        self._sb.reconnect()
-        self._sb.driver.quit()
+    async def disconnect_driver(self):
+        await self._browser.close()
 
-    def get_current_url(self) -> str:
-        return self._sb.cdp.get_current_url()
+    async def get_current_url(self) -> str:
+        return self._page.url
 
-    def get_page_html(self) -> str:
-        return self._sb.cdp.get_element_html("html")
+    async def get_page_html(self) -> str:
+        return await self._page.content()
 
-    def is_element_visible(self, xpath: str) -> bool:
-        return self._sb.cdp.is_element_visible(xpath)
+    async def is_element_visible(self, xpath: str) -> bool:
+        element = self._page.locator(f"xpath={xpath}")
+        return await element.count() > 0 and await element.first.is_visible()
 
-    def save_screenshot(self, screenshot_id: str):
+    async def save_screenshot(self, screenshot_id: str):
         if screenshot_id is None:
             return
         dev_mode = os.getenv("RUN_MODE") != "production"
 
         if dev_mode:
-            path = f"../config/images"
+            path = "../config/images"
         else:
-            path = f"/config/images"
-        self._sb.cdp.save_screenshot(os.path.join(path, f"{screenshot_id}.png"), selector="body")
+            path = "/config/images"
+        await self._page.locator("body").screenshot(
+            path=os.path.join(path, f"{screenshot_id}.png")
+        )
 
-    def find_element(self, xpath: str) -> bool:
-        return self._sb.cdp.find_element(xpath) is not None
+    async def find_element(self, xpath: str) -> bool:
+        return await self._page.locator(f"xpath={xpath}").count() > 0
 
-    def solve_captcha(self):
-        self._sb.uc_gui_click_captcha()
+    async def solve_captcha(self):
+        # Camoufox avoids captchas through fingerprint spoofing
+        pass
 
-    def fill_text(self, xpath: str, value: str):
-        self._sb.cdp.send_keys(xpath, value)
+    async def fill_text(self, xpath: str, value: str):
+        await self._page.locator(f"xpath={xpath}").fill(value)
 
-    def click_button(self, xpath: str):
-        self._sb.cdp.click(xpath)
+    async def click_button(self, xpath: str):
+        await self._page.locator(f"xpath={xpath}").click()
 
-    def open_url(self, url: str):
-        self._sb.cdp.open(url)
+    async def open_url(self, url: str):
+        await self._page.goto(url)
 
-    def wait(self, ms: int):
-        self._sb.sleep(ms / 1000)
-
+    async def wait(self, ms: int):
+        await self._page.wait_for_timeout(ms)

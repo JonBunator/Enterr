@@ -49,9 +49,11 @@ parser = Lark(grammar, start="start")
 
 
 class Executor(Transformer):
-    def __init__(self, custom_login_methods: CustomLoginMethodsInterface):
+    """Transforms the parse tree into a list of (method_name, args) tuples."""
+
+    def __init__(self):
         super().__init__()
-        self._custom_login_methods = custom_login_methods
+        self.operations = []
 
     def STRING(self, token):
         return ast.literal_eval(token)
@@ -61,31 +63,31 @@ class Executor(Transformer):
 
     def click_submit_button(self, items):
         xpath = items[0] if items else None
-        self._custom_login_methods.click_submit_button(xpath)
+        self.operations.append(("click_submit_button", (xpath,)))
 
     def fill_username(self, items):
         xpath = items[0] if items else None
-        self._custom_login_methods.fill_username(xpath)
+        self.operations.append(("fill_username", (xpath,)))
 
     def fill_password(self, items):
         xpath = items[0] if items else None
-        self._custom_login_methods.fill_password(xpath)
+        self.operations.append(("fill_password", (xpath,)))
 
     def fill_text(self, items):
         xpath, value = items
-        self._custom_login_methods.fill_text(xpath, value)
+        self.operations.append(("fill_text", (xpath, value)))
 
     def click_button(self, items):
         (xpath,) = items
-        self._custom_login_methods.click_button(xpath)
+        self.operations.append(("click_button", (xpath,)))
 
     def open_url(self, items):
         (url,) = items
-        self._custom_login_methods.open_url(url)
+        self.operations.append(("open_url", (url,)))
 
     def wait(self, items):
         (ms,) = items
-        self._custom_login_methods.wait(ms)
+        self.operations.append(("wait", (ms,)))
 
 
 class CustomLoginScriptParser:
@@ -105,20 +107,20 @@ class CustomLoginScriptParser:
             return str(e)
         return None
 
-    def execute(self, script: str) -> ScriptExecutionStopped | None:
+    async def execute(self, script: str) -> ScriptExecutionStopped | None:
         """
         Executes the custom login script.
         """
         tree = parser.parse(script)
-        executor = Executor(self._custom_login_methods)
+        executor = Executor()
         try:
             executor.transform(tree)
-        except VisitError as e:
-            orig = e.orig_exc
-            if orig is not None and type(orig).__name__ == "ScriptExecutionStopped":
-                return orig
-            traceback.print_exc()
-            return ScriptExecutionStopped()
+            # Execute operations sequentially
+            for method_name, args in executor.operations:
+                method = getattr(self._custom_login_methods, method_name)
+                await method(*args)
+        except ScriptExecutionStopped as e:
+            return e
         except Exception:
             traceback.print_exc()
             return ScriptExecutionStopped()
