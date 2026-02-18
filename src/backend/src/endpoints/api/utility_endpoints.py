@@ -18,11 +18,7 @@ def register_utility_endpoints(app: FastAPI):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
             )
-        dev_mode = os.getenv("RUN_MODE") != "production"
-        if dev_mode:
-            path = f"../config/images"
-        else:
-            path = f"/config/images"
+        path = "/config/images"
         image_path = os.path.join(path, f"{screenshot_id}.png")
 
         if os.path.isfile(image_path):

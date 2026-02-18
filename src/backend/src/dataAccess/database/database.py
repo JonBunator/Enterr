@@ -22,61 +22,33 @@ from utils.security import get_database_key, get_database_pepper
 from alembic.config import Config
 from alembic import command
 import sys
-
-try:
-    import sqlcipher3
-except ImportError:
-    sqlcipher3 = None
-
+import sqlcipher3
 
 Base = declarative_base()
 
-dev_mode = os.getenv("RUN_MODE") != "production"
-
 
 def get_database_uri() -> str:
-    """Get the database URI based on the current environment."""
-    if dev_mode:
-        return "sqlite:///database.db"
-    else:
-        db_key = get_database_key()
-        return f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
+    db_key = get_database_key()
+    return f"sqlite+pysqlcipher://:{db_key}@//config/database.db"
 
 
-database_uri = get_database_uri()
-
-if dev_mode:
-    engine = create_engine(
-        database_uri,
-        connect_args={
-            "check_same_thread": False,
-        },
-        poolclass=NullPool,
-    )
-else:
-    # Encrypted database in production
-    if sqlcipher3 is None:
-        raise ImportError("sqlcipher3 is required for encrypted database in production")
-    engine = create_engine(
-        database_uri,
-        module=sqlcipher3,
-        connect_args={
-            "check_same_thread": False,
-        },
-        poolclass=NullPool,
-    )
+if sqlcipher3 is None:
+    raise ImportError("sqlcipher3 is required for encrypted database in production")
+engine = create_engine(
+    get_database_uri(),
+    module=sqlcipher3,
+    connect_args={
+        "check_same_thread": False,
+    },
+    poolclass=NullPool,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db():
     """Initialize database with Alembic migrations"""
-    # In dev mode, just create all tables without migrations
-    if dev_mode:
-        Base.metadata.create_all(engine)
-        return
-
-    # Production mode: use Alembic migrations
+    # Use Alembic migrations
     alembic_cfg = Config("src/alembic.ini", stdout=sys.stdout)
     alembic_cfg.set_main_option("script_location", "src/migrations")
 

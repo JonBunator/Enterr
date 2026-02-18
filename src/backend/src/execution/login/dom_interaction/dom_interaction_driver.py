@@ -9,9 +9,7 @@ from execution.login.dom_interaction.interfaces.dom_interaction_interface import
 class DomInteractionDriver(DomInteractionInterface):
 
     async def __aenter__(self):
-        is_production = os.getenv("RUN_MODE") == "production"
-        headless_mode = "virtual" if is_production else False
-        self._camoufox = AsyncCamoufox(headless=headless_mode)
+        self._camoufox = AsyncCamoufox(headless="virtual", geoip=True, humanize=True)
         self._browser = await self._camoufox.__aenter__()
         self._page = await self._browser.new_page()
         await self._page.goto(self._url)
@@ -37,12 +35,8 @@ class DomInteractionDriver(DomInteractionInterface):
     async def save_screenshot(self, screenshot_id: str):
         if screenshot_id is None:
             return
-        dev_mode = os.getenv("RUN_MODE") != "production"
 
-        if dev_mode:
-            path = "../config/images"
-        else:
-            path = "/config/images"
+        path = "/config/images"
         await self._page.locator("body").screenshot(
             path=os.path.join(path, f"{screenshot_id}.png")
         )

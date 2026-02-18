@@ -1,19 +1,10 @@
-# ------------------- BUILD FRONTEND -------------------
-FROM node:24-slim AS frontend
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm install
-
-COPY frontend/ .
-RUN npm run build
-
-# ------------ COMBINE BACKEND AND FRONTEND ------------
-FROM python:3.12-slim
+# ------------------- BASE -------------------
+FROM python:3.12-slim AS base
 
 ENV PYTHONPATH=/app/backend/src:$PYTHONPATH
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV RUN_MODE=production
 
+# Install system dependencies for backend (browser automation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     libgtk-3-0 \
@@ -44,15 +35,51 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Download Camoufox browser
 RUN camoufox fetch
 
-# Copy source code
-COPY entrypoint.sh start.sh /app/
-RUN chmod +x /app/entrypoint.sh /app/start.sh
-COPY --from=frontend /app/frontend/dist /app/frontend/dist
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+VOLUME /config
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# ------------------- DEVELOPMENT -------------------
+FROM base AS development
+
+ENV RUN_MODE=development
+
+# Install Node.js for frontend dev server
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install frontend dependencies
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+
+WORKDIR /app
+COPY start-dev.sh /app/
+RUN chmod +x /app/start-dev.sh
+
+EXPOSE 7653 5173
+CMD ["/app/start-dev.sh"]
+
+# ------------------- PRODUCTION -------------------
+FROM node:24-slim AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ .
+RUN npm run build
+
+FROM base AS production
+ENV RUN_MODE=production
+
+COPY start.sh /app/
+RUN chmod +x /app/start.sh
+COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 COPY backend/src ./src
 
 EXPOSE 7653
-VOLUME /config
-
 HEALTHCHECK --interval=15m --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "http://localhost:7653/api/health" ]
-ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/start.sh"]

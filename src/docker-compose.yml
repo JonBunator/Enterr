@@ -1,7 +1,9 @@
 services:
   enterr:
-    build: .
-    image: enterr:dev
+    build:
+      context: .
+      target: production
+    image: enterr:latest
     environment:
       - SECRET_KEY=DEBUG_SECRET_KEY
     ports:

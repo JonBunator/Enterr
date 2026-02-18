@@ -1,0 +1,20 @@
+services:
+  enterr-dev:
+    build:
+      context: .
+      target: development
+    image: enterr:dev
+    environment:
+      - SECRET_KEY=DEBUG_SECRET_KEY
+      - RUN_MODE=development
+    ports:
+      - "7653:7653"
+      - "5173:5173"
+    volumes:
+      - ./config:/config
+      - ./backend/src:/app/backend/src
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/public:/app/frontend/public
+      - ./frontend/index.html:/app/frontend/index.html
+      - ./frontend/vite.config.ts:/app/frontend/vite.config.ts
+    restart: unless-stopped
