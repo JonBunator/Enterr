@@ -41,7 +41,7 @@
     "@types/node": "^25.2.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.1",
+    "eslint": "^10.0.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-format": "^1.4.0",
