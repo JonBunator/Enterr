@@ -6,7 +6,7 @@ SQLAlchemy==2.0.47
 pydantic==2.12.5
 APScheduler==3.11.2
 pytz==2025.2
-apprise==1.9.7
+apprise==1.9.8
 fastapi[standard]==0.129.0
 python-socketio==5.16.1
 python-jose[cryptography]==3.5.0
