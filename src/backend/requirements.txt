@@ -1,4 +1,4 @@
-python-dotenv==1.2.1
+python-dotenv==1.2.2
 seleniumbase==4.46.5
 lxml==6.0.2
 PyAutoGUI==0.9.54
