@@ -1,6 +1,10 @@
 import os
 
 from camoufox.async_api import AsyncCamoufox
+from playwright_captcha import ClickSolver, CaptchaType, FrameworkType
+from playwright_captcha.utils.camoufox_add_init_script.add_init_script import (
+    get_addon_path,
+)
 from execution.login.dom_interaction.interfaces.dom_interaction_interface import (
     DomInteractionInterface,
 )
@@ -9,7 +13,13 @@ from execution.login.dom_interaction.interfaces.dom_interaction_interface import
 class DomInteractionDriver(DomInteractionInterface):
 
     async def __aenter__(self):
-        self._camoufox = AsyncCamoufox(headless="virtual", geoip=True, humanize=True)
+        self._camoufox = AsyncCamoufox(
+            headless="virtual",
+            geoip=True,
+            humanize=True,
+            main_world_eval=True,
+            addons=[os.path.abspath(get_addon_path())],
+        )
         self._browser = await self._camoufox.__aenter__()
         self._page = await self._browser.new_page()
         await self._page.goto(self._url)
@@ -45,8 +55,27 @@ class DomInteractionDriver(DomInteractionInterface):
         return await self._page.locator(f"xpath={xpath}").count() > 0
 
     async def solve_captcha(self):
-        # Camoufox avoids captchas through fingerprint spoofing
-        pass
+        """Attempt to solve captchas on the page using click-based solving."""
+        captcha_types = [
+            CaptchaType.CLOUDFLARE_TURNSTILE,
+            CaptchaType.CLOUDFLARE_INTERSTITIAL,
+        ]
+
+        for captcha_type in captcha_types:
+            try:
+                async with ClickSolver(
+                    framework=FrameworkType.CAMOUFOX,
+                    page=self._page,
+                    max_attempts=3,
+                    attempt_delay=2,
+                ) as solver:
+                    await solver.solve_captcha(
+                        captcha_container=self._page,
+                        captcha_type=captcha_type,
+                    )
+                    return
+            except Exception:
+                continue
 
     async def fill_text(self, xpath: str, value: str):
         await self._page.locator(f"xpath={xpath}").fill(value)

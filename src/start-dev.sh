@@ -7,7 +7,7 @@ sleep 1
 
 # Start Vite dev server in background
 cd /app/frontend
-npm run start -- --host &
+npm run start &
 
 # Start uvicorn with hot reload
 cd /app/backend
