@@ -1,10 +1,11 @@
-import asyncio
 import uuid
 from datetime import datetime, timezone
 from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.date import DateTrigger
+from pytz import utc
+
 from dataAccess.data_access_internal import DataAccessInternal
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
@@ -89,8 +90,8 @@ class Scheduler:
         if website.next_schedule is None:
             return
 
-        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
-        if website.next_schedule < now_utc:
+        now_utc = datetime.now(timezone.utc)
+        if website.next_schedule.replace(tzinfo=timezone.utc) < now_utc:
             run_date = now_utc
         else:
             run_date = website.next_schedule

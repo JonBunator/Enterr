@@ -310,7 +310,7 @@ class ActionInterval(Base):
         random_date_delta = randint(
             self.date_minutes_start, self.date_minutes_end_not_none
         )
-        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        now_utc = datetime.now(timezone.utc)
         random_date = now_utc + timedelta(minutes=random_date_delta)
         if (
             self.date_minutes_start % 1440 == 0
