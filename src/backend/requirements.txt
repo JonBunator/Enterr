@@ -5,7 +5,7 @@ PyAutoGUI==0.9.54
 SQLAlchemy==2.0.48
 pydantic==2.12.5
 APScheduler==3.11.2
-pytz==2025.2
+pytz==2026.1.post1
 apprise==1.9.8
 fastapi[standard]==0.135.1
 python-socketio==5.16.1
