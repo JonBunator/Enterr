@@ -7,7 +7,12 @@ from execution.login.dom_interaction.interfaces.dom_interaction_interface import
 class DomInteractionDriver(DomInteractionInterface):
 
     def __enter__(self):
-        self._sb_instance = SB(uc=True, headed=True, window_size="1920,953")
+        user_agent = os.getenv("CUSTOM_USER_AGENT")
+        kwargs = {"uc": True, "headed": True, "window_size": "1920,953"}
+        if user_agent:
+            kwargs["agent"] = user_agent
+            
+        self._sb_instance = SB(**kwargs)
         self._sb = self._sb_instance.__enter__()
 
         self._sb.activate_cdp_mode(self._url)
