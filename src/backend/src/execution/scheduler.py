@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.date import DateTrigger
@@ -20,7 +21,7 @@ class Scheduler:
     ):
         self.data_access = data_access_internal
         self.webhook_endpoints = webhook_endpoints
-        self.scheduler = AsyncIOScheduler(timezone=utc)
+        self.scheduler = AsyncIOScheduler(executors={'default': ThreadPoolExecutor(1)}, timezone=utc)
 
     def start(self):
         self._init_tasks()
