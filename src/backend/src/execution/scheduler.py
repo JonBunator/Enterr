@@ -14,13 +14,13 @@ from execution.login.login import LoginStatusCode, login
 
 class Scheduler:
     def __init__(
-        self,
-        data_access_internal: DataAccessInternal,
-        webhook_endpoints: WebhookEndpoints,
+            self,
+            data_access_internal: DataAccessInternal,
+            webhook_endpoints: WebhookEndpoints,
     ):
         self.data_access = data_access_internal
         self.webhook_endpoints = webhook_endpoints
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = AsyncIOScheduler(timezone=utc)
 
     def start(self):
         self._init_tasks()
@@ -42,6 +42,7 @@ class Scheduler:
             self.add_task(website.id)
 
     def _login_task(self, website_id: int):
+        self.data_access.set_next_schedule(website_id)
         screenshot_id = None
         website = DataAccessInternal.get_website_all_users(website_id)
         if website.take_screenshot:
@@ -60,7 +61,8 @@ class Scheduler:
             website_id=website.id, action_history=action_history
         )
         self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history_id
+            action_history_id=action_history_id,
+            website_id=website.id,
         )
 
         # login
@@ -87,14 +89,19 @@ class Scheduler:
 
     def add_task(self, website_id: int):
         website = DataAccessInternal.get_website_all_users(website_id)
-        if website.next_schedule is None:
-            return
 
         now_utc = datetime.now(timezone.utc)
-        if website.next_schedule.replace(tzinfo=timezone.utc) < now_utc:
+        if website.next_schedule is None:
+            if website.paused:
+                return
+            next_schedule = now_utc
+        else:
+            next_schedule = website.next_schedule.replace(tzinfo=timezone.utc)
+
+        if next_schedule < now_utc:
             run_date = now_utc
         else:
-            run_date = website.next_schedule
+            run_date = next_schedule
         self.scheduler.add_job(
             self._login_task,
             trigger=DateTrigger(run_date=run_date),

@@ -63,9 +63,10 @@ class WebhookEndpoints(socketio.AsyncNamespace):
     def login_data_changed(self):
         self._send_webhook_message(Topic.LOGIN_DATA_CHANGED.value, {})
 
-    def action_history_changed(self, action_history_id: int):
+    def action_history_changed(self, action_history_id: int, website_id: int):
         self._send_webhook_message(
-            Topic.ACTION_HISTORY_CHANGED.value, {"id": action_history_id}
+            Topic.ACTION_HISTORY_CHANGED.value,
+            {"action_history_id": action_history_id, "website_id": website_id},
         )
 
     def notifications_changed(self):

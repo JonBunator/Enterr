@@ -27,11 +27,15 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
       await queryClient.invalidateQueries({ queryKey: ['websites'] })
     })
 
-    on("action_history_changed", async (data: { id: number }) => {
-      if (data.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["actionHistory"],
-        });
+    on("action_history_changed", async (data: { action_history_id: number; website_id: number }) => {
+      if (data.action_history_id && data.website_id) {
+        await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["actionHistory", `websiteId=${data.website_id}`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["websites"],
+        })]);
       }
     });
 

@@ -382,7 +382,7 @@ class DataBase:
         with get_db_session() as session:
             existing_action_history = session.get(ActionHistory, action_history_id)
             if existing_action_history is None:
-                return
+                return None
             existing_action_history.execution_ended = datetime.now(timezone.utc)
             existing_action_history.execution_status = execution_status
             existing_action_history.failed_details = failed_details
@@ -390,6 +390,29 @@ class DataBase:
                 custom_failed_details_message
             )
             existing_action_history.screenshot_id = screenshot_id
+            website_id = existing_action_history.website
+            session.commit()
+            return website_id
+
+    @staticmethod
+    def set_next_schedule(website_id: int):
+        with get_db_session() as session:
+            website = (
+                session.query(Website)
+                .options(joinedload(Website.action_interval))
+                .filter_by(id=website_id)
+                .first()
+            )
+            if website is None:
+                raise NotFoundException(f"Website {website_id} not found")
+
+            if website.paused:
+                website.next_schedule = None
+            else:
+                website.next_schedule = (
+                    website.action_interval.get_random_action_datetime()
+                )
+
             session.commit()
 
     @staticmethod
@@ -434,12 +457,6 @@ class DataBase:
         def _add_action_history(session: Session) -> ActionHistory:
             website = session.get(Website, website_id)
             website.action_histories.append(action_history)
-            if website.paused:
-                website.next_schedule = None  # In order to prevent race conditions
-            else:
-                website.next_schedule = (
-                    website.action_interval.get_random_action_datetime()
-                )
             session.commit()
             session.refresh(action_history)
             return action_history
