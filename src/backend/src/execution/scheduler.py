@@ -15,13 +15,15 @@ from execution.login.login import LoginStatusCode, login
 
 class Scheduler:
     def __init__(
-            self,
-            data_access_internal: DataAccessInternal,
-            webhook_endpoints: WebhookEndpoints,
+        self,
+        data_access_internal: DataAccessInternal,
+        webhook_endpoints: WebhookEndpoints,
     ):
         self.data_access = data_access_internal
         self.webhook_endpoints = webhook_endpoints
-        self.scheduler = AsyncIOScheduler(executors={'default': ThreadPoolExecutor(1)}, timezone=utc)
+        self.scheduler = AsyncIOScheduler(
+            executors={"default": ThreadPoolExecutor(1)}, timezone=utc
+        )
 
     def start(self):
         self._init_tasks()
@@ -60,10 +62,6 @@ class Scheduler:
         )
         action_history_id = self.data_access.add_action_history(
             website_id=website.id, action_history=action_history
-        )
-        self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history_id,
-            website_id=website.id,
         )
 
         # login
