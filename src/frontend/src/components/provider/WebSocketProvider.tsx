@@ -15,7 +15,7 @@ import { io } from 'socket.io-client'
 interface WebSocketContextType {
   socket: Socket | null
   emit: (event: string, data: any) => void
-  on: (event: string, callback: (message: any) => void) => void
+  on: (event: string, callback: (message: any) => void) => () => void
 }
 
 const SOCKET_URL = import.meta.env.PROD ? window.location.origin : 'http://localhost:7653'
@@ -39,6 +39,7 @@ export default function WebSocketProvider({
     })
     setSocket(socketIo)
     return () => {
+      socketIo.removeAllListeners()
       socketIo.disconnect()
     }
   }, [])
@@ -50,8 +51,14 @@ export default function WebSocketProvider({
   }, [socket])
 
   const on = useCallback((event: string, callback: (message: any) => void) => {
-    if (socket) {
-      socket.on(event, callback)
+    if (!socket) {
+      return () => {}
+    }
+
+    socket.on(event, callback)
+
+    return () => {
+      socket.off(event, callback)
     }
   }, [socket])
 

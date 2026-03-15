@@ -23,21 +23,31 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
   useEffect(() => {
     // Invalidate queries when socket.io events occur
 
-    on('login_data_changed', async () => {
+    const disposeLoginDataChanged = on('login_data_changed', async () => {
       await queryClient.invalidateQueries({ queryKey: ['websites'] })
     })
 
-    on("action_history_changed", async (data: { id: number }) => {
-      if (data.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["actionHistory"],
-        });
+    const disposeActionHistoryChanged = on("action_history_changed", async (data: { action_history_id: number; website_id: number }) => {
+      if (data.action_history_id && data.website_id) {
+        await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["actionHistory", `websiteId=${data.website_id}`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["websites"],
+        })]);
       }
-    });
+    })
 
-    on('notifications_changed', async () => {
+    const disposeNotificationsChanged = on('notifications_changed', async () => {
       await queryClient.invalidateQueries({ queryKey: ['notifications'] })
     })
+
+    return () => {
+      disposeLoginDataChanged()
+      disposeActionHistoryChanged()
+      disposeNotificationsChanged()
+    }
   }, [on, queryClient])
 
   return (

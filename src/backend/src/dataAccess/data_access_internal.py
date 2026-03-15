@@ -3,7 +3,12 @@ from typing import List
 
 from dataAccess.database.change_database import DataBase
 from dataAccess.database.database import (
-    Website, ActionHistory, ActionStatusCode, ActionFailedDetails, Notification, )
+    Website,
+    ActionHistory,
+    ActionStatusCode,
+    ActionFailedDetails,
+    Notification,
+)
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 
 
@@ -11,6 +16,7 @@ class DataAccessInternal:
     """
     Internal data access class that should only be called internally and not by the user.
     """
+
     def __init__(self, webhook_endpoints: WebhookEndpoints):
         self.webhook_endpoints = webhook_endpoints
 
@@ -35,15 +41,16 @@ class DataAccessInternal:
 
         for action_history_id in ids:
             self.webhook_endpoints.action_history_changed(
-                action_history_id=action_history_id
+                action_history_id=action_history_id,
+                website_id=website_id,
             )
-
 
     def add_action_history(self, website_id: int, action_history: ActionHistory):
         created_action_history = DataBase.add_action_history(website_id, action_history)
 
         self.webhook_endpoints.action_history_changed(
-            action_history_id=created_action_history.id
+            action_history_id=created_action_history.id,
+            website_id=website_id,
         )
 
         return created_action_history.id
@@ -56,14 +63,23 @@ class DataAccessInternal:
         custom_failed_details_message: str = None,
         screenshot_id: str = None,
     ):
-        DataBase.action_history_finish_execution(
-            action_history_id, execution_status, failed_details, custom_failed_details_message, screenshot_id
+        website_id = DataBase.action_history_finish_execution(
+            action_history_id,
+            execution_status,
+            failed_details,
+            custom_failed_details_message,
+            screenshot_id,
         )
 
-        self.webhook_endpoints.action_history_changed(
-            action_history_id=action_history_id
-        )
+        if website_id is not None:
+            self.webhook_endpoints.action_history_changed(
+                action_history_id=action_history_id,
+                website_id=website_id,
+            )
 
+    @staticmethod
+    def set_next_schedule(website_id: int):
+        DataBase.set_next_schedule(website_id)
 
     @staticmethod
     def get_notifications_all_users() -> List[Notification]:

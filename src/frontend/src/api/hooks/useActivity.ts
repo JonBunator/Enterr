@@ -17,7 +17,7 @@ export function useActivity(page: number, pageSize: number, searchTerm?: string,
   
   const loginHistoryQueries = useQueries({
     queries: websites.map(website => ({
-      queryKey: ['actionHistory', website.id],
+      queryKey: ['actionHistory', `websiteId=${website.id}`],
       queryFn: () => api.getActionHistories(website.id),
       enabled: !isLoadingWebsites,
     })),
