@@ -24,6 +24,7 @@ services:
     container_name: enterr
     image: ghcr.io/jonbunator/enterr:latest
     environment:
+      - CUSTOM_USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
       - SECRET_KEY=MY_RANDOM_SECRET
     volumes:
       - ./config:/config
