@@ -20,8 +20,10 @@ const darkTheme = createTheme({
   components: {
     MuiDialog: {
       defaultProps: {
-        PaperProps: {
-          elevation: 2,
+        slotProps: {
+          paper: {
+            elevation: 2,
+          },
         },
       },
     },

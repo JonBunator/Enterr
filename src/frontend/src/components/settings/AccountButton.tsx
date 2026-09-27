@@ -1,5 +1,5 @@
 import { AdjustmentsHorizontalIcon, ArrowRightEndOnRectangleIcon, UserCircleIcon } from "@heroicons/react/24/solid";
-import { Chip, ListItemIcon, ListItemText, MenuItem, Popover } from '@mui/material'
+import { Chip, ListItemIcon, ListItemText, MenuItem, MenuList, Popover } from '@mui/material'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
@@ -70,18 +70,20 @@ export default function AccountButton() {
         }}
         style={{ marginTop: 8 }}
       >
-        <MenuItem onClick={() => void openSettings()}>
-          <ListItemIcon>
-            <AdjustmentsHorizontalIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Settings" />
-        </MenuItem>
-        <MenuItem onClick={() => void logout()}>
-          <ListItemIcon>
-            <ArrowRightEndOnRectangleIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Log out" />
-        </MenuItem>
+        <MenuList>
+          <MenuItem onClick={() => void openSettings()}>
+            <ListItemIcon>
+              <AdjustmentsHorizontalIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </MenuItem>
+          <MenuItem onClick={() => void logout()}>
+            <ListItemIcon>
+              <ArrowRightEndOnRectangleIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Log out" />
+          </MenuItem>
+        </MenuList>
       </Popover>
     </div>
   );

@@ -45,13 +45,15 @@ export default function Search(props: SearchProps) {
           {...params}
           placeholder="Search..."
           slotProps={{
+            ...params.slotProps,
             input: {
-              ...params.InputProps,
-              startAdornment: (
+              ...params.slotProps.input,
+              startAdornment: <>
                 <InputAdornment position="start">
                   <MagnifyingGlassIcon className="icon" />
                 </InputAdornment>
-              ),
+                {params.slotProps.input.startAdornment}
+              </>,
             },
           }}
         />

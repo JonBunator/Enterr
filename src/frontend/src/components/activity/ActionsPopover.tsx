@@ -13,6 +13,7 @@ import {
   Link,
   ListItemIcon,
   ListItemText,
+  MenuList,
   MenuItem,
   Popover,
   Tooltip,
@@ -204,52 +205,54 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
           horizontal: "right",
         }}
       >
-        <MenuItem onClick={() => void handlePause()}>
-          <ListItemIcon>
-            {editWebsiteValue?.paused ? (
-              <PlayCircleIcon className="icon" />
-            ) : (
-              <PauseCircleIcon className="icon" />
-            )}
-          </ListItemIcon>
-          <ListItemText
-            primary={`${editWebsiteValue?.paused ? "Resume" : "Pause"} automatic login`}
-          />
-        </MenuItem>
-        <MenuItem
-          onClick={() => void triggerLogin()}
-          disabled={editWebsiteValue?.paused}
-        >
-          <ListItemIcon>
-            <ArrowPathIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Trigger automatic login" />
-        </MenuItem>
-        <MenuItem onClick={handleOpenWebsite}>
-          <ListItemIcon>
-            <GlobeAltIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Open website" />
-        </MenuItem>
-        <MenuItem onClick={() => void handleAddManualLogin()}>
-          <ListItemIcon>
-            <CheckCircleIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Save successful login" />
-        </MenuItem>
-        <MenuItem onClick={() => void handleOpenEditDialog()}>
-          <ListItemIcon>
-            <PencilSquareIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Edit" />
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleDeleteRequest}>
-          <ListItemIcon>
-            <TrashIcon className="icon" />
-          </ListItemIcon>
-          <ListItemText primary="Delete" />
-        </MenuItem>
+        <MenuList>
+          <MenuItem onClick={() => void handlePause()}>
+            <ListItemIcon>
+              {editWebsiteValue?.paused ? (
+                <PlayCircleIcon className="icon" />
+              ) : (
+                <PauseCircleIcon className="icon" />
+              )}
+            </ListItemIcon>
+            <ListItemText
+              primary={`${editWebsiteValue?.paused ? "Resume" : "Pause"} automatic login`}
+            />
+          </MenuItem>
+          <MenuItem
+            onClick={() => void triggerLogin()}
+            disabled={editWebsiteValue?.paused}
+          >
+            <ListItemIcon>
+              <ArrowPathIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Trigger automatic login" />
+          </MenuItem>
+          <MenuItem onClick={handleOpenWebsite}>
+            <ListItemIcon>
+              <GlobeAltIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Open website" />
+          </MenuItem>
+          <MenuItem onClick={() => void handleAddManualLogin()}>
+            <ListItemIcon>
+              <CheckCircleIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Save successful login" />
+          </MenuItem>
+          <MenuItem onClick={() => void handleOpenEditDialog()}>
+            <ListItemIcon>
+              <PencilSquareIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Edit" />
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleDeleteRequest}>
+            <ListItemIcon>
+              <TrashIcon className="icon" />
+            </ListItemIcon>
+            <ListItemText primary="Delete" />
+          </MenuItem>
+        </MenuList>
       </Popover>
     </>
   );
