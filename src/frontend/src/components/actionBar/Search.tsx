@@ -11,7 +11,7 @@ interface SearchProps {
 export default function Search(props: SearchProps) {
   const { value, onChange } = props
   const [inputValue, setInputValue] = useState<string | undefined>(value)
-  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+  const [timer, setTimer] = useState<number | null>(null)
 
   useEffect(() => {
     if (value !== inputValue) {

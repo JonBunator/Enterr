@@ -89,7 +89,7 @@ export default function NotificationsSettings() {
   return (
     <div className="notifications-settings">
       <div>
-        <Typography typography="h6">Notifications</Typography>
+        <Typography variant="h6">Notifications</Typography>
         <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
           Configure notifications for login updates
         </Typography>

@@ -132,7 +132,7 @@ export default function ActionIntervalForm(props: ActionIntervalFormProps) {
                 date_minutes_start: minutes,
               } as ActionInterval,
             })}
-          onValidate={validateExecutiossnInterval}
+          onValidate={validateExecutionInterval}
         />
       </div>
       <FormGrouping
