@@ -80,6 +80,7 @@ RUN apt-get update && \
 RUN apt-get update && \
     apt-get -qy --no-install-recommends install \
     curl \
+    ffmpeg \
     sudo \
     unzip \
     wget \

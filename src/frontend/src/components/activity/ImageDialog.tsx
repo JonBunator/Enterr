@@ -7,11 +7,12 @@ interface ImageDialogProps {
   open?: boolean
   onClose?: () => void
   screenshotId: string | null
+  showLiveFeed?: boolean
 
 }
 
 export default function ImageDialog(props: ImageDialogProps) {
-  const { open, onClose, screenshotId } = props
+  const { open, onClose, screenshotId, showLiveFeed } = props
   return (
     <Dialog className="image-dialog" open={open ?? false} maxWidth="lg" onClose={onClose}>
       <IconButton
@@ -27,7 +28,15 @@ export default function ImageDialog(props: ImageDialogProps) {
         <XMarkIcon className="icon" />
       </IconButton>
       <DialogContent className="image-dialog-content">
-        {screenshotId !== null
+        {showLiveFeed
+          ? (
+              <img
+                className="screenshot"
+                src="/api/stream/display"
+                alt="Live display stream"
+              />
+            )
+          : screenshotId !== null
           ? (
               <Screenshot screenshotId={screenshotId} />
             )

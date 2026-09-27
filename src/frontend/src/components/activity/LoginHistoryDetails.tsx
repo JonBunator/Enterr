@@ -14,6 +14,7 @@ interface LoginHistoryDetailsProps {
 
 export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   const { loginHistory } = props
+  const isTaskRunning = loginHistory.execution_status === 'IN_PROGRESS'
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
@@ -94,12 +95,21 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
 
   return (
     <>
-      <ImageDialog screenshotId={loginHistory.screenshot_id} open={imageDialogOpen} onClose={() => setImageDialogOpen(false)} />
+      <ImageDialog
+        screenshotId={loginHistory.screenshot_id}
+        showLiveFeed={isTaskRunning}
+        open={imageDialogOpen}
+        onClose={() => setImageDialogOpen(false)}
+      />
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <StatusIcon hover onClick={loginHistory.screenshot_id !== null ? openImageDialog : undefined} activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+        <StatusIcon
+          hover
+          onClick={isTaskRunning || loginHistory.screenshot_id !== null ? openImageDialog : undefined}
+          activityStatus={loginHistory.execution_status as ActivityStatusCode}
+        />
         <Popover
           className="login-history-details"
           open={open}
@@ -114,13 +124,21 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
             horizontal: 'center',
           }}
         >
-          {loginHistory.screenshot_id !== null
+          {isTaskRunning
             ? (
-                <Screenshot screenshotId={loginHistory.screenshot_id} />
+                <img
+                  className="screenshot"
+                  src="/api/stream/display"
+                  alt="Live display stream"
+                />
               )
-            : (
-                []
-              )}
+            : loginHistory.screenshot_id !== null
+              ? (
+                  <Screenshot screenshotId={loginHistory.screenshot_id} />
+                )
+              : (
+                  null
+                )}
           <div>
             <Paper className="login-history-details-header">
               <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />
