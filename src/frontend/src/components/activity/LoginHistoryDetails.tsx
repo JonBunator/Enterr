@@ -3,6 +3,7 @@ import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Paper, Popover, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { FailedDetails } from '../../api/apiModels.ts'
+import { useScreenshotAvailable } from '../../api/hooks/useScreenshot.ts'
 import ImageDialog from './ImageDialog.tsx'
 import LiveFeed from './LiveFeed.tsx'
 import Screenshot from './Screenshot.tsx'
@@ -18,8 +19,12 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   const isRunning = loginHistory.execution_status === 'IN_PROGRESS'
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [hasBeenHovered, setHasBeenHovered] = useState(false)
+  const screenshotAvailable = useScreenshotAvailable(loginHistory.screenshot_id, hasBeenHovered && !isRunning)
+  const hasImage = isRunning || screenshotAvailable
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
+    setHasBeenHovered(true)
     setAnchorEl(event.currentTarget)
   }
 
@@ -97,7 +102,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   return (
     <>
       <ImageDialog
-        screenshotId={loginHistory.screenshot_id}
+        screenshotId={screenshotAvailable ? loginHistory.screenshot_id : null}
         liveActionHistoryId={isRunning ? loginHistory.id : undefined}
         open={imageDialogOpen}
         onClose={() => setImageDialogOpen(false)}
@@ -108,7 +113,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
       >
         <StatusIcon
           hover
-          onClick={isRunning || loginHistory.screenshot_id !== null ? openImageDialog : undefined}
+          onClick={hasImage ? openImageDialog : undefined}
           activityStatus={loginHistory.execution_status as ActivityStatusCode}
         />
         <Popover
@@ -129,7 +134,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
             ? (
                 <LiveFeed actionHistoryId={loginHistory.id} />
               )
-            : loginHistory.screenshot_id !== null
+            : loginHistory.screenshot_id !== null && screenshotAvailable
               ? (
                   <Screenshot screenshotId={loginHistory.screenshot_id} />
                 )

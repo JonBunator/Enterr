@@ -15,6 +15,8 @@ interface ImageDialogProps {
 export default function ImageDialog(props: ImageDialogProps) {
   const { open, onClose, screenshotId, liveActionHistoryId } = props
 
+  const dialogOpen = ((screenshotId !== null || liveActionHistoryId !== undefined) && open) ?? false
+
   function renderContent() {
     if (liveActionHistoryId !== undefined) {
       return <LiveFeed actionHistoryId={liveActionHistoryId} />
@@ -26,7 +28,7 @@ export default function ImageDialog(props: ImageDialogProps) {
   }
 
   return (
-    <Dialog className="image-dialog" open={open ?? false} maxWidth="lg" onClose={onClose}>
+    <Dialog className="image-dialog" open={dialogOpen} maxWidth="lg" onClose={onClose}>
       <IconButton
         aria-label="close"
         onClick={onClose}
