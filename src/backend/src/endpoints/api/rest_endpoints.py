@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from dataAccess.data_access import DataAccess
+from execution.live_view import LiveView
 from execution.notifications.notification_manager import NotificationManager
 from endpoints.api.exception_handlers import register_exception_handlers
 from endpoints.api.website_endpoints import register_website_endpoints
@@ -10,12 +11,15 @@ from endpoints.api.utility_endpoints import register_utility_endpoints
 
 
 def register_rest_endpoints(
-    app: FastAPI, data_access: DataAccess, notification_manager: NotificationManager
+    app: FastAPI,
+    data_access: DataAccess,
+    notification_manager: NotificationManager,
+    live_view: LiveView,
 ):
     """Register all REST API endpoints by importing from thematic sub-files."""
     register_exception_handlers(app)
     register_website_endpoints(app, data_access)
-    register_action_history_endpoints(app, data_access)
+    register_action_history_endpoints(app, data_access, live_view)
     register_notification_endpoints(app, data_access, notification_manager)
     register_user_endpoints(app, data_access)
     register_utility_endpoints(app)

@@ -4,6 +4,7 @@ import { Paper, Popover, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { FailedDetails } from '../../api/apiModels.ts'
 import ImageDialog from './ImageDialog.tsx'
+import LiveFeed from './LiveFeed.tsx'
 import Screenshot from './Screenshot.tsx'
 import StatusIcon from './StatusIcon.tsx'
 import './LoginHistoryDetails.scss'
@@ -14,6 +15,7 @@ interface LoginHistoryDetailsProps {
 
 export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   const { loginHistory } = props
+  const isRunning = loginHistory.execution_status === 'IN_PROGRESS'
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
@@ -94,12 +96,21 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
 
   return (
     <>
-      <ImageDialog screenshotId={loginHistory.screenshot_id} open={imageDialogOpen} onClose={() => setImageDialogOpen(false)} />
+      <ImageDialog
+        screenshotId={loginHistory.screenshot_id}
+        liveActionHistoryId={isRunning ? loginHistory.id : undefined}
+        open={imageDialogOpen}
+        onClose={() => setImageDialogOpen(false)}
+      />
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <StatusIcon hover onClick={loginHistory.screenshot_id !== null ? openImageDialog : undefined} activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+        <StatusIcon
+          hover
+          onClick={isRunning || loginHistory.screenshot_id !== null ? openImageDialog : undefined}
+          activityStatus={loginHistory.execution_status as ActivityStatusCode}
+        />
         <Popover
           className="login-history-details"
           open={open}
@@ -114,13 +125,17 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
             horizontal: 'center',
           }}
         >
-          {loginHistory.screenshot_id !== null
+          {isRunning
             ? (
-                <Screenshot screenshotId={loginHistory.screenshot_id} />
+                <LiveFeed actionHistoryId={loginHistory.id} />
               )
-            : (
-                []
-              )}
+            : loginHistory.screenshot_id !== null
+              ? (
+                  <Screenshot screenshotId={loginHistory.screenshot_id} />
+                )
+              : (
+                  []
+                )}
           <div>
             <Paper className="login-history-details-header">
               <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />

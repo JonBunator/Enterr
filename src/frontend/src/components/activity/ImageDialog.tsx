@@ -1,5 +1,6 @@
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { Dialog, DialogContent, IconButton } from '@mui/material'
+import LiveFeed from './LiveFeed.tsx'
 import Screenshot from './Screenshot.tsx'
 import './ImageDialog.scss'
 
@@ -7,11 +8,23 @@ interface ImageDialogProps {
   open?: boolean
   onClose?: () => void
   screenshotId: string | null
+  liveActionHistoryId?: number
 
 }
 
 export default function ImageDialog(props: ImageDialogProps) {
-  const { open, onClose, screenshotId } = props
+  const { open, onClose, screenshotId, liveActionHistoryId } = props
+
+  function renderContent() {
+    if (liveActionHistoryId !== undefined) {
+      return <LiveFeed actionHistoryId={liveActionHistoryId} />
+    }
+    if (screenshotId !== null) {
+      return <Screenshot screenshotId={screenshotId} />
+    }
+    return []
+  }
+
   return (
     <Dialog className="image-dialog" open={open ?? false} maxWidth="lg" onClose={onClose}>
       <IconButton
@@ -27,13 +40,7 @@ export default function ImageDialog(props: ImageDialogProps) {
         <XMarkIcon className="icon" />
       </IconButton>
       <DialogContent className="image-dialog-content">
-        {screenshotId !== null
-          ? (
-              <Screenshot screenshotId={screenshotId} />
-            )
-          : (
-              []
-            )}
+        {renderContent()}
       </DialogContent>
     </Dialog>
   )
