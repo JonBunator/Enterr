@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from hashlib import pbkdf2_hmac
 import os
 from jose import jwt, JWTError
 
 
+@lru_cache(maxsize=None)
 def _get_secret_key(public_salt: str):
     dev_mode = os.getenv("RUN_MODE") != "production"
     if dev_mode:

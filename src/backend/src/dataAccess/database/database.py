@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from random import randint
 from typing import List, Optional
 from sqlalchemy import create_engine, inspect
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import QueuePool
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import (
     Mapped,
@@ -51,7 +51,10 @@ if dev_mode:
         connect_args={
             "check_same_thread": False,
         },
-        poolclass=NullPool,
+        poolclass=QueuePool,
+        pool_size=20,
+        max_overflow=20,
+        pool_timeout=30,
     )
 else:
     # Encrypted database in production
@@ -63,7 +66,10 @@ else:
         connect_args={
             "check_same_thread": False,
         },
-        poolclass=NullPool,
+        poolclass=QueuePool,
+        pool_size=20,
+        max_overflow=20,
+        pool_timeout=30,
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
