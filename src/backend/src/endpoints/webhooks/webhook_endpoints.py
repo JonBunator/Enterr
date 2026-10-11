@@ -1,10 +1,8 @@
 import asyncio
+from concurrent.futures import Future
 from enum import Enum
-from http.cookies import SimpleCookie
-from urllib.parse import unquote
-import socketio
+from fastapi import WebSocket, WebSocketDisconnect, status
 
-from endpoints.webhooks.socketio import sio
 from utils.security import decode_token
 
 
@@ -14,51 +12,66 @@ class Topic(Enum):
     NOTIFICATIONS_CHANGED = "notifications_changed"
 
 
-class WebhookEndpoints(socketio.AsyncNamespace):
+class WebhookEndpoints:
 
-    def __init__(self, event_loop: asyncio.AbstractEventLoop):
-        super().__init__("/")
+    def __init__(self):
+        self._event_loop: asyncio.AbstractEventLoop | None = None
+        self._connections: set[WebSocket] = set()
+
+    def set_event_loop(self, event_loop: asyncio.AbstractEventLoop):
+        # Must be the loop uvicorn is serving on, so set it at runtime (not at import)
         self._event_loop = event_loop
 
-    def on_connect(self, sid, environ):
-        headers = environ["asgi.scope"]["headers"]
-        cookie_header = None
-        for name, value in headers:
-            if name == b"cookie":
-                cookie_header = value.decode("utf-8")
-                break
-        if not cookie_header:
+    @staticmethod
+    def _is_authenticated(websocket: WebSocket) -> bool:
+        raw_token = websocket.cookies.get("access_token")
+        if not raw_token or not raw_token.startswith("Bearer "):
             return False
-
-        decoded = unquote(cookie_header)
-        cookies = SimpleCookie()
-        cookies.load(decoded)
-
-        if "access_token" not in cookies:
-            return False
-        raw_token = cookies["access_token"].value
         access_token = raw_token[len("Bearer ") :]
-        username = decode_token(access_token)
-        if username is None:
-            return False
+        return decode_token(access_token) is not None
 
-        return True
+    async def handle_connection(self, websocket: WebSocket):
+        if not WebhookEndpoints._is_authenticated(websocket):
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
 
-    def connect_error(*args):
-        print("The connection failed!", args)
+        await websocket.accept()
+        self._connections.add(websocket)
+        try:
+            while True:
+                # Incoming messages are ignored, only used to detect disconnects
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            pass
+        finally:
+            self._connections.discard(websocket)
+
+    async def _send_message(self, topic: str, message: any):
+        payload = {"event": topic, "data": message}
+        for connection in list(self._connections):
+            try:
+                await connection.send_json(payload)
+            except Exception:
+                self._connections.discard(connection)
 
     @staticmethod
-    async def _send_message(topic: str, message: any):
-        await sio.emit(topic, message)
+    def _log_send_error(future: Future):
+        if future.cancelled():
+            return
+        exception = future.exception()
+        if exception is not None:
+            print(f"Failed to send websocket message: {exception!r}")
 
     def _send_webhook_message(self, topic: str, message: any):
-        asyncio.run_coroutine_threadsafe(
-            WebhookEndpoints._send_message(topic, message), self._event_loop
+        if self._event_loop is None or self._event_loop.is_closed():
+            return
+        future = asyncio.run_coroutine_threadsafe(
+            self._send_message(topic, message), self._event_loop
         )
+        future.add_done_callback(WebhookEndpoints._log_send_error)
 
-    @staticmethod
-    async def _send_webhook_message_async(topic: str, message: any):
-        await WebhookEndpoints._send_message(topic, message)
+    async def _send_webhook_message_async(self, topic: str, message: any):
+        await self._send_message(topic, message)
 
     def login_data_changed(self):
         self._send_webhook_message(Topic.LOGIN_DATA_CHANGED.value, {})

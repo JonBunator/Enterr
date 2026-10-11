@@ -1,13 +1,11 @@
 import asyncio
-import socketio
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
-from endpoints.webhooks.socketio import sio
 from execution.notifications.notification_manager import NotificationManager
 from dataAccess.data_access_internal import DataAccessInternal
 from user_management import create_user
@@ -27,8 +25,7 @@ init_db()
 if dev_mode:
     create_user(username="debug", password="123", create_db=False)
 
-event_loop = asyncio.get_event_loop()
-webhook_endpoints = WebhookEndpoints(event_loop=event_loop)
+webhook_endpoints = WebhookEndpoints()
 data_access = DataAccess(webhook_endpoints=webhook_endpoints)
 data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
 notification_manager = NotificationManager(data_access=data_access_internal)
@@ -36,6 +33,9 @@ notification_manager = NotificationManager(data_access=data_access_internal)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    # Uvicorn may import this module before its event loop runs,
+    # so the loop has to be captured here instead of at import time
+    webhook_endpoints.set_event_loop(asyncio.get_running_loop())
     scheduler = Scheduler(data_access_internal=data_access_internal, webhook_endpoints=webhook_endpoints)
     register_database_events(
         scheduler=scheduler, notification_manager=notification_manager
@@ -60,10 +60,11 @@ if dev_mode:
         allow_headers=["*"],
     )
 
-sio.register_namespace(webhook_endpoints)
-sio_asgi_app = socketio.ASGIApp(socketio_server=sio, other_asgi_app=app)
-app.add_route("/socket.io/", route=sio_asgi_app, methods=["GET", "POST"])
-app.add_websocket_route("/socket.io/", sio_asgi_app)
+
+@app.websocket("/api/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await webhook_endpoints.handle_connection(websocket)
+
 
 register_rest_endpoints(
     app=app, data_access=data_access, notification_manager=notification_manager

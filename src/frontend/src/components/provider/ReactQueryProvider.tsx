@@ -21,7 +21,7 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
   const { on } = useWebSocket()
 
   useEffect(() => {
-    // Invalidate queries when socket.io events occur
+    // Invalidate queries when websocket events occur
 
     const disposeLoginDataChanged = on('login_data_changed', async () => {
       await queryClient.invalidateQueries({ queryKey: ['websites'] })

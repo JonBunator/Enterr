@@ -8,7 +8,6 @@ APScheduler==3.11.3
 pytz==2026.4
 apprise==2.0.0
 fastapi[standard]==0.141.1
-python-socketio==5.17.0
 python-jose[cryptography]==3.5.0
 Werkzeug==3.1.8
 sqlcipher3-wheels==0.5.7
