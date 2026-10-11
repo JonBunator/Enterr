@@ -183,5 +183,5 @@ def test_job_error_marks_execution_as_failed(scheduler, data_access, mocker):
     scheduler._scheduler_event(event)
 
     data_access.unexpected_execution_failure.assert_called_once_with(
-        website_id="5", execution_started=started
+        website_id=5, execution_started=started
     )

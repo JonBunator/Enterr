@@ -37,7 +37,8 @@ class Scheduler:
     def _scheduler_event(self, event: JobExecutionEvent):
         if event.exception:
             self.data_access.unexpected_execution_failure(
-                website_id=event.job_id, execution_started=event.scheduled_run_time
+                website_id=int(event.job_id),
+                execution_started=event.scheduled_run_time,
             )
 
     def _init_tasks(self):
