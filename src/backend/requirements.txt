@@ -5,7 +5,7 @@ PyAutoGUI==0.9.54
 SQLAlchemy==2.1.1
 pydantic==2.13.5
 APScheduler==3.11.3
-pytz==2026.4
+pytz==2026.5
 apprise==2.0.0
 fastapi[standard]==0.141.1
 python-jose[cryptography]==3.5.0
