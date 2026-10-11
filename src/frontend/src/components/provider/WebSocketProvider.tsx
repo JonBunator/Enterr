@@ -1,24 +1,29 @@
 import type {
   ReactNode,
 } from 'react'
-import type { Socket } from 'socket.io-client'
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useRef,
 } from 'react'
-import { io } from 'socket.io-client'
+
+type Listener = (message: any) => void
 
 interface WebSocketContextType {
-  socket: Socket | null
-  emit: (event: string, data: any) => void
-  on: (event: string, callback: (message: any) => void) => () => void
+  emit: (event: string, data: unknown) => void
+  on: (event: string, callback: Listener) => () => void
 }
 
-const SOCKET_URL = import.meta.env.PROD ? window.location.origin : 'http://localhost:7653'
+const INITIAL_RECONNECT_DELAY = 1000
+const MAX_RECONNECT_DELAY = 10000
+
+function getSocketUrl() {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  return `${protocol}://${window.location.host}/api/ws`
+}
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(
   undefined,
@@ -31,42 +36,79 @@ interface WebSocketProviderProps {
 export default function WebSocketProvider({
   children,
 }: WebSocketProviderProps) {
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const socketRef = useRef<WebSocket | null>(null)
+  const listenersRef = useRef(new Map<string, Set<Listener>>())
 
   useEffect(() => {
-    const socketIo = io(SOCKET_URL, {
-      withCredentials: true,
-    })
-    setSocket(socketIo)
+    let disposed = false
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let reconnectDelay = INITIAL_RECONNECT_DELAY
+
+    const connect = () => {
+      const socket = new WebSocket(getSocketUrl())
+      socketRef.current = socket
+
+      socket.onopen = () => {
+        reconnectDelay = INITIAL_RECONNECT_DELAY
+      }
+
+      socket.onmessage = (messageEvent: MessageEvent<string>) => {
+        let message: { event: string, data: unknown }
+        try {
+          message = JSON.parse(messageEvent.data) as { event: string, data: unknown }
+        }
+        catch {
+          return
+        }
+        listenersRef.current.get(message.event)?.forEach(listener => listener(message.data))
+      }
+
+      socket.onclose = () => {
+        if (socketRef.current === socket) {
+          socketRef.current = null
+        }
+        if (disposed) {
+          return
+        }
+        // Reconnect (e.g. after login, when the server rejected the unauthenticated connection)
+        reconnectTimer = setTimeout(connect, reconnectDelay)
+        reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY)
+      }
+    }
+
+    connect()
+
     return () => {
-      socketIo.removeAllListeners()
-      socketIo.disconnect()
+      disposed = true
+      clearTimeout(reconnectTimer)
+      socketRef.current?.close()
+      socketRef.current = null
     }
   }, [])
 
-  const emit = useCallback((event: string, data: any) => {
-    if (socket) {
-      socket.emit(event, data)
+  const emit = useCallback((event: string, data: unknown) => {
+    const socket = socketRef.current
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ event, data }))
     }
-  }, [socket])
+  }, [])
 
-  const on = useCallback((event: string, callback: (message: any) => void) => {
-    if (!socket) {
-      return () => {}
+  const on = useCallback((event: string, callback: Listener) => {
+    const listeners = listenersRef.current
+    if (!listeners.has(event)) {
+      listeners.set(event, new Set())
     }
-
-    socket.on(event, callback)
+    listeners.get(event)!.add(callback)
 
     return () => {
-      socket.off(event, callback)
+      listeners.get(event)?.delete(callback)
     }
-  }, [socket])
+  }, [])
 
   const value = useMemo(() => ({
-    socket,
     emit,
     on,
-  }), [socket, emit, on])
+  }), [emit, on])
 
   return (
     <WebSocketContext.Provider value={value}>

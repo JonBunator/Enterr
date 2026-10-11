@@ -1,9 +1,9 @@
-import { useQueries } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import type { ActivityData } from '../../components/activity/model.ts'
-import { useWebsites } from './useWebsites'
-import * as api from '../apiRequests'
+import { useQueries } from '@tanstack/react-query'
 import { ActivityStatusCode } from '../../components/activity/StatusIcon'
+import * as api from '../apiRequests'
+import { useWebsites } from './useWebsites'
 
 export function useActivity(page: number, pageSize: number, searchTerm?: string, orderBy?: string) {
   const { data: websitesData, isLoading: isLoadingWebsites } = useWebsites(
@@ -11,14 +11,14 @@ export function useActivity(page: number, pageSize: number, searchTerm?: string,
     pageSize,
     searchTerm,
     orderBy,
-  );
+  )
   const websites = websitesData?.items ?? []
   const rowCount = websitesData?.total ?? 0
-  
+
   const loginHistoryQueries = useQueries({
     queries: websites.map(website => ({
       queryKey: ['actionHistory', `websiteId=${website.id}`],
-      queryFn: () => api.getActionHistories(website.id),
+      queryFn: async () => api.getActionHistories(website.id),
       enabled: !isLoadingWebsites,
     })),
   })
@@ -41,7 +41,7 @@ export function useActivity(page: number, pageSize: number, searchTerm?: string,
     status = website.paused ? ActivityStatusCode.PAUSED : status
 
     const nextLogin = website?.next_schedule !== null ? new Date(website?.next_schedule) : new Date(0)
-    
+
     return {
       id: website.id,
       status,

@@ -5,17 +5,17 @@ import useMeasure from 'react-use-measure'
 import './FormGrouping.scss'
 
 interface FormGroupingProps {
-  title: ReactNode;
-  subtitle?: ReactNode;
-  elevation?: number;
-  column?: boolean;
-  backgroundElevation?: number;
-  disableCheckbox?: boolean;
-  checked?: boolean;
-  onChange?: (checked: boolean) => void;
-  disabled?: boolean;
-  children?: ReactNode;
-  className?: string;
+  title: ReactNode
+  subtitle?: ReactNode
+  elevation?: number
+  column?: boolean
+  backgroundElevation?: number
+  disableCheckbox?: boolean
+  checked?: boolean
+  onChange?: (checked: boolean) => void
+  disabled?: boolean
+  children?: ReactNode
+  className?: string
 }
 
 interface ResizablePanelProps {
@@ -40,7 +40,7 @@ function ResizablePanel(props: ResizablePanelProps) {
 export default function FormGrouping(props: FormGroupingProps) {
   const { title, subtitle, elevation, column, backgroundElevation, disableCheckbox, checked, onChange, disabled, className, children } = props
   return (
-    <FormGroup className={className ?? ""}>
+    <FormGroup className={className ?? ''}>
       <Paper className="form-grouping" elevation={elevation ?? 8}>
         {disableCheckbox
           ? (

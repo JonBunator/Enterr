@@ -1,5 +1,5 @@
-import { Link, Typography } from '@mui/material'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
+import { Link, Typography } from '@mui/material'
 
 interface ExternalLinkProps {
   /**
@@ -18,7 +18,7 @@ interface ExternalLinkProps {
 }
 
 export default function ExternalLink(props: ExternalLinkProps) {
-  const { href, text, linkText } = props;
+  const { href, text, linkText } = props
   const parts = text.split('INSERT_LINK')
 
   return (

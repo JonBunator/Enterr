@@ -1,5 +1,5 @@
 import type { ActionHistory } from '../../api/apiModels.ts'
-import { ActivityStatusCode } from './StatusIcon.tsx'
+import type { ActivityStatusCode } from './StatusIcon.tsx'
 
 export interface ActivityData {
   id: number
@@ -21,14 +21,14 @@ export interface ActionInterval {
 }
 
 export interface ChangeWebsite {
-  url?: string;
-  success_url?: string;
-  name?: string;
-  username?: string;
-  password?: string;
-  take_screenshot?: boolean;
-  paused?: boolean;
-  expiration_interval_minutes?: number | null;
-  custom_login_script?: string | null;
-  action_interval?: ActionInterval | null;
+  url?: string
+  success_url?: string
+  name?: string
+  username?: string
+  password?: string
+  take_screenshot?: boolean
+  paused?: boolean
+  expiration_interval_minutes?: number | null
+  custom_login_script?: string | null
+  action_interval?: ActionInterval | null
 }

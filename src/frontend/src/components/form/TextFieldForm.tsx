@@ -1,4 +1,4 @@
-import type { InputBaseComponentProps, TextFieldProps } from "@mui/material";
+import type { InputBaseComponentProps, TextFieldProps } from '@mui/material'
 import type { ElementType } from 'react'
 import { TextField } from '@mui/material'
 import { forwardRef, useCallback, useEffect, useState } from 'react'
@@ -62,7 +62,7 @@ export default function TextFieldForm(props: TextFieldFormProps) {
 
   const validate = useCallback((): boolean => {
     let error = ''
-    const valueToValidate = validationValue ?? (value as string);
+    const valueToValidate = validationValue ?? (value as string)
     if (onValidate) {
       error = onValidate(valueToValidate)
     }
@@ -85,12 +85,14 @@ export default function TextFieldForm(props: TextFieldFormProps) {
       {...otherProps}
       required={required}
       value={numberInput ? value?.toString() : value}
-      slotProps={numberInput ? {
-        input: {
-          inputComponent: NumberMask as any as ElementType<InputBaseComponentProps>,
-          onChange: (event) => { handleChange(event) },
-        },
-      } : {...slotProps}}
+      slotProps={numberInput
+        ? {
+            input: {
+              inputComponent: NumberMask as any as ElementType<InputBaseComponentProps>,
+              onChange: (event) => { handleChange(event) },
+            },
+          }
+        : { ...slotProps }}
       onChange={event => handleChange(event)}
       helperText={errorMessage === '' ? helperText : errorMessage}
       error={errorMessage !== ''}

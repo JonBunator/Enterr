@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { useEffect } from 'react'
 import { useWebSocket } from './WebSocketProvider'
-import { QueryClient } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,21 +21,22 @@ export default function ReactQueryProvider({ children }: ReactQueryProviderProps
   const { on } = useWebSocket()
 
   useEffect(() => {
-    // Invalidate queries when socket.io events occur
+    // Invalidate queries when websocket events occur
 
     const disposeLoginDataChanged = on('login_data_changed', async () => {
       await queryClient.invalidateQueries({ queryKey: ['websites'] })
     })
 
-    const disposeActionHistoryChanged = on("action_history_changed", async (data: { action_history_id: number; website_id: number }) => {
+    const disposeActionHistoryChanged = on('action_history_changed', async (data: { action_history_id: number, website_id: number }) => {
       if (data.action_history_id && data.website_id) {
         await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["actionHistory", `websiteId=${data.website_id}`],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["websites"],
-        })]);
+          queryClient.invalidateQueries({
+            queryKey: ['actionHistory', `websiteId=${data.website_id}`],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ['websites'],
+          }),
+        ])
       }
     })
 

@@ -1,5 +1,5 @@
-import type { ActivityData } from './model.ts'
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
+import type { ActivityData } from './model.ts'
 import { Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
@@ -16,11 +16,11 @@ interface ActivityProps {
 }
 
 const fieldMapping: Record<string, string> = {
-  status: "status",
-  name: "name",
-  nextLogin: "next_schedule",
-  lastLoginAttempt: "last_login_attempt",
-};
+  status: 'status',
+  name: 'name',
+  nextLogin: 'next_schedule',
+  lastLoginAttempt: 'last_login_attempt',
+}
 
 export default function Activity(props: ActivityProps) {
   const { searchTerm } = props
@@ -32,10 +32,12 @@ export default function Activity(props: ActivityProps) {
 
   // Convert sort model to backend format
   const orderBy = useMemo(() => {
-    if (sortModel.length === 0) return undefined
+    if (sortModel.length === 0)
+      return undefined
     const sort = sortModel[0]
     const backendField = fieldMapping[sort.field]
-    if (!backendField) return undefined
+    if (!backendField)
+      return undefined
     const prefix = sort.sort === 'desc' ? '-' : '+'
     return `${prefix}${backendField}`
   }, [sortModel])
@@ -49,7 +51,7 @@ export default function Activity(props: ActivityProps) {
     paginationModel.pageSize,
     searchTerm,
     orderBy,
-  );
+  )
 
   const handleSortModelChange = useCallback((newSortModel: GridSortModel) => {
     setSortModel(newSortModel)
@@ -58,12 +60,12 @@ export default function Activity(props: ActivityProps) {
   const columns: GridColDef<ActivityData>[] = useMemo(
     () => [
       {
-        field: "status",
-        headerName: "Status",
+        field: 'status',
+        headerName: 'Status',
         flex: 1,
         minWidth: 250,
         sortable: true,
-        renderCell: (params) => (
+        renderCell: params => (
           <ActivityStatus
             status={params.row.status}
             expirationDate={params.row.expirationDate}
@@ -71,19 +73,19 @@ export default function Activity(props: ActivityProps) {
         ),
       },
       {
-        field: "name",
-        headerName: "Name",
+        field: 'name',
+        headerName: 'Name',
         flex: 1,
         minWidth: 150,
         sortable: true,
       },
       {
-        field: "nextLogin",
-        headerName: "Next Login",
+        field: 'nextLogin',
+        headerName: 'Next Login',
         flex: 1,
         minWidth: 150,
         sortable: true,
-        renderCell: (params) => (
+        renderCell: params => (
           <TimeDifference
             prefix=""
             datetime={params.row.nextLogin}
@@ -93,29 +95,31 @@ export default function Activity(props: ActivityProps) {
         ),
       },
       {
-        field: "lastLoginAttempt",
-        headerName: "Last Login Attempt",
+        field: 'lastLoginAttempt',
+        headerName: 'Last Login Attempt',
         flex: 1,
         minWidth: 150,
         sortable: true,
-        renderCell: (params) =>
-          params.row.lastLoginAttempt !== undefined ? (
-            <TimeDifference
-              prefix=""
-              tooltip
-              datetime={params.row.lastLoginAttempt}
-            />
-          ) : (
-            "No logins yet"
-          ),
+        renderCell: params =>
+          params.row.lastLoginAttempt !== undefined
+            ? (
+                <TimeDifference
+                  prefix=""
+                  tooltip
+                  datetime={params.row.lastLoginAttempt}
+                />
+              )
+            : (
+                'No logins yet'
+              ),
       },
       {
-        field: "loginHistory",
-        headerName: "Login History",
+        field: 'loginHistory',
+        headerName: 'Login History',
         flex: 1,
         minWidth: 150,
         sortable: false,
-        renderCell: (params) =>
+        renderCell: params =>
           params.row.loginHistory !== null && (
             <div className="login-history">
               {params.row.loginHistory.slice(0, 3).map((lh, index) => (
@@ -128,11 +132,11 @@ export default function Activity(props: ActivityProps) {
           ),
       },
       {
-        field: "actions",
-        type: "actions",
+        field: 'actions',
+        type: 'actions',
         hideable: false,
         resizable: false,
-        renderCell: (params) => (
+        renderCell: params => (
           <ActionsPopover
             websiteId={params.row.id}
             websiteURL={params.row.url}
@@ -141,14 +145,14 @@ export default function Activity(props: ActivityProps) {
       },
     ],
     [],
-  );
+  )
 
   const getTogglableColumns = (columns: GridColDef[]) => {
     // hide the column with field `actions` from list of togglable columns
     return columns
-      .filter((column) => column.field !== "actions")
-      .map((column) => column.field);
-  };
+      .filter(column => column.field !== 'actions')
+      .map(column => column.field)
+  }
 
   return (
     <Card className="activity">
@@ -184,5 +188,5 @@ export default function Activity(props: ActivityProps) {
         />
       </CardContent>
     </Card>
-  );
+  )
 }

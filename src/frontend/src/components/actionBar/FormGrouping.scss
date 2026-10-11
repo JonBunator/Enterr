@@ -14,14 +14,15 @@
   .form-grouping-checkbox {
     top: -16px;
     .MuiCheckbox-root {
-     padding: 4px;
+      padding: 4px;
     }
     .form-grouping-checkbox-label {
       margin: 0;
     }
   }
 
-  .form-grouping-title, .form-grouping-checkbox {
+  .form-grouping-title,
+  .form-grouping-checkbox {
     position: absolute;
     border: none !important;
     background: none;
@@ -32,17 +33,18 @@
     z-index: 0;
   }
 
-  .form-grouping-title-before, .form-grouping-checkbox-before {
+  .form-grouping-title-before,
+  .form-grouping-checkbox-before {
     &.MuiPaper-root {
-    border: none;
-    width: 100%;
-    height: 50%;
-    content: "";
-    top: 0;
-    left: 0;
-    border-radius: 0;
-    position: absolute;
-    z-index: -1;
+      border: none;
+      width: 100%;
+      height: 50%;
+      content: '';
+      top: 0;
+      left: 0;
+      border-radius: 0;
+      position: absolute;
+      z-index: -1;
     }
   }
 

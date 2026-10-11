@@ -11,7 +11,7 @@ interface SearchProps {
 export default function Search(props: SearchProps) {
   const { value, onChange } = props
   const [inputValue, setInputValue] = useState<string | undefined>(value)
-  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+  const [timer, setTimer] = useState<number | null>(null)
 
   useEffect(() => {
     if (value !== inputValue) {
@@ -27,7 +27,8 @@ export default function Search(props: SearchProps) {
       options={[]}
       inputValue={inputValue ?? ''}
       onInputChange={(_event, newValue, reason) => {
-        if (reason === 'reset') return
+        if (reason === 'reset')
+          return
         setInputValue(newValue)
 
         if (timer) {
@@ -45,13 +46,15 @@ export default function Search(props: SearchProps) {
           {...params}
           placeholder="Search..."
           slotProps={{
+            ...params.slotProps,
             input: {
-              ...params.InputProps,
-              startAdornment: (
+              ...params.slotProps.input,
+              startAdornment: <>
                 <InputAdornment position="start">
                   <MagnifyingGlassIcon className="icon" />
                 </InputAdornment>
-              ),
+                {params.slotProps.input.startAdornment}
+              </>,
             },
           }}
         />

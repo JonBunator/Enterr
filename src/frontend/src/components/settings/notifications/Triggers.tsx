@@ -1,15 +1,14 @@
-import { Chip } from "@mui/material";
-import { ActionStatusCode } from "../../../api/apiModels.ts";
-import './Triggers.scss';
-import { ArrowPathIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import type { ActionStatusCode } from '../../../api/apiModels.ts'
+import { ArrowPathIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import { Chip } from '@mui/material'
+import './Triggers.scss'
 
 export interface TriggersProps {
   triggers: ActionStatusCode[]
 }
 
 export default function Triggers(props: TriggersProps) {
-
-  const { triggers } = props;
+  const { triggers } = props
 
   function getLabel(trigger: ActionStatusCode) {
     if (trigger === 'SUCCESS') {
@@ -21,16 +20,18 @@ export default function Triggers(props: TriggersProps) {
     else if (trigger === 'IN_PROGRESS') {
       return 'In Progress'
     }
-    return '';
+    return ''
   }
 
   function getIcon(trigger: ActionStatusCode) {
     if (trigger === 'SUCCESS') {
-      return <CheckIcon className="icon"/>
-    } else if (trigger === 'FAILED') {
-      return <XMarkIcon className="icon"/>
-    } else if (trigger === 'IN_PROGRESS') {
-      return <ArrowPathIcon className="icon"/>
+      return <CheckIcon className="icon" />
+    }
+    else if (trigger === 'FAILED') {
+      return <XMarkIcon className="icon" />
+    }
+    else if (trigger === 'IN_PROGRESS') {
+      return <ArrowPathIcon className="icon" />
     }
   }
 
@@ -48,7 +49,7 @@ export default function Triggers(props: TriggersProps) {
 
   return (
     <div className="trigger">
-      {triggers.map((trigger) => <Chip icon={getIcon(trigger)}  label={getLabel(trigger)} className={getColor(trigger)} key={trigger} />)}
+      {triggers.map(trigger => <Chip icon={getIcon(trigger)} label={getLabel(trigger)} className={getColor(trigger)} key={trigger} />)}
     </div>
-  );
+  )
 }

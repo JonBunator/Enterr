@@ -1,96 +1,99 @@
+import type { EditNotification, Notification } from '../../../api/apiModels.ts'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import {
   Button,
-  Drawer, Skeleton,
+  Drawer,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography
-} from "@mui/material";
-import "./NotificationsSettings.scss";
-import { EditNotification, Notification } from "../../../api/apiModels.ts";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
-import Triggers from "./Triggers.tsx";
+  Typography,
+} from '@mui/material'
+import { useState } from 'react'
 import {
-  useNotifications,
   useAddNotification,
+  useDeleteNotification,
   useEditNotification,
-  useDeleteNotification
-} from "../../../api/hooks";
-import AddEditNotification from "./AddEditNotification.tsx";
-import { useSnackbar } from "../../provider/SnackbarProvider.tsx";
-import EmptyState from "../../activity/EmptyState.tsx";
+  useNotifications,
+} from '../../../api/hooks'
+import EmptyState from '../../activity/EmptyState.tsx'
+import { useSnackbar } from '../../provider/SnackbarProvider.tsx'
+import AddEditNotification from './AddEditNotification.tsx'
+import Triggers from './Triggers.tsx'
+import './NotificationsSettings.scss'
 
 export default function NotificationsSettings() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editCreateNotification, setEditCreateNotification] = useState<Notification | null>(null);
-  const { error, success, loading } = useSnackbar();
-  
-  const { data: notifications = [], isLoading } = useNotifications();
-  const addMutation = useAddNotification();
-  const editMutation = useEditNotification();
-  const deleteMutation = useDeleteNotification();
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editCreateNotification, setEditCreateNotification] = useState<Notification | null>(null)
+  const { error, success, loading } = useSnackbar()
 
+  const { data: notifications = [], isLoading } = useNotifications()
+  const addMutation = useAddNotification()
+  const editMutation = useEditNotification()
+  const deleteMutation = useDeleteNotification()
 
   function openEditNotificationDrawer(notification: Notification) {
-    setEditCreateNotification(notification);
-    setDrawerOpen(true);
+    setEditCreateNotification(notification)
+    setDrawerOpen(true)
   }
 
   function openCreateNotificationDrawer() {
-    setEditCreateNotification(null);
-    setDrawerOpen(true);
+    setEditCreateNotification(null)
+    setDrawerOpen(true)
   }
 
   async function create(notification: Notification) {
-    setDrawerOpen(false);
+    setDrawerOpen(false)
     loading('Adding notification...')
     try {
-      await addMutation.mutateAsync(notification);
-      success('Notification added successfully');
-    } catch (e) {
-      error("Failed to add notification", (e as Error).message);
+      await addMutation.mutateAsync(notification)
+      success('Notification added successfully')
+    }
+    catch (e) {
+      error('Failed to add notification', (e as Error).message)
     }
   }
 
   async function edit(notification: Notification) {
-    setDrawerOpen(false);
+    setDrawerOpen(false)
     loading('Editing notification...')
     try {
-      await editMutation.mutateAsync(notification as EditNotification);
-      success('Notification edited successfully');
-    } catch (e) {
-      error("Failed to edit notification", (e as Error).message);
+      await editMutation.mutateAsync(notification as EditNotification)
+      success('Notification edited successfully')
+    }
+    catch (e) {
+      error('Failed to edit notification', (e as Error).message)
     }
   }
 
   async function remove(notification: Notification) {
-    setDrawerOpen(false);
+    setDrawerOpen(false)
     loading('Deleting notification...')
     try {
-      await deleteMutation.mutateAsync(notification.id!);
-      success('Notification deleted successfully');
-    } catch (e) {
-      error("Failed to delete notification", (e as Error).message);
+      await deleteMutation.mutateAsync(notification.id!)
+      success('Notification deleted successfully')
+    }
+    catch (e) {
+      error('Failed to delete notification', (e as Error).message)
     }
   }
 
   function getType(token: string) {
-    const type = token.split("://")[0];
+    const type = token.split('://')[0]
     if (!type) {
-      return "Unknown";
+      return 'Unknown'
     }
-    return type.charAt(0).toUpperCase() + type.slice(1);
+    return type.charAt(0).toUpperCase() + type.slice(1)
   }
 
   return (
     <div className="notifications-settings">
       <div>
-        <Typography typography="h6">Notifications</Typography>
-        <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+        <Typography variant="h6">Notifications</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
           Configure notifications for login updates
         </Typography>
       </div>
@@ -113,14 +116,14 @@ export default function NotificationsSettings() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading &&
-              Array.from({ length: 5 }).map((_, index) => (
+            {isLoading
+              && Array.from({ length: 5 }).map((_, index) => (
                 <TableRow className="table-row" key={index}>
                   <TableCell>
-                    <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                    <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
                   </TableCell>
                   <TableCell>
-                    <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                    <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
                   </TableCell>
                   <TableCell>
                     <div className="trigger">
@@ -137,33 +140,35 @@ export default function NotificationsSettings() {
                   </TableCell>
                 </TableRow>
               ))}
-            {notifications.length === 0 && !isLoading ? (
-              <TableRow className="table-row">
-                <TableCell colSpan={4}>
-                  <EmptyState
-                    noData
-                    noDataHelperText="Add a notification to get started"
-                  />
-                </TableCell>
-              </TableRow>
-            ) : (
-              notifications.map((notificaton, index) => (
-                <TableRow key={index} className="table-row">
-                  <TableCell>{notificaton.name}</TableCell>
-                  <TableCell>{getType(notificaton.apprise_token)}</TableCell>
-                  <TableCell>
-                    <Triggers triggers={notificaton.triggers} />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      onClick={() => openEditNotificationDrawer(notificaton)}
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            {notifications.length === 0 && !isLoading
+              ? (
+                  <TableRow className="table-row">
+                    <TableCell colSpan={4}>
+                      <EmptyState
+                        noData
+                        noDataHelperText="Add a notification to get started"
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
+              : (
+                  notifications.map((notificaton, index) => (
+                    <TableRow key={index} className="table-row">
+                      <TableCell>{notificaton.name}</TableCell>
+                      <TableCell>{getType(notificaton.apprise_token)}</TableCell>
+                      <TableCell>
+                        <Triggers triggers={notificaton.triggers} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          onClick={() => openEditNotificationDrawer(notificaton)}
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -181,5 +186,5 @@ export default function NotificationsSettings() {
         />
       </Drawer>
     </div>
-  );
+  )
 }

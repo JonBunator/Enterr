@@ -5,23 +5,24 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import LoginPage from './components/pages/LoginPage.tsx'
 import MainPage from './components/pages/MainPage.tsx'
+import SettingsPage from './components/pages/SettingsPage.tsx'
+import ReactQueryProvider from './components/provider/ReactQueryProvider.tsx'
 import SnackbarProvider from './components/provider/SnackbarProvider.tsx'
 import WebSocketProvider from './components/provider/WebSocketProvider.tsx'
-import ReactQueryProvider from './components/provider/ReactQueryProvider.tsx'
 import './globalStyles.scss'
-import SettingsPage from "./components/pages/SettingsPage.tsx";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-
+import '@fontsource/roboto/300.css'
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
 
 const darkTheme = createTheme({
   components: {
     MuiDialog: {
       defaultProps: {
-        PaperProps: {
-          elevation: 2,
+        slotProps: {
+          paper: {
+            elevation: 2,
+          },
         },
       },
     },
