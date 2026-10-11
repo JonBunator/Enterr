@@ -22,7 +22,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   }
 
   const handleMouseLeave = () => {
-    setTimeout(() => setAnchorEl(null), 200)
+    setTimeout(setAnchorEl, 200, null)
   }
 
   function getStatusText(): string {
@@ -53,37 +53,37 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   }
 
   function getFailedDetails(): string {
-    let message: string;
+    let message: string
 
     switch (loginHistory.failed_details) {
       case FailedDetails.AUTOMATIC_FORM_DETECTION_FAILED:
-        message = 'Automatic form detection failed. Try to define a custom login script or submit an issue on GitHub.';
-        break;
+        message = 'Automatic form detection failed. Try to define a custom login script or submit an issue on GitHub.'
+        break
       case FailedDetails.USERNAME_FIELD_NOT_FOUND:
-        message = 'Username field not found. Try to define a custom login script or submit an issue on GitHub.';
-        break;
+        message = 'Username field not found. Try to define a custom login script or submit an issue on GitHub.'
+        break
       case FailedDetails.PASSWORD_FIELD_NOT_FOUND:
-        message = 'Password field not found. Try to define a custom login script or submit an issue on GitHub.';
-        break;
+        message = 'Password field not found. Try to define a custom login script or submit an issue on GitHub.'
+        break
       case FailedDetails.SUBMIT_BUTTON_NOT_FOUND:
-        message = 'Submit button not found. Try to define a custom login script or submit an issue on GitHub.';
-        break;
+        message = 'Submit button not found. Try to define a custom login script or submit an issue on GitHub.'
+        break
       case FailedDetails.SUCCESS_URL_DID_NOT_MATCH:
-        message = 'The success URL did not match after login attempt.';
-        break;
+        message = 'The success URL did not match after login attempt.'
+        break
       case FailedDetails.UNKNOWN_EXECUTION_ERROR:
-        message = 'An unknown error occurred while executing task.';
-        break;
+        message = 'An unknown error occurred while executing task.'
+        break
       case null:
-        message = 'Unknown error';
-        break;
+        message = 'Unknown error'
+        break
       default:
-        message = 'Unknown error';
+        message = 'Unknown error'
     }
 
-    const customMessage = loginHistory.custom_failed_details_message;
+    const customMessage = loginHistory.custom_failed_details_message
 
-    return message + `${customMessage !== null ? " " + customMessage : ''}`;
+    return `${message}${customMessage !== null ? ` ${customMessage}` : ''}`
   }
   const open = Boolean(anchorEl)
 

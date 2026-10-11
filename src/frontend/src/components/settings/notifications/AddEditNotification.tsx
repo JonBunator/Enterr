@@ -1,12 +1,13 @@
-import { Autocomplete, Button, Divider, Link, Typography } from "@mui/material";
-import { ActionStatusCode, Notification } from "../../../api/apiModels.ts";
+import type { ActionStatusCode, Notification } from '../../../api/apiModels.ts'
+import type { FormProviderRef } from '../../form/FormProvider.tsx'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/16/solid'
+import { Autocomplete, Button, Divider, Link, Typography } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
+import { useTestNotification } from '../../../api/hooks'
+import ApprovalDialog from '../../ApprovalDialog.tsx'
+import { FormProvider } from '../../form/FormProvider.tsx'
+import TextFieldForm from '../../form/TextFieldForm.tsx'
 import './AddEditNotification.scss'
-import { useEffect, useRef, useState } from "react";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
-import ApprovalDialog from "../../ApprovalDialog.tsx";
-import { useTestNotification } from "../../../api/hooks";
-import { FormProvider, type FormProviderRef } from "../../form/FormProvider.tsx";
-import TextFieldForm from "../../form/TextFieldForm.tsx";
 
 interface AddEditNotificationProps {
   /**
@@ -40,64 +41,64 @@ const emptyNotification: Notification = {
   token: '',
   title: '',
   body: '',
-  triggers: []
+  triggers: [],
 }
 
-type TriggerOption = {
+interface TriggerOption {
   label: string
   value: ActionStatusCode
 }
 
 const triggerOptions: TriggerOption[] = [
   {
-    label: "Success",
-    value: "SUCCESS"
+    label: 'Success',
+    value: 'SUCCESS',
   },
   {
-    label: "Failure",
-    value: "FAILED"
+    label: 'Failure',
+    value: 'FAILED',
   },
   {
-    label: "In Progress",
-    value: "IN_PROGRESS"
+    label: 'In Progress',
+    value: 'IN_PROGRESS',
   },
 ]
 
 export default function AddEditNotification(props: AddEditNotificationProps) {
-  const { notification, onCreate, onEdit, onDelete, onCancel } = props;
-  const [currentNotification, setCurrentNotification] = useState<Notification>(notification ?? emptyNotification);
+  const { notification, onCreate, onEdit, onDelete, onCancel } = props
+  const [currentNotification, setCurrentNotification] = useState<Notification>(notification ?? emptyNotification)
   const [deletionApprovalDialogOpen, setDeletionApprovalDialogOpen] = useState<boolean>(false)
 
   const formRef = useRef<FormProviderRef>(null)
-  const testMutation = useTestNotification();
+  const testMutation = useTestNotification()
 
   useEffect(() => {
-    setCurrentNotification(notification ?? emptyNotification);
-  }, [notification]);
-
+    setCurrentNotification(notification ?? emptyNotification)
+  }, [notification])
 
   /**
    * Returns true when the notification should be created. False when edited.
    */
   function isCreation(): boolean {
-    return notification === null;
+    return notification === null
   }
 
   function handleTriggerChange(_: any, selectedOptions: TriggerOption[]) {
-    setCurrentNotification((prev) => ({
+    setCurrentNotification(prev => ({
       ...prev,
-      triggers: selectedOptions.map(option => option.value)
-    }));
+      triggers: selectedOptions.map(option => option.value),
+    }))
   }
 
   async function editOrCreate() {
     if (formRef?.current) {
-      const isValid = await formRef?.current.validate();
+      const isValid = await formRef?.current.validate()
       if (isValid) {
         if (isCreation()) {
-          onCreate(currentNotification);
-        } else {
-          onEdit(currentNotification);
+          onCreate(currentNotification)
+        }
+        else {
+          onEdit(currentNotification)
         }
       }
       else {
@@ -107,16 +108,16 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
   }
 
   function deleteNotification() {
-    if(notification?.id) {
-      onDelete(notification);
+    if (notification?.id) {
+      onDelete(notification)
     }
   }
 
   async function testCreate() {
     if (formRef?.current) {
-      const isValid = await formRef?.current.validate();
+      const isValid = await formRef?.current.validate()
       if (isValid) {
-        await testMutation.mutateAsync(currentNotification);
+        await testMutation.mutateAsync(currentNotification)
       }
       else {
         formRef?.current.scrollToError()
@@ -126,7 +127,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
 
   function validateAppriseToken(value: string): string {
     if (value === '') {
-      return 'Field is required';
+      return 'Field is required'
     }
     const regex = /^\w*:\/\/.*$/
     if (value === undefined || !regex.test(value)) {
@@ -147,7 +148,11 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
           approvalText="Delete"
         />
         <div>
-          <Typography variant="h6">{isCreation() ? 'Add' : 'Edit'} Notification</Typography>
+          <Typography variant="h6">
+            {isCreation() ? 'Add' : 'Edit'}
+            {' '}
+            Notification
+          </Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
             {isCreation() ? 'Configure a new notification' : 'Edit an existing notification'}
           </Typography>
@@ -163,7 +168,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
             fullWidth
             name="name"
             value={currentNotification.name}
-            onChange={(event) => setCurrentNotification((prev) => ({
+            onChange={event => setCurrentNotification(prev => ({
               ...prev,
               name: event.target.value,
             }))}
@@ -172,18 +177,18 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
           <Autocomplete
             multiple
             options={triggerOptions}
-            getOptionLabel={(option) => option.label}
+            getOptionLabel={option => option.label}
             value={triggerOptions.filter(opt => currentNotification.triggers.includes(opt.value))}
             onChange={handleTriggerChange}
-            renderInput={(params) => (
+            renderInput={params => (
               <TextFieldForm
                 identifier="triggers"
-                className={`${currentNotification.triggers.length !== 0 ? "value-selected" : "no-value-selected"}`}
+                className={`${currentNotification.triggers.length !== 0 ? 'value-selected' : 'no-value-selected'}`}
                 {...params}
                 required
                 variant="filled"
                 label="Triggers"
-                validationValue={currentNotification.triggers.join(";")}
+                validationValue={currentNotification.triggers.join(';')}
                 helperText="Defines when a notification should be triggered"
               />
             )}
@@ -194,9 +199,15 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
 
         <div className="section">
           <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
-            Enterr uses <Link rel="noopener" href="https://github.com/caronc/apprise" target="_blank">
-            Apprise <ArrowTopRightOnSquareIcon className="icon-small" />
-          </Link> for notifications
+            Enterr uses
+            {' '}
+            <Link rel="noopener" href="https://github.com/caronc/apprise" target="_blank">
+              Apprise
+              {' '}
+              <ArrowTopRightOnSquareIcon className="icon-small" />
+            </Link>
+            {' '}
+            for notifications
           </Typography>
 
           <TextFieldForm
@@ -209,7 +220,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
             onValidate={validateAppriseToken}
             name="apprise_token"
             value={currentNotification.apprise_token}
-            onChange={(event) => setCurrentNotification((prev) => ({
+            onChange={event => setCurrentNotification(prev => ({
               ...prev,
               apprise_token: event.target.value,
             }))}
@@ -223,9 +234,9 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
             fullWidth
             name="title"
             value={currentNotification.title}
-            onChange={(event) => setCurrentNotification((prev) => ({
+            onChange={event => setCurrentNotification(prev => ({
               ...prev,
-              title: event.target.value
+              title: event.target.value,
             }))}
             helperText="Title is used as the subject of the notification"
           />
@@ -240,11 +251,21 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
             rows={10}
             name="body"
             value={currentNotification.body}
-            onChange={(event) => setCurrentNotification((prev) => ({
+            onChange={event => setCurrentNotification(prev => ({
               ...prev,
-              body: event.target.value
+              body: event.target.value,
             }))}
-            helperText={<>Body is used as the content of the notification. It can contain variables (See <Link rel="noopener" href="https://github.com/JonBunator/Enterr/wiki" target="_blank">Docs <ArrowTopRightOnSquareIcon className="icon-small" /></Link> for more information).</>}
+            helperText={(
+              <>
+                Body is used as the content of the notification. It can contain variables (See
+                <Link rel="noopener" href="https://github.com/JonBunator/Enterr/wiki" target="_blank">
+                  Docs
+                  <ArrowTopRightOnSquareIcon className="icon-small" />
+                </Link>
+                {' '}
+                for more information).
+              </>
+            )}
           />
         </div>
 
@@ -255,10 +276,10 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
           </div>
           <div className="button-group">
             <Button onClick={onCancel}>Cancel</Button>
-            <Button onClick={editOrCreate} variant="contained">{isCreation() ? "Create" : "Save"}</Button>
+            <Button onClick={editOrCreate} variant="contained">{isCreation() ? 'Create' : 'Save'}</Button>
           </div>
         </div>
       </div>
     </FormProvider>
-  );
+  )
 }

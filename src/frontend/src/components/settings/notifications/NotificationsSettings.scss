@@ -5,7 +5,8 @@
     margin-top: 24px;
     max-height: 100%;
     .table-row {
-      &:last-child td, &:last-child th {
+      &:last-child td,
+      &:last-child th {
         border: 0;
       }
       .skeleton-edit {

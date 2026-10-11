@@ -1,17 +1,17 @@
-import { AdjustmentsHorizontalIcon, ArrowRightEndOnRectangleIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import { AdjustmentsHorizontalIcon, ArrowRightEndOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { Chip, ListItemIcon, ListItemText, MenuItem, MenuList, Popover } from '@mui/material'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useLogoutUser, useUserData } from '../../api/hooks'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
 import './AccountButton.scss'
-import { useLogoutUser, useUserData } from "../../api/hooks";
 
 export default function AccountButton() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const navigate = useNavigate()
-  const { clear, error, loading } = useSnackbar();
+  const { clear, error, loading } = useSnackbar()
   const logoutMutation = useLogoutUser()
-  const { data: userData, isLoading: userDataLoading, error: userDataError } = useUserData();
+  const { data: userData, isLoading: userDataLoading, error: userDataError } = useUserData()
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -29,7 +29,7 @@ export default function AccountButton() {
     handleClose()
     loading('Logging out...')
     try {
-      await logoutMutation.mutateAsync();
+      await logoutMutation.mutateAsync()
       clear()
       await navigate('/login')
     }
@@ -38,13 +38,15 @@ export default function AccountButton() {
     }
   }
 
-  let chipLabel = "";
+  let chipLabel = ''
   if (userDataLoading) {
-    chipLabel = "Loading...";
-  } else if (userDataError || userData == null) {
-    chipLabel = "Unknown";
-  } else {
-    chipLabel = userData.username;
+    chipLabel = 'Loading...'
+  }
+  else if (userDataError || userData == null) {
+    chipLabel = 'Unknown'
+  }
+  else {
+    chipLabel = userData.username
   }
 
   return (
@@ -61,12 +63,12 @@ export default function AccountButton() {
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
+          vertical: 'top',
+          horizontal: 'right',
         }}
         style={{ marginTop: 8 }}
       >
@@ -86,5 +88,5 @@ export default function AccountButton() {
         </MenuList>
       </Popover>
     </div>
-  );
+  )
 }

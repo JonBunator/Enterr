@@ -27,7 +27,8 @@ export default function Search(props: SearchProps) {
       options={[]}
       inputValue={inputValue ?? ''}
       onInputChange={(_event, newValue, reason) => {
-        if (reason === 'reset') return
+        if (reason === 'reset')
+          return
         setInputValue(newValue)
 
         if (timer) {

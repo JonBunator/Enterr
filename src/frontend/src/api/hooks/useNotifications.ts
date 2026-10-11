@@ -1,11 +1,12 @@
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
+import type { UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
-import * as api from '../apiRequests'
 import type { Notification } from '../apiModels'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import * as api from '../apiRequests'
 
 // Query hooks
 export function useNotifications(
-  options?: Omit<UseQueryOptions<Notification[], AxiosError>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Notification[], AxiosError>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery<Notification[], AxiosError>({
     queryKey: ['notifications'],

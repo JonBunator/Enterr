@@ -1,4 +1,6 @@
+import type { AddEditWebsiteRef } from './AddEditWebsite.tsx'
 import type { ChangeWebsite } from './model.ts'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/16/solid'
 import {
   CheckCircleIcon,
   GlobeAltIcon,
@@ -13,18 +15,17 @@ import {
   Link,
   ListItemIcon,
   ListItemText,
-  MenuList,
   MenuItem,
+  MenuList,
   Popover,
   Tooltip,
   Typography,
 } from '@mui/material'
 import React, { useMemo, useRef, useState } from 'react'
-import { useDeleteWebsite, useEditWebsite, useAddManualLogin, useTriggerAutomaticLogin, useWebsite } from '../../api/hooks'
+import { useAddManualLogin, useDeleteWebsite, useEditWebsite, useTriggerAutomaticLogin, useWebsite } from '../../api/hooks'
 import ApprovalDialog from '../ApprovalDialog.tsx'
 import { useSnackbar } from '../provider/SnackbarProvider.tsx'
-import AddEditWebsite, { type AddEditWebsiteRef } from './AddEditWebsite.tsx'
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/16/solid";
+import AddEditWebsite from './AddEditWebsite.tsx'
 
 interface ActionsPopoverProps {
   websiteId: number
@@ -43,16 +44,17 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
   const editWebsiteDialogRef = useRef<AddEditWebsiteRef | null>(null)
 
   const { success, error, loading } = useSnackbar()
-  
+
   const deleteMutation = useDeleteWebsite()
   const editMutation = useEditWebsite()
   const addManualLoginMutation = useAddManualLogin()
   const triggerLoginMutation = useTriggerAutomaticLogin()
-  const { data: website, isLoading: loadingEditData } = useWebsite(websiteId);
+  const { data: website, isLoading: loadingEditData } = useWebsite(websiteId)
 
   // Transform Website to ChangeWebsite by removing id and next_schedule
   const editWebsiteValue = useMemo(() => {
-    if (!website) return undefined
+    if (!website)
+      return undefined
     const { next_schedule, id, ...rest } = website
     return rest
   }, [website])
@@ -91,10 +93,11 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
     handleClose()
     loading('Saving manual pages...')
     try {
-      await addManualLoginMutation.mutateAsync(websiteId);
-      success("Manual pages saved successfully");
-    } catch (e) {
-      error("Failed to save manual pages", (e as Error).message);
+      await addManualLoginMutation.mutateAsync(websiteId)
+      success('Manual pages saved successfully')
+    }
+    catch (e) {
+      error('Failed to save manual pages', (e as Error).message)
     }
   }
 
@@ -170,7 +173,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         onClose={() => setSaveWebsiteVisitDialogOpen(false)}
         onApproval={() => void handleAddManualLogin()}
         header="Save login"
-        description={
+        description={(
           <>
             <Typography>You manually visited the website </Typography>
             <Link rel="noopener" href={websiteURL}>
@@ -181,7 +184,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
               Do you want to save the potential login as successful?
             </Typography>
           </>
-        }
+        )}
       />
       <AddEditWebsite
         loading={loadingEditData}
@@ -190,32 +193,34 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         add={false}
         ref={editWebsiteDialogRef}
         onClose={() => handleEditCloseDialog()}
-        onChange={(value) => void handleEdit(value)}
+        onChange={value => void handleEdit(value)}
       />
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
+          vertical: 'top',
+          horizontal: 'right',
         }}
       >
         <MenuList>
           <MenuItem onClick={() => void handlePause()}>
             <ListItemIcon>
-              {editWebsiteValue?.paused ? (
-                <PlayCircleIcon className="icon" />
-              ) : (
-                <PauseCircleIcon className="icon" />
-              )}
+              {editWebsiteValue?.paused
+                ? (
+                    <PlayCircleIcon className="icon" />
+                  )
+                : (
+                    <PauseCircleIcon className="icon" />
+                  )}
             </ListItemIcon>
             <ListItemText
-              primary={`${editWebsiteValue?.paused ? "Resume" : "Pause"} automatic login`}
+              primary={`${editWebsiteValue?.paused ? 'Resume' : 'Pause'} automatic login`}
             />
           </MenuItem>
           <MenuItem
@@ -255,5 +260,5 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         </MenuList>
       </Popover>
     </>
-  );
+  )
 }

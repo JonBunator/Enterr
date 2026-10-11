@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import { CircularProgress, Typography } from "@mui/material";
+import type { ReactNode } from 'react'
+import { CircularProgress, Typography } from '@mui/material'
 import { Navigate } from 'react-router'
-import { useUserData } from "../../api/hooks"
+import { useUserData } from '../../api/hooks'
 import './ProtectedPage.scss'
 
 interface ProtectedPageProps {
@@ -15,10 +15,10 @@ export default function ProtectedPage(props: ProtectedPageProps) {
 
   if (isLoading) {
     return (
-    <div className="loading-container">
-      <CircularProgress size={64} />
-      <Typography>Loading...</Typography>
-    </div>
+      <div className="loading-container">
+        <CircularProgress size={64} />
+        <Typography>Loading...</Typography>
+      </div>
     )
   }
 

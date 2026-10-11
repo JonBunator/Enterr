@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { createContext, forwardRef, useCallback, useContext, useImperativeHandle, useMemo, useState } from 'react'
 
 interface Subscriber {
-  identifier: string;
-  callback: () => (boolean | Promise<boolean>);
+  identifier: string
+  callback: () => (boolean | Promise<boolean>)
 }
 
 interface FormContextType {
@@ -52,9 +52,9 @@ export const FormProvider = forwardRef<FormProviderRef, FormProviderProps>((prop
 
   const validate = async () => {
     const results = await Promise.all(
-      subscribers.map((subscriber) => subscriber.callback()),
-    );
-    return results.every((result) => result);
+      subscribers.map(async subscriber => subscriber.callback()),
+    )
+    return results.every(result => result)
   }
 
   const scrollToError = () => {

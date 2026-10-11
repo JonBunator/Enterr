@@ -19,10 +19,10 @@
 }
 
 .MuiPaper-root {
-  &:not(.MuiDialog-paper){
+  &:not(.MuiDialog-paper) {
     border: 1px solid #515151;
   }
-  box-shadow:  none !important;
+  box-shadow: none !important;
 }
 
 .row {
