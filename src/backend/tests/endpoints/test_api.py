@@ -6,7 +6,6 @@ from fastapi_pagination import add_pagination
 from dataAccess.data_access import DataAccess
 from endpoints.api.rest_endpoints import register_rest_endpoints
 from execution.notifications.notification_manager import NotificationManager
-from utils.exceptions import NotFoundException
 
 WEBSITE = {
     "url": "https://example.com/login",
@@ -113,6 +112,7 @@ def test_website_crud(auth_client, webhooks):
     # Delete
     assert auth_client.delete(f"/api/websites/{website_id}").status_code == 200
     assert auth_client.get("/api/websites").json()["items"] == []
+    assert auth_client.get(f"/api/websites/{website_id}").status_code == 404
 
     assert webhooks.login_data_changed.call_count == 3
 
@@ -133,9 +133,15 @@ def test_websites_of_other_users_are_hidden(auth_client, make_website, other_use
     foreign_website = make_website(owner=other_user)
 
     assert auth_client.get("/api/websites").json()["items"] == []
-    # NotFoundException is not mapped to an HTTP status code yet
-    with pytest.raises(NotFoundException):
-        auth_client.get(f"/api/websites/{foreign_website.id}")
+
+    response = auth_client.get(f"/api/websites/{foreign_website.id}")
+    assert response.status_code == 404
+    assert response.json() == {"detail": f"Website {foreign_website.id} not found"}
+
+    assert auth_client.delete(f"/api/websites/{foreign_website.id}").status_code == 404
+    assert auth_client.put(
+        f"/api/websites/{foreign_website.id}", json={"name": "Hijacked"}
+    ).status_code == 404
 
 
 def test_add_invalid_website_is_rejected(auth_client):
