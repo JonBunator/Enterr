@@ -1,101 +1,153 @@
+from datetime import datetime
+
 import pytest
 
-
-def test_unauthenticated_request_is_rejected(client):
-    assert client.get("/api/websites").status_code == 401
+from dataAccess.database.database import Website
 
 
-@pytest.fixture
-def created_website(auth_client, webhooks, website_payload):
-    """Website added through the API"""
-    response = auth_client.post("/api/websites", json=website_payload)
-    assert response.status_code == 200
-    webhooks.reset_mock()
-    return response.json()
+# ---------------------------- GET /api/websites ----------------------------
 
 
-def test_add_website(auth_client, webhooks, website_payload):
-    response = auth_client.post("/api/websites", json=website_payload)
+def test_get_websites(auth_client, make_website):
+    website = make_website()
 
-    assert response.status_code == 200
-    website = response.json()
-    assert website["name"] == "Example"
-    assert website["paused"] is False
-    assert website["next_schedule"] is not None
-    assert website["action_interval"]["date_minutes_start"] == 1440
-    webhooks.login_data_changed.assert_called_once()
-
-
-def test_get_websites(auth_client, created_website):
     response = auth_client.get("/api/websites")
 
     assert response.status_code == 200
-    assert [w["id"] for w in response.json()["items"]] == [created_website["id"]]
+    assert [w["id"] for w in response.json()["items"]] == [website.id]
 
 
-def test_get_website(auth_client, created_website):
-    response = auth_client.get(f"/api/websites/{created_website['id']}")
-
-    assert response.status_code == 200
-    assert response.json() == created_website
+def test_get_websites_unauthenticated(client):
+    assert client.get("/api/websites").status_code == 401
 
 
-def test_edit_website(auth_client, webhooks, created_website):
-    website_id = created_website["id"]
+def test_get_websites_hides_other_users_websites(auth_client, make_website, other_user):
+    make_website(owner=other_user)
 
-    response = auth_client.put(
-        f"/api/websites/{website_id}", json={"name": "Renamed", "paused": True}
-    )
+    response = auth_client.get("/api/websites")
 
-    assert response.status_code == 200
-    website = auth_client.get(f"/api/websites/{website_id}").json()
-    assert website["name"] == "Renamed"
-    assert website["paused"] is True
-    assert website["next_schedule"] is None
-    webhooks.login_data_changed.assert_called_once()
+    assert response.json()["items"] == []
 
 
-def test_delete_website(auth_client, webhooks, created_website):
-    website_id = created_website["id"]
-
-    response = auth_client.delete(f"/api/websites/{website_id}")
-
-    assert response.status_code == 200
-    assert auth_client.get("/api/websites").json()["items"] == []
-    assert auth_client.get(f"/api/websites/{website_id}").status_code == 404
-    webhooks.login_data_changed.assert_called_once()
-
-
-def test_website_search(auth_client, website_payload):
-    auth_client.post("/api/websites", json=website_payload)
-    auth_client.post(
-        "/api/websites",
-        json=website_payload | {"name": "Other", "url": "https://other.org/login"},
-    )
+def test_get_websites_search(auth_client, make_website):
+    make_website(name="Example")
+    make_website(name="Other", url="https://other.org/login")
 
     response = auth_client.get("/api/websites", params={"search": "other"})
 
     assert [w["name"] for w in response.json()["items"]] == ["Other"]
 
 
-def test_websites_of_other_users_are_hidden(auth_client, make_website, other_user):
-    foreign_website = make_website(owner=other_user)
+# ---------------------------- GET /api/websites/{id} ----------------------------
 
-    assert auth_client.get("/api/websites").json()["items"] == []
 
-    response = auth_client.get(f"/api/websites/{foreign_website.id}")
+def test_get_website(auth_client, make_website):
+    website = make_website()
+
+    response = auth_client.get(f"/api/websites/{website.id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == website.id
+    assert body["name"] == "Example"
+    assert body["url"] == "https://example.com/login"
+    assert body["action_interval"]["date_minutes_start"] == 1440
+
+
+def test_get_website_of_other_user_returns_404(auth_client, make_website, other_user):
+    website = make_website(owner=other_user)
+
+    response = auth_client.get(f"/api/websites/{website.id}")
+
     assert response.status_code == 404
-    assert response.json() == {"detail": f"Website {foreign_website.id} not found"}
-
-    assert auth_client.delete(f"/api/websites/{foreign_website.id}").status_code == 404
-    assert auth_client.put(
-        f"/api/websites/{foreign_website.id}", json={"name": "Hijacked"}
-    ).status_code == 404
+    assert response.json() == {"detail": f"Website {website.id} not found"}
 
 
-def test_add_invalid_website_is_rejected(auth_client):
+# ---------------------------- POST /api/websites ----------------------------
+
+
+def test_add_website(auth_client, session, user, webhooks, website_payload):
+    response = auth_client.post("/api/websites", json=website_payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Example"
+    assert body["paused"] is False
+    assert body["next_schedule"] is not None
+
+    website = session.get(Website, body["id"])
+    assert website.user == user.id
+    assert website.action_interval.date_minutes_start == 1440
+    webhooks.login_data_changed.assert_called_once()
+
+
+def test_add_invalid_website_is_rejected(auth_client, session, webhooks):
     response = auth_client.post("/api/websites", json={"name": "Missing fields"})
+
     assert response.status_code == 422
+    assert session.query(Website).count() == 0
+    webhooks.login_data_changed.assert_not_called()
+
+
+# ---------------------------- PUT /api/websites/{id} ----------------------------
+
+
+def test_edit_website(auth_client, session, make_website, webhooks):
+    website = make_website(next_schedule=datetime(2030, 1, 1))
+
+    response = auth_client.put(
+        f"/api/websites/{website.id}", json={"name": "Renamed", "paused": True}
+    )
+
+    assert response.status_code == 200
+    session.expire_all()
+    website = session.get(Website, website.id)
+    assert website.name == "Renamed"
+    assert website.paused is True
+    assert website.next_schedule is None
+    webhooks.login_data_changed.assert_called_once()
+
+
+def test_edit_website_of_other_user_returns_404(
+    auth_client, session, make_website, other_user, webhooks
+):
+    website = make_website(owner=other_user)
+
+    response = auth_client.put(f"/api/websites/{website.id}", json={"name": "Hijacked"})
+
+    assert response.status_code == 404
+    session.expire_all()
+    assert session.get(Website, website.id).name == "Example"
+    webhooks.login_data_changed.assert_not_called()
+
+
+# ---------------------------- DELETE /api/websites/{id} ----------------------------
+
+
+def test_delete_website(auth_client, session, make_website, webhooks):
+    website = make_website()
+
+    response = auth_client.delete(f"/api/websites/{website.id}")
+
+    assert response.status_code == 200
+    session.expire_all()
+    assert session.query(Website).count() == 0
+    webhooks.login_data_changed.assert_called_once()
+
+
+def test_delete_website_of_other_user_returns_404(
+    auth_client, session, make_website, other_user, webhooks
+):
+    website = make_website(owner=other_user)
+
+    response = auth_client.delete(f"/api/websites/{website.id}")
+
+    assert response.status_code == 404
+    assert session.query(Website).count() == 1
+    webhooks.login_data_changed.assert_not_called()
+
+
+# ---------------------- POST /api/websites/check_custom_login_script ----------------------
 
 
 @pytest.mark.parametrize(
