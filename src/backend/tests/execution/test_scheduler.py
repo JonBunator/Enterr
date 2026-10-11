@@ -17,6 +17,7 @@ from execution.scheduler import Scheduler
 def _website(**overrides) -> Website:
     values = dict(
         id=5,
+        user=7,
         url="https://example.com/login",
         success_url="https://example.com/home",
         name="Example",
@@ -134,6 +135,7 @@ def test_login_task_success(scheduler, data_access, get_website, mocker):
     data_access.set_next_schedule.assert_called_once_with(5)
     add_kwargs = data_access.add_action_history.call_args.kwargs
     assert add_kwargs["website_id"] == 5
+    assert add_kwargs["user_id"] == 7
     assert add_kwargs["action_history"].execution_status == ActionStatusCode.IN_PROGRESS
     login.assert_called_once_with(
         url="https://example.com/login",
@@ -145,6 +147,7 @@ def test_login_task_success(scheduler, data_access, get_website, mocker):
     )
     data_access.action_history_finish_execution.assert_called_once_with(
         action_history_id=42,
+        user_id=7,
         execution_status=ActionStatusCode.SUCCESS,
         failed_details=None,
         custom_failed_details_message=None,
@@ -163,6 +166,7 @@ def test_login_task_failure(scheduler, data_access, get_website, mocker):
 
     data_access.action_history_finish_execution.assert_called_once_with(
         action_history_id=42,
+        user_id=7,
         execution_status=ActionStatusCode.FAILED,
         failed_details=ActionFailedDetails.PASSWORD_FIELD_NOT_FOUND,
         custom_failed_details_message="details",

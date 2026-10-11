@@ -65,7 +65,7 @@ class Scheduler:
             execution_status=ActionStatusCode.IN_PROGRESS,
         )
         action_history_id = self.data_access.add_action_history(
-            website_id=website.id, action_history=action_history
+            website_id=website.id, user_id=website.user, action_history=action_history
         )
 
         self.login_live_view.start(action_history_id)
@@ -91,6 +91,7 @@ class Scheduler:
             failed_details = status.value
         self.data_access.action_history_finish_execution(
             action_history_id=action_history_id,
+            user_id=website.user,
             execution_status=ActionStatusCode(executions_status.value),
             failed_details=failed_details,
             custom_failed_details_message=custom_failed_details_message,

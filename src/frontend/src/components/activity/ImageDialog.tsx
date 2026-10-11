@@ -1,5 +1,5 @@
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { Dialog, DialogContent, IconButton } from '@mui/material'
+import { CircularProgress, Dialog, DialogContent, IconButton, Typography } from '@mui/material'
 import LiveFeed from './LiveFeed.tsx'
 import Screenshot from './Screenshot.tsx'
 import './ImageDialog.scss'
@@ -8,14 +8,16 @@ interface ImageDialogProps {
   open?: boolean
   onClose?: () => void
   screenshotId: string | null
+  screenshotPending?: boolean
   liveActionHistoryId?: number
 
 }
 
 export default function ImageDialog(props: ImageDialogProps) {
-  const { open, onClose, screenshotId, liveActionHistoryId } = props
+  const { open, onClose, screenshotId, screenshotPending, liveActionHistoryId } = props
 
-  const dialogOpen = ((screenshotId !== null || liveActionHistoryId !== undefined) && open) ?? false
+  // Must not depend on the content, otherwise the dialog closes when a running login finishes
+  const dialogOpen = open ?? false
 
   function renderContent() {
     if (liveActionHistoryId !== undefined) {
@@ -24,7 +26,14 @@ export default function ImageDialog(props: ImageDialogProps) {
     if (screenshotId !== null) {
       return <Screenshot screenshotId={screenshotId} />
     }
-    return []
+    if (screenshotPending) {
+      return (
+        <div className="image-dialog-loading">
+          <CircularProgress />
+        </div>
+      )
+    }
+    return <Typography className="image-dialog-message">No screenshot available</Typography>
   }
 
   return (
