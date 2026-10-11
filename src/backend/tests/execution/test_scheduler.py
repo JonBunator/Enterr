@@ -9,7 +9,7 @@ from dataAccess.database.database import (
     ActionStatusCode,
     Website,
 )
-from execution.live_view import LiveView
+from execution.login_live_view import LoginLiveView
 from execution.login.constants import LoginStatusCode
 from execution.scheduler import Scheduler
 
@@ -39,16 +39,16 @@ def data_access(mocker):
 
 
 @pytest.fixture
-def live_view(mocker):
-    return mocker.Mock(spec=LiveView)
+def login_live_view(mocker):
+    return mocker.Mock(spec=LoginLiveView)
 
 
 @pytest.fixture
-def scheduler(data_access, webhooks, live_view, mocker):
+def scheduler(data_access, webhooks, login_live_view, mocker):
     scheduler = Scheduler(
         data_access_internal=data_access,
         webhook_endpoints=webhooks,
-        live_view=live_view,
+        login_live_view=login_live_view,
     )
     mocker.patch.object(scheduler.scheduler, "add_job")
     mocker.patch.object(scheduler.scheduler, "remove_job")
@@ -184,13 +184,13 @@ def test_login_task_with_screenshot(scheduler, data_access, get_website, mocker)
     assert finish_kwargs["screenshot_id"] == screenshot_id
 
 
-def test_login_task_live_view_covers_the_login(
-    scheduler, data_access, get_website, live_view, mocker
+def test_login_live_view_covers_the_login_task(
+    scheduler, data_access, get_website, login_live_view, mocker
 ):
     get_website.return_value = _website()
     calls = mocker.Mock()
-    calls.attach_mock(live_view.start, "start")
-    calls.attach_mock(live_view.stop, "stop")
+    calls.attach_mock(login_live_view.start, "start")
+    calls.attach_mock(login_live_view.stop, "stop")
     calls.attach_mock(
         mocker.patch(
             "execution.scheduler.login", return_value=(LoginStatusCode.SUCCESS, None)
@@ -201,12 +201,12 @@ def test_login_task_live_view_covers_the_login(
     scheduler._login_task(5)
 
     assert [c[0] for c in calls.mock_calls] == ["start", "login", "stop"]
-    live_view.start.assert_called_once_with(42)
-    live_view.stop.assert_called_once_with(42)
+    login_live_view.start.assert_called_once_with(42)
+    login_live_view.stop.assert_called_once_with(42)
 
 
-def test_login_task_stops_live_view_when_login_raises(
-    scheduler, data_access, get_website, live_view, mocker
+def test_login_task_stops_login_live_view_when_login_raises(
+    scheduler, data_access, get_website, login_live_view, mocker
 ):
     get_website.return_value = _website()
     mocker.patch("execution.scheduler.login", side_effect=RuntimeError("boom"))
@@ -214,7 +214,7 @@ def test_login_task_stops_live_view_when_login_raises(
     with pytest.raises(RuntimeError):
         scheduler._login_task(5)
 
-    live_view.stop.assert_called_once_with(42)
+    login_live_view.stop.assert_called_once_with(42)
     data_access.action_history_finish_execution.assert_not_called()
 
 

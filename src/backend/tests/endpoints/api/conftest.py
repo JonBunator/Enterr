@@ -8,7 +8,7 @@ from fastapi_pagination import add_pagination
 from dataAccess.data_access import DataAccess
 from dataAccess.database.database import ActionHistory, Notification, User
 from endpoints.api.rest_endpoints import register_rest_endpoints
-from execution.live_view import LiveView
+from execution.login_live_view import LoginLiveView
 from execution.notifications.notification_manager import NotificationManager
 from utils.security import create_access_token
 
@@ -19,23 +19,23 @@ def notification_manager(mocker):
 
 
 @pytest.fixture
-def live_view():
-    live_view = LiveView()
-    yield live_view
-    active = live_view._active
+def login_live_view():
+    login_live_view = LoginLiveView()
+    yield login_live_view
+    active = login_live_view._active
     if active is not None:
-        live_view.stop(active.action_history_id)
+        login_live_view.stop(active.action_history_id)
 
 
 @pytest.fixture
-def app(session_factory, webhooks, notification_manager, live_view):
+def app(session_factory, webhooks, notification_manager, login_live_view):
     """App with all REST endpoints, without the side effects of main.py"""
     app = FastAPI()
     register_rest_endpoints(
         app=app,
         data_access=DataAccess(webhook_endpoints=webhooks),
         notification_manager=notification_manager,
-        live_view=live_view,
+        login_live_view=login_live_view,
     )
     add_pagination(app)
     return app

@@ -44,7 +44,7 @@ class LiveSession:
             self._frame = None
 
 
-class LiveView:
+class LoginLiveView:
     """
     Captures the virtual display while a login is running and hands the frames to
     the viewers of that login. The scheduler runs one login at a time and calls
@@ -61,7 +61,7 @@ class LiveView:
             previous = self._active
             self._active = LiveSession(action_history_id)
         if previous is not None:
-            LiveView._close_session(previous)
+            LoginLiveView._close_session(previous)
 
     def stop(self, action_history_id: int):
         with self._lock:
@@ -69,7 +69,7 @@ class LiveView:
             if session is None or session.action_history_id != action_history_id:
                 return
             self._active = None
-        LiveView._close_session(session)
+        LoginLiveView._close_session(session)
 
     def subscribe(self, action_history_id: int) -> LiveSession | None:
         with self._lock:
@@ -83,7 +83,7 @@ class LiveView:
             # Capture only while someone is watching, all viewers share one capture
             if not session.capture_started:
                 session.capture_started = True
-                LiveView._start_capture(session)
+                LoginLiveView._start_capture(session)
             return session
 
     @staticmethod
@@ -116,7 +116,7 @@ class LiveView:
     def _start_capture(session: LiveSession):
         try:
             session.process = subprocess.Popen(
-                LiveView._ffmpeg_command(),
+                LoginLiveView._ffmpeg_command(),
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
@@ -125,7 +125,7 @@ class LiveView:
             print(f"Could not start live view capture: {exception!r}")
             return
         session.reader_thread = threading.Thread(
-            target=LiveView._read_frames,
+            target=LoginLiveView._read_frames,
             args=(session, session.process.stdout),
             daemon=True,
         )

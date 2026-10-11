@@ -12,11 +12,11 @@ from endpoints.models.action_history_model import (
     GetActionHistory,
     GetLastSuccessfulLogin,
 )
-from execution.live_view import FRAME_RATE, LiveView
+from execution.login_live_view import FRAME_RATE, LoginLiveView
 
 
 def register_action_history_endpoints(
-    app: FastAPI, data_access: DataAccess, live_view: LiveView
+    app: FastAPI, data_access: DataAccess, login_live_view: LoginLiveView
 ):
     # ---------------------------- GET ----------------------------
     @app.get(
@@ -68,7 +68,7 @@ def register_action_history_endpoints(
         "/api/action_history/{action_history_id}/live",
         tags=["Action History"],
     )
-    def get_live_view(
+    def get_login_live_view(
         action_history_id: int,
         request: Request,
         current_user=Depends(DataAccess.get_current_user),
@@ -79,7 +79,7 @@ def register_action_history_endpoints(
         # Raises a 404 if the action history does not belong to the current user
         DataAccess.get_action_history(action_history_id, current_user)
 
-        live_session = live_view.subscribe(action_history_id)
+        live_session = login_live_view.subscribe(action_history_id)
         if live_session is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

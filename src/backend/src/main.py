@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from dataAccess.database.database_events import register_database_events
 from endpoints.api.rest_endpoints import register_rest_endpoints
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
-from execution.live_view import LiveView
+from execution.login_live_view import LoginLiveView
 from execution.scheduler import Scheduler
 
 load_dotenv()
@@ -30,7 +30,7 @@ webhook_endpoints = WebhookEndpoints()
 data_access = DataAccess(webhook_endpoints=webhook_endpoints)
 data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
 notification_manager = NotificationManager(data_access=data_access_internal)
-live_view = LiveView()
+login_live_view = LoginLiveView()
 
 
 @asynccontextmanager
@@ -41,7 +41,7 @@ async def lifespan(_app: FastAPI):
     scheduler = Scheduler(
         data_access_internal=data_access_internal,
         webhook_endpoints=webhook_endpoints,
-        live_view=live_view,
+        login_live_view=login_live_view,
     )
     register_database_events(
         scheduler=scheduler, notification_manager=notification_manager
@@ -76,7 +76,7 @@ register_rest_endpoints(
     app=app,
     data_access=data_access,
     notification_manager=notification_manager,
-    live_view=live_view,
+    login_live_view=login_live_view,
 )
 
 add_pagination(app)

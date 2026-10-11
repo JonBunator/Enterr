@@ -10,7 +10,7 @@ from pytz import utc
 from dataAccess.data_access_internal import DataAccessInternal
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
-from execution.live_view import LiveView
+from execution.login_live_view import LoginLiveView
 from execution.login.login import LoginStatusCode, login
 
 
@@ -19,11 +19,11 @@ class Scheduler:
         self,
         data_access_internal: DataAccessInternal,
         webhook_endpoints: WebhookEndpoints,
-        live_view: LiveView,
+        login_live_view: LoginLiveView,
     ):
         self.data_access = data_access_internal
         self.webhook_endpoints = webhook_endpoints
-        self.live_view = live_view
+        self.login_live_view = login_live_view
         self.scheduler = AsyncIOScheduler(
             executors={"default": ThreadPoolExecutor(1)}, timezone=utc
         )
@@ -68,7 +68,7 @@ class Scheduler:
             website_id=website.id, action_history=action_history
         )
 
-        self.live_view.start(action_history_id)
+        self.login_live_view.start(action_history_id)
         try:
             # login
             status, custom_failed_details_message = login(
@@ -82,7 +82,7 @@ class Scheduler:
         finally:
             # Must happen before the next login can start, so no viewer of this
             # login ever sees the display of another login
-            self.live_view.stop(action_history_id)
+            self.login_live_view.stop(action_history_id)
 
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
