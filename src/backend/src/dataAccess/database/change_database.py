@@ -209,7 +209,11 @@ class DataBase:
         session = db_session.get()
         action_history = (
             session.query(ActionHistory)
-            .filter_by(id=action_history_id, user=current_user.id)
+            .join(Website, ActionHistory.website == Website.id)
+            .filter(
+                ActionHistory.id == action_history_id,
+                Website.user == current_user.id,
+            )
             .first()
         )
         if action_history:
