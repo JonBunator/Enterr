@@ -136,7 +136,7 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
         >
           {isRunning
             ? (
-                <LiveFeed actionHistoryId={loginHistory.id} />
+                <LiveFeed key={loginHistory.id} actionHistoryId={loginHistory.id} />
               )
             : loginHistory.screenshot_id !== null && screenshot.available
               ? (

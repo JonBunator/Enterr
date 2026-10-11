@@ -21,7 +21,7 @@ export default function ImageDialog(props: ImageDialogProps) {
 
   function renderContent() {
     if (liveActionHistoryId !== undefined) {
-      return <LiveFeed actionHistoryId={liveActionHistoryId} />
+      return <LiveFeed key={liveActionHistoryId} actionHistoryId={liveActionHistoryId} />
     }
     if (screenshotId !== null) {
       return <Screenshot screenshotId={screenshotId} />
