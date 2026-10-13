@@ -1,5 +1,5 @@
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useState } from 'react'
 
 interface WebsiteNameProps {
@@ -34,7 +34,7 @@ export default function WebsiteName(props: WebsiteNameProps) {
     <div className="website-name">
       {faviconSrc !== null && !faviconFailed
         ? <img className="favicon" src={faviconSrc} alt="" referrerPolicy="no-referrer" onError={() => setFaviconFailed(true)} />
-        : <GlobeAltIcon className="favicon" />}
+        : <Box component={GlobeAltIcon} className="favicon" sx={{ color: 'text.secondary' }} />}
       <div className="text">
         <Typography className="name" sx={{ fontSize: 14 }}>
           {name}

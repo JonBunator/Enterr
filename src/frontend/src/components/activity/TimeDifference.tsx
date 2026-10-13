@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import './TimeDifference.scss'
 
@@ -74,9 +74,9 @@ export default function TimeDifference(props: TimeDifferenceProps) {
           </Tooltip>
         )
       : (
-          <div>
+          <Box sx={formattedTime === negativeDifference ? { color: 'text.secondary' } : undefined}>
             {formattedTime}
-          </div>
+          </Box>
         )
   )
 }

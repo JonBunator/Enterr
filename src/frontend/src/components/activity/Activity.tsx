@@ -1,6 +1,6 @@
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import type { ActivityData } from './model.ts'
-import { Card, CardContent, Typography } from '@mui/material'
+import { Box, Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
 import { useActivity } from '../../api/hooks'
@@ -126,7 +126,7 @@ export default function Activity(props: ActivityProps) {
                 />
               )
             : (
-                'No logins yet'
+                <Box sx={{ color: 'text.secondary' }}>No logins yet</Box>
               ),
       },
       {

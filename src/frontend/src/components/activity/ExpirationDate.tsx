@@ -13,7 +13,7 @@ export default function ExpirationDate(props: ExpirationDateProps) {
 
   if (expirationDate === undefined) {
     return (
-      <Typography sx={{ fontSize: 14 }}>
+      <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
         Unknown
       </Typography>
     )
