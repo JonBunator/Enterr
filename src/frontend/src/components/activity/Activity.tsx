@@ -7,8 +7,10 @@ import { useActivity } from '../../api/hooks'
 import ActionsPopover from './ActionsPopover.tsx'
 import ActivityStatus from './ActivityStatus.tsx'
 import EmptyState from './EmptyState.tsx'
+import ExpirationDate from './ExpirationDate.tsx'
 import LoginHistoryDetails from './LoginHistoryDetails.tsx'
 import TimeDifference from './TimeDifference.tsx'
+import WebsiteName from './WebsiteName.tsx'
 import './Activity.scss'
 
 interface ActivityProps {
@@ -63,21 +65,37 @@ export default function Activity(props: ActivityProps) {
         field: 'status',
         headerName: 'Status',
         flex: 1,
-        minWidth: 250,
+        minWidth: 220,
         sortable: true,
         renderCell: params => (
           <ActivityStatus
             status={params.row.status}
-            expirationDate={params.row.expirationDate}
           />
         ),
       },
       {
-        field: 'name',
-        headerName: 'Name',
+        field: 'website',
+        headerName: 'Website',
         flex: 1,
-        minWidth: 150,
+        minWidth: 200,
         sortable: true,
+        renderCell: params => (
+          <WebsiteName
+            key={params.row.url}
+            name={params.row.name}
+            url={params.row.url}
+          />
+        ),
+      },
+      {
+        field: 'expiration',
+        headerName: 'Expiration',
+        flex: 1,
+        minWidth: 100,
+        sortable: false,
+        renderCell: params => (
+          <ExpirationDate expirationDate={params.row.expirationDate} />
+        ),
       },
       {
         field: 'nextLogin',
@@ -87,7 +105,6 @@ export default function Activity(props: ActivityProps) {
         sortable: true,
         renderCell: params => (
           <TimeDifference
-            prefix=""
             datetime={params.row.nextLogin}
             tooltip
             negativeDifference="No login scheduled"
@@ -104,7 +121,6 @@ export default function Activity(props: ActivityProps) {
           params.row.lastLoginAttempt !== undefined
             ? (
                 <TimeDifference
-                  prefix=""
                   tooltip
                   datetime={params.row.lastLoginAttempt}
                 />

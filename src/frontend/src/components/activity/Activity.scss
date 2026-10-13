@@ -25,13 +25,27 @@
     flex-direction: row;
     gap: 0.5rem;
 
-    .next-run {
-      line-height: 0.9rem;
+  }
+
+  .website-name {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+
+    .favicon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      object-fit: contain;
     }
 
-    .expiration {
-      font-weight: 500;
+    .name,
+    .host {
       line-height: 0.9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
