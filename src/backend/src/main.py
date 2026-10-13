@@ -1,10 +1,8 @@
 import asyncio
 import os
 from fastapi import FastAPI, WebSocket
-from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
 from execution.notifications.notification_manager import NotificationManager
 from dataAccess.data_access_internal import DataAccessInternal
@@ -74,13 +72,4 @@ add_pagination(app)
 
 # Serve React frontend in production
 if not dev_mode:
-    app.mount(
-        "/assets", StaticFiles(directory="/app/frontend/dist/assets"), name="assets"
-    )
-
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        file_path = f"/app/frontend/dist/{full_path}"
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse("/app/frontend/dist/index.html")
+    app.frontend("/", directory="/app/frontend/dist", fallback="index.html")
