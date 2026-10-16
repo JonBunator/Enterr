@@ -7,7 +7,7 @@ pydantic==2.13.5
 APScheduler==3.11.3
 pytz==2026.5
 apprise==2.0.1
-fastapi[standard]==0.141.1
+fastapi[standard]==0.143.3
 python-jose[cryptography]==3.5.0
 Werkzeug==3.1.9
 sqlcipher3-wheels==0.5.7
