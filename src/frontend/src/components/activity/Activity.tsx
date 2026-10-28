@@ -122,8 +122,8 @@ export default function Activity(props: ActivityProps) {
         renderCell: params =>
           params.row.loginHistory !== null && (
             <div className="login-history">
-              {params.row.loginHistory.slice(0, 3).map((lh, index) => (
-                <LoginHistoryDetails key={index} loginHistory={lh} />
+              {params.row.loginHistory.slice(0, 3).map(lh => (
+                <LoginHistoryDetails key={lh.id} loginHistory={lh} />
               ))}
               {params.row.loginHistory.length > 3 && (
                 <Typography>...</Typography>

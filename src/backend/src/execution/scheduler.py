@@ -10,6 +10,7 @@ from pytz import utc
 from dataAccess.data_access_internal import DataAccessInternal
 from dataAccess.database.database import ActionHistory, ActionStatusCode
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
+from execution.login_live_view import LoginLiveView
 from execution.login.login import LoginStatusCode, login
 
 
@@ -18,9 +19,11 @@ class Scheduler:
         self,
         data_access_internal: DataAccessInternal,
         webhook_endpoints: WebhookEndpoints,
+        login_live_view: LoginLiveView,
     ):
         self.data_access = data_access_internal
         self.webhook_endpoints = webhook_endpoints
+        self.login_live_view = login_live_view
         self.scheduler = AsyncIOScheduler(
             executors={"default": ThreadPoolExecutor(1)}, timezone=utc
         )
@@ -62,18 +65,25 @@ class Scheduler:
             execution_status=ActionStatusCode.IN_PROGRESS,
         )
         action_history_id = self.data_access.add_action_history(
-            website_id=website.id, action_history=action_history
+            website_id=website.id, user_id=website.user, action_history=action_history
         )
 
-        # login
-        status, custom_failed_details_message = login(
-            url=url,
-            success_url=success_url,
-            username=username,
-            password=password,
-            custom_login_script=website.custom_login_script,
-            screenshot_id=screenshot_id,
-        )
+        self.login_live_view.start(action_history_id)
+        try:
+            # login
+            status, custom_failed_details_message = login(
+                url=url,
+                success_url=success_url,
+                username=username,
+                password=password,
+                custom_login_script=website.custom_login_script,
+                screenshot_id=screenshot_id,
+            )
+        finally:
+            # Must happen before the next login can start, so no viewer of this
+            # login ever sees the display of another login
+            self.login_live_view.stop(action_history_id)
+
         executions_status = LoginStatusCode.SUCCESS
         failed_details = None
         if status != LoginStatusCode.SUCCESS:
@@ -81,6 +91,7 @@ class Scheduler:
             failed_details = status.value
         self.data_access.action_history_finish_execution(
             action_history_id=action_history_id,
+            user_id=website.user,
             execution_status=ActionStatusCode(executions_status.value),
             failed_details=failed_details,
             custom_failed_details_message=custom_failed_details_message,
