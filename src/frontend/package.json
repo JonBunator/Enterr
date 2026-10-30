@@ -25,7 +25,7 @@
     "@tanstack/react-query-devtools": "5.105.0",
     "@uiw/codemirror-theme-vscode": "4.25.12",
     "@uiw/react-codemirror": "4.25.12",
-    "axios": "1.20.0",
+    "axios": "1.21.0",
     "dayjs": "1.11.23",
     "framer-motion": "13.5.1",
     "react": "19.3.1",
