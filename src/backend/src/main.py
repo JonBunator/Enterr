@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from dataAccess.database.database_events import register_database_events
 from endpoints.api.rest_endpoints import register_rest_endpoints
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
+from execution.login_live_view import LoginLiveView
 from execution.scheduler import Scheduler
 
 load_dotenv()
@@ -27,6 +28,7 @@ webhook_endpoints = WebhookEndpoints()
 data_access = DataAccess(webhook_endpoints=webhook_endpoints)
 data_access_internal = DataAccessInternal(webhook_endpoints=webhook_endpoints)
 notification_manager = NotificationManager(data_access=data_access_internal)
+login_live_view = LoginLiveView()
 
 
 @asynccontextmanager
@@ -34,7 +36,11 @@ async def lifespan(_app: FastAPI):
     # Uvicorn may import this module before its event loop runs,
     # so the loop has to be captured here instead of at import time
     webhook_endpoints.set_event_loop(asyncio.get_running_loop())
-    scheduler = Scheduler(data_access_internal=data_access_internal, webhook_endpoints=webhook_endpoints)
+    scheduler = Scheduler(
+        data_access_internal=data_access_internal,
+        webhook_endpoints=webhook_endpoints,
+        login_live_view=login_live_view,
+    )
     register_database_events(
         scheduler=scheduler, notification_manager=notification_manager
     )
@@ -65,7 +71,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 register_rest_endpoints(
-    app=app, data_access=data_access, notification_manager=notification_manager
+    app=app,
+    data_access=data_access,
+    notification_manager=notification_manager,
+    login_live_view=login_live_view,
 )
 
 add_pagination(app)

@@ -221,6 +221,24 @@ class DataBase:
         raise NotFoundException(f"ActionHistory {action_history_id} not found")
 
     @staticmethod
+    def get_action_history_by_screenshot(
+        screenshot_id: str, current_user: User
+    ) -> ActionHistory:
+        session = db_session.get()
+        action_history = (
+            session.query(ActionHistory)
+            .join(Website, ActionHistory.website == Website.id)
+            .filter(
+                ActionHistory.screenshot_id == screenshot_id,
+                Website.user == current_user.id,
+            )
+            .first()
+        )
+        if action_history:
+            return action_history
+        raise NotFoundException(f"Screenshot {screenshot_id} not found")
+
+    @staticmethod
     def get_last_successful_login(
         website_id: int, current_user: User
     ) -> ActionHistory | None:
@@ -319,6 +337,12 @@ class DataBase:
     def get_user(username: str) -> User:
         with get_db_session() as session:
             return session.query(User).filter_by(username=username).first()
+
+    @staticmethod
+    def get_website_owner_id(website_id: int) -> int | None:
+        with get_db_session() as session:
+            website = session.get(Website, website_id)
+            return website.user if website else None
 
     @staticmethod
     def get_website_by_id(website_id: int) -> Website:

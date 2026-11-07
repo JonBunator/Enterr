@@ -53,18 +53,18 @@ class DataAccess:
     def add_website(self, request: AddWebsite, current_user: User) -> GetWebsite:
         website = request.to_sql_model()
         created_website = DataBase.add_website(website, current_user)
-        self.webhook_endpoints.login_data_changed()
+        self.webhook_endpoints.login_data_changed(current_user.id)
         return GetWebsite.from_sql_model(created_website)
 
     def edit_website(self, website_id: int, request: EditWebsite, current_user: User):
         existing_website = DataBase.get_website(website_id, current_user)
         website = request.edit_existing_model(existing_website)
         DataBase.edit_website(website, current_user)
-        self.webhook_endpoints.login_data_changed()
+        self.webhook_endpoints.login_data_changed(current_user.id)
 
     def delete_website(self, website_id: int, current_user: User):
         DataBase.delete_website(website_id, current_user)
-        self.webhook_endpoints.login_data_changed()
+        self.webhook_endpoints.login_data_changed(current_user.id)
 
     def add_manual_action_history(self, website_id: int, current_user: User):
         action_history = ActionHistory(
@@ -78,6 +78,7 @@ class DataAccess:
         self.webhook_endpoints.action_history_changed(
             action_history_id=created_action_history.id,
             website_id=website_id,
+            user_id=current_user.id,
         )
         return created_action_history
 
@@ -86,7 +87,7 @@ class DataAccess:
     ) -> Notification:
         notification = request.to_sql_model()
         notification = DataBase.add_notification(notification, current_user)
-        self.webhook_endpoints.notifications_changed()
+        self.webhook_endpoints.notifications_changed(current_user.id)
         return notification
 
     def edit_notification(
@@ -95,12 +96,12 @@ class DataAccess:
         existing_notification = DataBase.get_notification(notification_id, current_user)
         notification = request.edit_existing_model(existing_notification)
         DataBase.edit_notification(notification, current_user)
-        self.webhook_endpoints.notifications_changed()
+        self.webhook_endpoints.notifications_changed(current_user.id)
 
     def delete_notification(self, notification_id: int, current_user: User):
         notification = DataBase.get_notification(notification_id, current_user)
         DataBase.delete_notification(notification, current_user)
-        self.webhook_endpoints.notifications_changed()
+        self.webhook_endpoints.notifications_changed(current_user.id)
 
     @staticmethod
     def trigger_login(website_id, current_user: User):
@@ -115,6 +116,12 @@ class DataAccess:
     @staticmethod
     def get_action_history(action_history_id: int, current_user: User) -> ActionHistory:
         return DataBase.get_action_history(action_history_id, current_user)
+
+    @staticmethod
+    def get_action_history_by_screenshot(
+        screenshot_id: str, current_user: User
+    ) -> ActionHistory:
+        return DataBase.get_action_history_by_screenshot(screenshot_id, current_user)
 
     @staticmethod
     def get_last_successful_login(

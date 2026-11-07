@@ -3,7 +3,9 @@ import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Paper, Popover, Typography } from '@mui/material'
 import React, { useState } from 'react'
 import { FailedDetails } from '../../api/apiModels.ts'
+import { useScreenshotAvailable } from '../../api/hooks/useScreenshot.ts'
 import ImageDialog from './ImageDialog.tsx'
+import LiveFeed from './LiveFeed.tsx'
 import Screenshot from './Screenshot.tsx'
 import StatusIcon from './StatusIcon.tsx'
 import './LoginHistoryDetails.scss'
@@ -14,10 +16,18 @@ interface LoginHistoryDetailsProps {
 
 export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
   const { loginHistory } = props
+  const isRunning = loginHistory.execution_status === 'IN_PROGRESS'
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [hasBeenHovered, setHasBeenHovered] = useState(false)
+  const screenshot = useScreenshotAvailable(loginHistory.screenshot_id, hasBeenHovered && !isRunning)
+  const hasImage = isRunning || screenshot.available
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
+    setHasBeenHovered(true)
+    if (screenshot.failed) {
+      screenshot.refetch()
+    }
     setAnchorEl(event.currentTarget)
   }
 
@@ -94,12 +104,22 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
 
   return (
     <>
-      <ImageDialog screenshotId={loginHistory.screenshot_id} open={imageDialogOpen} onClose={() => setImageDialogOpen(false)} />
+      <ImageDialog
+        screenshotId={screenshot.available ? loginHistory.screenshot_id : null}
+        screenshotPending={screenshot.pending}
+        liveActionHistoryId={isRunning ? loginHistory.id : undefined}
+        open={imageDialogOpen}
+        onClose={() => setImageDialogOpen(false)}
+      />
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <StatusIcon hover onClick={loginHistory.screenshot_id !== null ? openImageDialog : undefined} activityStatus={loginHistory.execution_status as ActivityStatusCode} />
+        <StatusIcon
+          hover
+          onClick={hasImage ? openImageDialog : undefined}
+          activityStatus={loginHistory.execution_status as ActivityStatusCode}
+        />
         <Popover
           className="login-history-details"
           open={open}
@@ -114,13 +134,17 @@ export default function LoginHistoryDetails(props: LoginHistoryDetailsProps) {
             horizontal: 'center',
           }}
         >
-          {loginHistory.screenshot_id !== null
+          {isRunning
             ? (
-                <Screenshot screenshotId={loginHistory.screenshot_id} />
+                <LiveFeed key={loginHistory.id} actionHistoryId={loginHistory.id} />
               )
-            : (
-                []
-              )}
+            : loginHistory.screenshot_id !== null && screenshot.available
+              ? (
+                  <Screenshot screenshotId={loginHistory.screenshot_id} />
+                )
+              : (
+                  []
+                )}
           <div>
             <Paper className="login-history-details-header">
               <StatusIcon activityStatus={loginHistory.execution_status as ActivityStatusCode} />
