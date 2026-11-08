@@ -19,7 +19,7 @@ from dataAccess.database.database import (
 )
 from endpoints.models.action_history_model import GetActionHistory
 from endpoints.models.notification_model import GetNotification
-from endpoints.models.website_model import GetWebsite
+from endpoints.models.website_model import GetWebsite, WebsiteStatus
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -47,10 +47,8 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User, search=None, sorting=None) -> Page[GetWebsite]:
-        """Get websites for the current user with optional filtering."""
-        session = db_session.get()
-
+    def _join_latest_action(query, action_alias):
+        """Outer join each website to its most recent action history."""
         latest_action_subquery = (
             select(
                 ActionHistory.website,
@@ -61,6 +59,52 @@ class DataBase:
             .group_by(ActionHistory.website)
             .subquery()
         )
+        return query.outerjoin(
+            latest_action_subquery,
+            Website.id == latest_action_subquery.c.website,
+        ).outerjoin(
+            action_alias,
+            and_(
+                action_alias.website == Website.id,
+                action_alias.execution_started
+                == latest_action_subquery.c.max_execution_started,
+            ),
+        )
+
+    @staticmethod
+    def _website_status(action_alias):
+        """Effective website status. Websites without any login count as failed."""
+        return case(
+            (Website.paused == True, WebsiteStatus.PAUSED.value),
+            (
+                action_alias.execution_status == ActionStatusCode.IN_PROGRESS,
+                WebsiteStatus.IN_PROGRESS.value,
+            ),
+            (
+                action_alias.execution_status == ActionStatusCode.SUCCESS,
+                WebsiteStatus.SUCCESS.value,
+            ),
+            else_=WebsiteStatus.FAILED.value,
+        )
+
+    @staticmethod
+    def _filter_search(query, search):
+        if not search:
+            return query
+        search_term = f"%{search}%"
+        return query.where(
+            Website.name.ilike(search_term) | Website.url.ilike(search_term)
+        )
+
+    @staticmethod
+    def get_websites(
+        current_user: User,
+        search=None,
+        sorting=None,
+        website_status: WebsiteStatus = None,
+    ) -> Page[GetWebsite]:
+        """Get websites for the current user with optional filtering."""
+        session = db_session.get()
 
         latest_success_subquery = (
             select(
@@ -83,22 +127,12 @@ class DataBase:
             "last_success_ended"
         )
 
+        query = select(
+            Website, last_login_col, status_col, last_success_ended_col
+        ).where(Website.user == current_user.id)
+        query = DataBase._join_latest_action(query, action_alias)
         query = (
-            select(Website, last_login_col, status_col, last_success_ended_col)
-            .where(Website.user == current_user.id)
-            .outerjoin(
-                latest_action_subquery,
-                Website.id == latest_action_subquery.c.website,
-            )
-            .outerjoin(
-                action_alias,
-                and_(
-                    action_alias.website == Website.id,
-                    action_alias.execution_started
-                    == latest_action_subquery.c.max_execution_started,
-                ),
-            )
-            .outerjoin(
+            query.outerjoin(
                 latest_success_subquery,
                 Website.id == latest_success_subquery.c.website,
             )
@@ -113,10 +147,11 @@ class DataBase:
             .options(joinedload(Website.action_interval))
         )
 
-        if search:
-            search_term = f"%{search}%"
+        query = DataBase._filter_search(query, search)
+
+        if website_status:
             query = query.where(
-                Website.name.ilike(search_term) | Website.url.ilike(search_term)
+                DataBase._website_status(action_alias) == website_status.value
             )
 
         if sorting:
@@ -152,6 +187,25 @@ class DataBase:
                 for item in items
             ],
         )
+
+    @staticmethod
+    def get_website_status_counts(current_user: User, search=None) -> dict[str, int]:
+        """Number of websites per status for the current user."""
+        session = db_session.get()
+        action_alias = aliased(ActionHistory)
+        status_expr = DataBase._website_status(action_alias)
+
+        query = (
+            select(status_expr, func.count(Website.id))
+            .select_from(Website)
+            .where(Website.user == current_user.id)
+        )
+        query = DataBase._join_latest_action(query, action_alias)
+        query = DataBase._filter_search(query, search).group_by(status_expr)
+
+        counts = {website_status.value: 0 for website_status in WebsiteStatus}
+        counts.update(dict(session.execute(query).all()))
+        return counts
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:

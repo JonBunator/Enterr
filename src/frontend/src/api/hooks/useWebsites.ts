@@ -1,6 +1,7 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import type { ChangeWebsite } from '../../components/activity/model.ts'
+import type { ActivityStatusCode } from '../../components/activity/StatusIcon.tsx'
 import type { Website } from '../apiModels'
 import type { PaginatedResponse } from '../apiRequests'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,6 +13,7 @@ export function useWebsites(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
+  status?: ActivityStatusCode,
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>,
 ) {
   const queryKey = ['websites', 'all', `pageSize=${pageSize}`, `page=${page}`]
@@ -21,11 +23,26 @@ export function useWebsites(
   if (orderBy !== undefined && orderBy !== '') {
     queryKey.push(`sort=${orderBy}`)
   }
+  if (status !== undefined) {
+    queryKey.push(`status=${status}`)
+  }
   return useQuery<PaginatedResponse<Website>, AxiosError>({
     queryKey,
-    queryFn: async () => api.getWebsites(page, pageSize, searchTerm, orderBy),
+    queryFn: async () => api.getWebsites(page, pageSize, searchTerm, orderBy, status),
     placeholderData: keepPreviousData,
     ...options,
+  })
+}
+
+export function useWebsiteStatusCounts(searchTerm?: string) {
+  const queryKey = ['websites', 'statusCounts']
+  if (searchTerm !== undefined && searchTerm !== '') {
+    queryKey.push(`search=${searchTerm}`)
+  }
+  return useQuery<Record<ActivityStatusCode, number>, AxiosError>({
+    queryKey,
+    queryFn: async () => api.getWebsiteStatusCounts(searchTerm),
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime, timezone
+from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 from dataAccess.database.database import Website
@@ -13,6 +14,20 @@ from endpoints.models.action_interval_model import (
     EditActionInterval,
 )
 from utils.utils import timedelta_to_parts
+
+
+class WebsiteStatus(str, Enum):
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    PAUSED = "PAUSED"
+    IN_PROGRESS = "IN_PROGRESS"
+
+
+class GetWebsiteStatusCounts(BaseModel):
+    SUCCESS: int
+    FAILED: int
+    PAUSED: int
+    IN_PROGRESS: int
 
 
 class DateTime(BaseModel):

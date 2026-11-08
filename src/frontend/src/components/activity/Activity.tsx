@@ -1,5 +1,6 @@
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import type { ActivityData } from './model.ts'
+import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Box, Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
@@ -15,6 +16,7 @@ import './Activity.scss'
 
 interface ActivityProps {
   searchTerm?: string
+  statusFilter?: ActivityStatusCode | null
 }
 
 const fieldMapping: Record<string, string> = {
@@ -26,11 +28,18 @@ const fieldMapping: Record<string, string> = {
 }
 
 export default function Activity(props: ActivityProps) {
-  const { searchTerm } = props
+  const { searchTerm, statusFilter } = props
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
   })
+
+
+  const [prevFilters, setPrevFilters] = useState({ searchTerm, statusFilter })
+  if (prevFilters.searchTerm !== searchTerm || prevFilters.statusFilter !== statusFilter) {
+    setPrevFilters({ searchTerm, statusFilter })
+    setPaginationModel(model => ({ ...model, page: 0 }))
+  }
   const [sortModel, setSortModel] = useState<GridSortModel>([])
 
   // Convert sort model to backend format
@@ -54,6 +63,7 @@ export default function Activity(props: ActivityProps) {
     paginationModel.pageSize,
     searchTerm,
     orderBy,
+    statusFilter ?? undefined,
   )
 
   const handleSortModelChange = useCallback((newSortModel: GridSortModel) => {
@@ -192,7 +202,7 @@ export default function Activity(props: ActivityProps) {
           slots={{
             noRowsOverlay: () => (
               <EmptyState
-                noData={searchTerm === undefined || searchTerm === ''}
+                noData={(searchTerm === undefined || searchTerm === '') && statusFilter == null}
                 noDataHelperText="Add a website to get started"
               />
             ),

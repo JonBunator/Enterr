@@ -1,6 +1,7 @@
 import type {
   ChangeWebsite,
 } from '../components/activity/model.ts'
+import type { ActivityStatusCode } from '../components/activity/StatusIcon.tsx'
 import type {
   ActionHistory,
   EditNotification,
@@ -20,6 +21,7 @@ export async function getWebsites(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
+  status?: ActivityStatusCode,
 ): Promise<PaginatedResponse<Website>> {
   let url = `/websites?page=${page}&size=${pageSize}`
   if (searchTerm !== undefined && searchTerm !== '') {
@@ -28,11 +30,25 @@ export async function getWebsites(
   if (orderBy !== undefined && orderBy !== '') {
     url += `&sort=${encodeURIComponent(orderBy)}`
   }
+  if (status !== undefined) {
+    url += `&status=${status}`
+  }
   const data = await apiClient.get(url)
   return {
     items: data.data.items as Website[],
     total: data.data.total as number,
   }
+}
+
+export async function getWebsiteStatusCounts(
+  searchTerm?: string,
+): Promise<Record<ActivityStatusCode, number>> {
+  let url = '/websites/status-counts'
+  if (searchTerm !== undefined && searchTerm !== '') {
+    url += `?search=${encodeURIComponent(searchTerm)}`
+  }
+  const data = await apiClient.get(url)
+  return data.data as Record<ActivityStatusCode, number>
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {

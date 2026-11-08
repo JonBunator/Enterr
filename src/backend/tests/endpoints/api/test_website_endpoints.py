@@ -112,6 +112,98 @@ def test_get_websites_expiration_uses_latest_started_success(
     assert response.json()["items"][0]["expiration_date"] is None
 
 
+@pytest.fixture
+def websites_with_statuses(make_website, make_action_history):
+    """One website per effective status, named after it"""
+    success = make_website(name="Success")
+    make_action_history(success, ActionStatusCode.FAILED, datetime(2024, 5, 1))
+    make_action_history(success, ActionStatusCode.SUCCESS, datetime(2024, 5, 2))
+
+    failed = make_website(name="Failed")
+    make_action_history(failed, ActionStatusCode.SUCCESS, datetime(2024, 5, 1))
+    make_action_history(failed, ActionStatusCode.FAILED, datetime(2024, 5, 2))
+
+    # A website without any login counts as failed
+    make_website(name="Never")
+
+    running = make_website(name="Running")
+    make_action_history(running, ActionStatusCode.IN_PROGRESS, datetime(2024, 5, 2))
+
+    # Paused takes precedence over the last login result
+    paused = make_website(name="Paused", paused=True)
+    make_action_history(paused, ActionStatusCode.SUCCESS, datetime(2024, 5, 2))
+
+
+@pytest.mark.parametrize(
+    "status, expected",
+    [
+        ("SUCCESS", ["Success"]),
+        ("FAILED", ["Failed", "Never"]),
+        ("IN_PROGRESS", ["Running"]),
+        ("PAUSED", ["Paused"]),
+    ],
+)
+def test_get_websites_filter_by_status(
+    auth_client, websites_with_statuses, status, expected
+):
+    response = auth_client.get("/api/websites", params={"status": status})
+
+    assert response.status_code == 200
+    assert response.json()["total"] == len(expected)
+    assert [w["name"] for w in response.json()["items"]] == expected
+
+
+def test_get_websites_invalid_status_is_rejected(auth_client):
+    response = auth_client.get("/api/websites", params={"status": "UNKNOWN"})
+
+    assert response.status_code == 422
+
+
+# ---------------------------- GET /api/websites/status-counts ----------------------------
+
+
+def test_get_website_status_counts(auth_client, websites_with_statuses):
+    response = auth_client.get("/api/websites/status-counts")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "SUCCESS": 1,
+        "FAILED": 2,
+        "PAUSED": 1,
+        "IN_PROGRESS": 1,
+    }
+
+
+def test_get_website_status_counts_search(auth_client, websites_with_statuses):
+    response = auth_client.get("/api/websites/status-counts", params={"search": "fail"})
+
+    assert response.json() == {
+        "SUCCESS": 0,
+        "FAILED": 1,
+        "PAUSED": 0,
+        "IN_PROGRESS": 0,
+    }
+
+
+def test_get_website_status_counts_hides_other_users_websites(
+    auth_client, make_website, other_user
+):
+    make_website(owner=other_user)
+
+    response = auth_client.get("/api/websites/status-counts")
+
+    assert response.json() == {
+        "SUCCESS": 0,
+        "FAILED": 0,
+        "PAUSED": 0,
+        "IN_PROGRESS": 0,
+    }
+
+
+def test_get_website_status_counts_unauthenticated(client):
+    assert client.get("/api/websites/status-counts").status_code == 401
+
+
 # ---------------------------- GET /api/websites/{id} ----------------------------
 
 

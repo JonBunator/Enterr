@@ -22,6 +22,7 @@ from endpoints.models.website_model import (
     CheckCustomLoginScript,
     CheckCustomLoginScriptResponse,
     GetWebsite,
+    WebsiteStatus,
 )
 from endpoints.webhooks.webhook_endpoints import WebhookEndpoints
 from execution.login.custom_login.parser import CustomLoginScriptParser
@@ -36,8 +37,17 @@ class DataAccess:
         return DataBase.get_current_user(token)
 
     @staticmethod
-    def get_websites(current_user: User, search=None, sorting=None) -> Page[GetWebsite]:
-        return DataBase.get_websites(current_user, search, sorting)
+    def get_websites(
+        current_user: User,
+        search=None,
+        sorting=None,
+        website_status: WebsiteStatus = None,
+    ) -> Page[GetWebsite]:
+        return DataBase.get_websites(current_user, search, sorting, website_status)
+
+    @staticmethod
+    def get_website_status_counts(current_user: User, search=None) -> dict[str, int]:
+        return DataBase.get_website_status_counts(current_user, search)
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:
