@@ -7,6 +7,8 @@ import type {
   Notification,
   UserData,
   Website,
+  WebsiteStatusCode,
+  WebsiteStatusCounts,
 } from './apiModels.ts'
 import apiClient from './apiClient.ts'
 
@@ -20,6 +22,7 @@ export async function getWebsites(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
+  status?: WebsiteStatusCode,
 ): Promise<PaginatedResponse<Website>> {
   let url = `/websites?page=${page}&size=${pageSize}`
   if (searchTerm !== undefined && searchTerm !== '') {
@@ -28,11 +31,25 @@ export async function getWebsites(
   if (orderBy !== undefined && orderBy !== '') {
     url += `&sort=${encodeURIComponent(orderBy)}`
   }
+  if (status !== undefined) {
+    url += `&status=${status}`
+  }
   const data = await apiClient.get(url)
   return {
     items: data.data.items as Website[],
     total: data.data.total as number,
   }
+}
+
+export async function getWebsiteStatusCounts(
+  searchTerm?: string,
+): Promise<WebsiteStatusCounts> {
+  let url = '/websites/status-counts'
+  if (searchTerm !== undefined && searchTerm !== '') {
+    url += `?search=${encodeURIComponent(searchTerm)}`
+  }
+  const data = await apiClient.get(url)
+  return data.data as WebsiteStatusCounts
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {

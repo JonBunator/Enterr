@@ -20,6 +20,17 @@
     padding-top: 16px;
   }
 
+  .main-page-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &.activity-section {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
   .main-page-header {
     display: flex;
     gap: 16px;

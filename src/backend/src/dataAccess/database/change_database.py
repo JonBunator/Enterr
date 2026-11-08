@@ -19,7 +19,7 @@ from dataAccess.database.database import (
 )
 from endpoints.models.action_history_model import GetActionHistory
 from endpoints.models.notification_model import GetNotification
-from endpoints.models.website_model import GetWebsite
+from endpoints.models.website_model import GetWebsite, WebsiteStatus
 from utils.cookie_authentication import OAuth2PasswordBearerWithCookie
 from utils.exceptions import NotFoundException
 from utils.security import decode_token
@@ -47,10 +47,8 @@ class DataBase:
             return user
 
     @staticmethod
-    def get_websites(current_user: User, search=None, sorting=None) -> Page[GetWebsite]:
-        """Get websites for the current user with optional filtering."""
-        session = db_session.get()
-
+    def _join_latest_action(query, action_alias):
+        """Outer join each website to its most recent action history."""
         latest_action_subquery = (
             select(
                 ActionHistory.website,
@@ -61,6 +59,53 @@ class DataBase:
             .group_by(ActionHistory.website)
             .subquery()
         )
+        return query.outerjoin(
+            latest_action_subquery,
+            Website.id == latest_action_subquery.c.website,
+        ).outerjoin(
+            action_alias,
+            and_(
+                action_alias.website == Website.id,
+                action_alias.execution_started
+                == latest_action_subquery.c.max_execution_started,
+            ),
+        )
+
+    @staticmethod
+    def _website_status(action_alias):
+        """Effective website status."""
+        return case(
+            (Website.paused == True, WebsiteStatus.PAUSED.value),
+            (action_alias.id == None, WebsiteStatus.NO_LOGIN.value),
+            (
+                action_alias.execution_status == ActionStatusCode.IN_PROGRESS,
+                WebsiteStatus.IN_PROGRESS.value,
+            ),
+            (
+                action_alias.execution_status == ActionStatusCode.SUCCESS,
+                WebsiteStatus.SUCCESS.value,
+            ),
+            else_=WebsiteStatus.FAILED.value,
+        )
+
+    @staticmethod
+    def _filter_search(query, search):
+        if not search:
+            return query
+        return query.where(
+            Website.name.icontains(search, autoescape=True)
+            | Website.url.icontains(search, autoescape=True)
+        )
+
+    @staticmethod
+    def get_websites(
+        current_user: User,
+        search=None,
+        sorting=None,
+        website_status: WebsiteStatus = None,
+    ) -> Page[GetWebsite]:
+        """Get websites for the current user with optional filtering."""
+        session = db_session.get()
 
         latest_success_subquery = (
             select(
@@ -78,27 +123,20 @@ class DataBase:
         success_alias = aliased(ActionHistory)
 
         last_login_col = action_alias.execution_started.label("last_login_attempt")
-        status_col = action_alias.execution_status.label("status")
+
         last_success_ended_col = success_alias.execution_ended.label(
             "last_success_ended"
         )
 
+        status_expr = DataBase._website_status(action_alias)
+        status_col = status_expr.label("status")
+
+        query = select(
+            Website, last_login_col, status_col, last_success_ended_col
+        ).where(Website.user == current_user.id)
+        query = DataBase._join_latest_action(query, action_alias)
         query = (
-            select(Website, last_login_col, status_col, last_success_ended_col)
-            .where(Website.user == current_user.id)
-            .outerjoin(
-                latest_action_subquery,
-                Website.id == latest_action_subquery.c.website,
-            )
-            .outerjoin(
-                action_alias,
-                and_(
-                    action_alias.website == Website.id,
-                    action_alias.execution_started
-                    == latest_action_subquery.c.max_execution_started,
-                ),
-            )
-            .outerjoin(
+            query.outerjoin(
                 latest_success_subquery,
                 Website.id == latest_success_subquery.c.website,
             )
@@ -113,19 +151,28 @@ class DataBase:
             .options(joinedload(Website.action_interval))
         )
 
-        if search:
-            search_term = f"%{search}%"
+        query = DataBase._filter_search(query, search)
+
+        if website_status == WebsiteStatus.FAILED:
+            # Websites without any login are shown as failed
             query = query.where(
-                Website.name.ilike(search_term) | Website.url.ilike(search_term)
+                status_expr.in_(
+                    [WebsiteStatus.FAILED.value, WebsiteStatus.NO_LOGIN.value]
+                )
             )
+        elif website_status:
+            query = query.where(status_expr == website_status.value)
 
         if sorting:
             status_sort_col = case(
-                (Website.paused == True, 3),
-                (action_alias.execution_status == ActionStatusCode.IN_PROGRESS, 1),
-                (action_alias.execution_status == ActionStatusCode.FAILED, 2),
-                (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
-                else_=5,
+                {
+                    WebsiteStatus.IN_PROGRESS.value: 1,
+                    WebsiteStatus.FAILED.value: 2,
+                    WebsiteStatus.NO_LOGIN.value: 2,
+                    WebsiteStatus.PAUSED.value: 3,
+                    WebsiteStatus.SUCCESS.value: 4,
+                },
+                value=status_expr,
             )
             expiration_sort_col = func.julianday(last_success_ended_col) + (
                 func.julianday(Website.expiration_interval)
@@ -152,6 +199,32 @@ class DataBase:
                 for item in items
             ],
         )
+
+    @staticmethod
+    def get_website_status_counts(current_user: User, search=None) -> dict[str, int]:
+        """Number of websites per status for the current user."""
+        session = db_session.get()
+        action_alias = aliased(ActionHistory)
+        status_expr = DataBase._website_status(action_alias)
+
+        query = (
+            select(status_expr, func.count(Website.id))
+            .select_from(Website)
+            .where(Website.user == current_user.id)
+        )
+        query = DataBase._join_latest_action(query, action_alias)
+        query = DataBase._filter_search(query, search).group_by(status_expr)
+
+        counts = {
+            website_status.value.lower(): 0
+            for website_status in WebsiteStatus
+            if website_status != WebsiteStatus.NO_LOGIN
+        }
+        for website_status, count in session.execute(query).all():
+            if website_status == WebsiteStatus.NO_LOGIN.value:
+                website_status = WebsiteStatus.FAILED.value
+            counts[website_status.lower()] += count
+        return counts
 
     @staticmethod
     def get_website(website_id: int, current_user: User) -> Website:

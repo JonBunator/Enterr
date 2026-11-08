@@ -1,9 +1,8 @@
-import type { ActionHistory } from '../../api/apiModels.ts'
-import type { ActivityStatusCode } from './StatusIcon.tsx'
+import type { ActionHistory, WebsiteStatusCode } from '../../api/apiModels.ts'
 
 export interface ActivityData {
   id: number
-  status: ActivityStatusCode
+  status: WebsiteStatusCode
   name: string
   url: string
   success_url: string

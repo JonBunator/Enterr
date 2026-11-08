@@ -16,6 +16,7 @@ import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
 const darkTheme = createTheme({
+  cssVariables: true,
   components: {
     MuiDialog: {
       defaultProps: {

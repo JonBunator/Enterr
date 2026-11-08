@@ -1,4 +1,5 @@
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
+import type { WebsiteStatusCode } from '../../api/apiModels.ts'
 import type { ActivityData } from './model.ts'
 import { Box, Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
@@ -15,6 +16,7 @@ import './Activity.scss'
 
 interface ActivityProps {
   searchTerm?: string
+  statusFilter?: WebsiteStatusCode
 }
 
 const fieldMapping: Record<string, string> = {
@@ -26,11 +28,16 @@ const fieldMapping: Record<string, string> = {
 }
 
 export default function Activity(props: ActivityProps) {
-  const { searchTerm } = props
+  const { searchTerm, statusFilter } = props
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
   })
+  const [prevFilters, setPrevFilters] = useState({ searchTerm, statusFilter })
+  if (prevFilters.searchTerm !== searchTerm || prevFilters.statusFilter !== statusFilter) {
+    setPrevFilters({ searchTerm, statusFilter })
+    setPaginationModel(model => ({ ...model, page: 0 }))
+  }
   const [sortModel, setSortModel] = useState<GridSortModel>([])
 
   // Convert sort model to backend format
@@ -48,13 +55,21 @@ export default function Activity(props: ActivityProps) {
   const {
     data: rows = [],
     rowCount,
+    isRowCountFresh,
     isLoading,
   } = useActivity(
     paginationModel.page + 1,
     paginationModel.pageSize,
     searchTerm,
     orderBy,
+    statusFilter,
   )
+
+  // Rows can leave the filtered result on their own (e.g. a status change), so keep the page in range
+  const lastPage = Math.max(0, Math.ceil(rowCount / paginationModel.pageSize) - 1)
+  if (isRowCountFresh && paginationModel.page > lastPage) {
+    setPaginationModel(model => ({ ...model, page: lastPage }))
+  }
 
   const handleSortModelChange = useCallback((newSortModel: GridSortModel) => {
     setSortModel(newSortModel)
@@ -192,7 +207,7 @@ export default function Activity(props: ActivityProps) {
           slots={{
             noRowsOverlay: () => (
               <EmptyState
-                noData={searchTerm === undefined || searchTerm === ''}
+                noData={(searchTerm === undefined || searchTerm === '') && statusFilter === undefined}
                 noDataHelperText="Add a website to get started"
               />
             ),

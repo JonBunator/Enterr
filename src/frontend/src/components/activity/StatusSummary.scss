@@ -1,0 +1,65 @@
+.status-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+
+  .status-card {
+    border-color: var(--mui-palette-divider);
+
+    @each $color in success, error, info, warning {
+      &.status-card-#{$color} {
+        --status-color: var(--mui-palette-#{$color}-main);
+        --status-color-channel: var(--mui-palette-#{$color}-mainChannel);
+        --status-color-contrast: var(--mui-palette-#{$color}-contrastText);
+      }
+    }
+
+    &:hover:not(:has(.Mui-disabled)) {
+      border-color: rgb(var(--status-color-channel) / 0.4);
+    }
+
+    &.selected {
+      border-color: var(--status-color);
+      background-color: rgb(var(--status-color-channel) / 0.08);
+
+      .status-card-icon {
+        background-color: var(--status-color);
+        color: var(--status-color-contrast);
+      }
+    }
+  }
+
+  .status-card-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .status-card-text {
+    min-width: 0;
+
+    .MuiTypography-root {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .status-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background-color: rgb(var(--status-color-channel) / 0.15);
+    color: var(--status-color);
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

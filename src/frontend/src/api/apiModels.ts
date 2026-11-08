@@ -1,3 +1,18 @@
+export enum WebsiteStatusCode {
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  NO_LOGIN = 'NO_LOGIN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  PAUSED = 'PAUSED',
+}
+
+export interface WebsiteStatusCounts {
+  success: number
+  failed: number
+  paused: number
+  in_progress: number
+}
+
 export interface ActionInterval {
   id: number
   date_minutes_start: number
@@ -20,6 +35,7 @@ export interface Website {
   action_interval: ActionInterval | null
   next_schedule: string | null
   expiration_date: string | null
+  status: WebsiteStatusCode
 }
 
 export type ActionStatusCode = 'SUCCESS' | 'FAILED' | 'IN_PROGRESS'

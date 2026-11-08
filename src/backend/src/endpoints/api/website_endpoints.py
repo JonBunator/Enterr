@@ -11,6 +11,8 @@ from endpoints.models.website_model import (
     EditWebsite,
     CheckCustomLoginScript,
     CheckCustomLoginScriptResponse,
+    GetWebsiteStatusCounts,
+    WebsiteStatus,
 )
 
 
@@ -19,6 +21,7 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     @app.get("/api/websites", response_model=Page[GetWebsite], tags=["Websites"])
     def get_websites(
         search: Optional[str] = Query(None),
+        status: Optional[WebsiteStatus] = Query(None),
         sorting: SortingValues = Depends(
             create_sorting(
                 "name", "next_schedule", "last_login_attempt", "status", "expiration"
@@ -28,7 +31,20 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
         current_user=Depends(DataAccess.get_current_user),
     ):
         db_session.set(session)
-        return DataAccess.get_websites(current_user, search, sorting)
+        return DataAccess.get_websites(current_user, search, sorting, status)
+
+    @app.get(
+        "/api/websites/status-counts",
+        response_model=GetWebsiteStatusCounts,
+        tags=["Websites"],
+    )
+    def get_website_status_counts(
+        search: Optional[str] = Query(None),
+        session: Session = Depends(get_db),
+        current_user=Depends(DataAccess.get_current_user),
+    ):
+        db_session.set(session)
+        return DataAccess.get_website_status_counts(current_user, search)
 
     @app.get("/api/websites/{website_id}", response_model=GetWebsite, tags=["Websites"])
     def get_website(
