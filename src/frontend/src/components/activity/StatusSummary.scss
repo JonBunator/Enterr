@@ -4,7 +4,7 @@
   gap: 16px;
 
   .status-card {
-    border-color: #515151;
+    border-color: var(--mui-palette-divider);
 
     @each $color in success, error, info, warning {
       &.status-card-#{$color} {

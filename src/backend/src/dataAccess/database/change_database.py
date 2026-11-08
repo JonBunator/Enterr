@@ -149,18 +149,19 @@ class DataBase:
 
         query = DataBase._filter_search(query, search)
 
+        status_expr = DataBase._website_status(action_alias)
         if website_status:
-            query = query.where(
-                DataBase._website_status(action_alias) == website_status.value
-            )
+            query = query.where(status_expr == website_status.value)
 
         if sorting:
             status_sort_col = case(
-                (Website.paused == True, 3),
-                (action_alias.execution_status == ActionStatusCode.IN_PROGRESS, 1),
-                (action_alias.execution_status == ActionStatusCode.FAILED, 2),
-                (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
-                else_=5,
+                {
+                    WebsiteStatus.IN_PROGRESS.value: 1,
+                    WebsiteStatus.FAILED.value: 2,
+                    WebsiteStatus.PAUSED.value: 3,
+                    WebsiteStatus.SUCCESS.value: 4,
+                },
+                value=status_expr,
             )
             expiration_sort_col = func.julianday(last_success_ended_col) + (
                 func.julianday(Website.expiration_interval)

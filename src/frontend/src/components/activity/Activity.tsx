@@ -16,7 +16,7 @@ import './Activity.scss'
 
 interface ActivityProps {
   searchTerm?: string
-  statusFilter?: ActivityStatusCode | null
+  statusFilter?: ActivityStatusCode
 }
 
 const fieldMapping: Record<string, string> = {
@@ -33,8 +33,6 @@ export default function Activity(props: ActivityProps) {
     page: 0,
     pageSize: 10,
   })
-
-
   const [prevFilters, setPrevFilters] = useState({ searchTerm, statusFilter })
   if (prevFilters.searchTerm !== searchTerm || prevFilters.statusFilter !== statusFilter) {
     setPrevFilters({ searchTerm, statusFilter })
@@ -63,8 +61,14 @@ export default function Activity(props: ActivityProps) {
     paginationModel.pageSize,
     searchTerm,
     orderBy,
-    statusFilter ?? undefined,
+    statusFilter,
   )
+
+  // Rows can leave the filtered result on their own (e.g. a status change), so keep the page in range
+  const lastPage = Math.max(0, Math.ceil(rowCount / paginationModel.pageSize) - 1)
+  if (!isLoading && paginationModel.page > lastPage) {
+    setPaginationModel(model => ({ ...model, page: lastPage }))
+  }
 
   const handleSortModelChange = useCallback((newSortModel: GridSortModel) => {
     setSortModel(newSortModel)
@@ -202,7 +206,7 @@ export default function Activity(props: ActivityProps) {
           slots={{
             noRowsOverlay: () => (
               <EmptyState
-                noData={(searchTerm === undefined || searchTerm === '') && statusFilter == null}
+                noData={(searchTerm === undefined || searchTerm === '') && statusFilter === undefined}
                 noDataHelperText="Add a website to get started"
               />
             ),

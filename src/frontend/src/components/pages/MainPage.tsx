@@ -12,7 +12,7 @@ import './MainPage.scss'
 
 export default function MainPage() {
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<ActivityStatusCode | null>(null)
+  const [statusFilter, setStatusFilter] = useState<ActivityStatusCode>()
 
   return (
     <ProtectedPage>
@@ -20,7 +20,7 @@ export default function MainPage() {
       <Content>
         <div className="main-page">
           <section className="main-page-section">
-            <Typography variant="h6" component="h2" >
+            <Typography variant="h6" component="h2">
               Overview
             </Typography>
             <StatusSummary

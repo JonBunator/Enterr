@@ -13,8 +13,8 @@ const summaryStatuses = [
 
 interface StatusSummaryProps {
   searchTerm?: string
-  selected: ActivityStatusCode | null
-  onSelect: (status: ActivityStatusCode | null) => void
+  selected?: ActivityStatusCode
+  onSelect: (status?: ActivityStatusCode) => void
 }
 
 export default function StatusSummary(props: StatusSummaryProps) {
@@ -35,7 +35,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
             <CardActionArea
               className="status-card-action"
               aria-pressed={isSelected}
-              onClick={() => onSelect(isSelected ? null : status)}
+              onClick={() => onSelect(isSelected ? undefined : status)}
             >
               <div className="status-card-icon">{icon}</div>
               <div className="status-card-text">
