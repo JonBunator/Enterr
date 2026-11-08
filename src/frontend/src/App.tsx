@@ -37,6 +37,22 @@ const darkTheme = createTheme({
     primary: {
       main: '#8dbf9f',
     },
+    success: {
+      main: '#c4f8d6',
+      contrastText: '#14532d',
+    },
+    error: {
+      main: '#f7c5c5',
+      contrastText: '#521714',
+    },
+    info: {
+      main: '#c4f1f8',
+      contrastText: '#144b53',
+    },
+    warning: {
+      main: '#f8f5c4',
+      contrastText: '#535314',
+    },
     background: {
       default: '#080808',
       paper: '#080808',

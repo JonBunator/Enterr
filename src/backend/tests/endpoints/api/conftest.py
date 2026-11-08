@@ -57,9 +57,14 @@ def website_payload():
 
 @pytest.fixture
 def make_action_history(session):
-    def _make_action_history(website, status, started=datetime(2024, 5, 10, 8, 0)):
+    def _make_action_history(
+        website, status, started=datetime(2024, 5, 10, 8, 0), ended=None
+    ):
         action_history = ActionHistory(
-            execution_started=started, execution_status=status, website=website.id
+            execution_started=started,
+            execution_ended=ended,
+            execution_status=status,
+            website=website.id,
         )
         session.add(action_history)
         session.commit()

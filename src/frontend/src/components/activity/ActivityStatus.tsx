@@ -1,41 +1,61 @@
-import { Typography } from '@mui/material'
-import StatusIcon, { ActivityStatusCode } from './StatusIcon.tsx'
-import TimeDifference from './TimeDifference.tsx'
+import type { ChipProps } from '@mui/material'
+import { ClockIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import { Chip, CircularProgress, Tooltip } from '@mui/material'
+import { ActivityStatusCode } from './StatusIcon.tsx'
 
 interface ActivityStatusProps {
   status: ActivityStatusCode
-  expirationDate?: Date
+}
+
+interface StatusConfig {
+  label: string
+  description: string
+  color: ChipProps['color']
+  icon: ChipProps['icon']
 }
 
 export default function ActivityStatus(props: ActivityStatusProps) {
-  const { status, expirationDate } = props
+  const { status } = props
 
-  function getInfoText(): string {
+  function getConfig(): StatusConfig {
     switch (status) {
       case ActivityStatusCode.SUCCESS:
-        return 'Last login was successful'
+        return {
+          label: 'Success',
+          description: 'The last login attempt was successful.',
+          color: 'success',
+          icon: <CheckIcon />,
+        }
       case ActivityStatusCode.FAILED:
-        return 'Last login failed'
+        return {
+          label: 'Failed',
+          description: 'The last login attempt failed. Check the login history for details.',
+          color: 'error',
+          icon: <XMarkIcon />,
+        }
       case ActivityStatusCode.IN_PROGRESS:
-        return 'Currently running...'
+        return {
+          label: 'Running',
+          description: 'A login is currently in progress.',
+          color: 'info',
+          icon: <CircularProgress size={16} color="inherit" />,
+        }
       case ActivityStatusCode.PAUSED:
-        return 'Automatic login is paused'
+        return {
+          label: 'Paused',
+          description: 'Automatic login is paused. No logins will be scheduled until it is resumed.',
+          color: 'warning',
+          icon: <ClockIcon />,
+        }
     }
   }
 
+  const { label, description, color, icon } = getConfig()
+
   return (
-    <div className="activity-status">
-      <StatusIcon activityStatus={status} />
-      <div className="text">
-        <Typography className="next-run" sx={{ fontSize: 14 }}>
-          {getInfoText()}
-        </Typography>
-        <Typography component="div" className="expiration" sx={{ color: 'text.secondary', fontSize: 12 }}>
-          {expirationDate !== undefined
-            ? <TimeDifference prefix="Account expires in " datetime={expirationDate} negativeDifference="Account might be expired" />
-            : 'Account expires at unknown date'}
-        </Typography>
-      </div>
-    </div>
+    <Tooltip title={description} arrow>
+      <Chip className="activity-status-chip" label={label} color={color} icon={icon} />
+    </Tooltip>
   )
 }

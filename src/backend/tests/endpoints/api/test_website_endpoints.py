@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 
-from dataAccess.database.database import Website
+from dataAccess.database.database import ActionStatusCode, Website
 
 
 # ---------------------------- GET /api/websites ----------------------------
@@ -36,6 +36,80 @@ def test_get_websites_search(auth_client, make_website):
     response = auth_client.get("/api/websites", params={"search": "other"})
 
     assert [w["name"] for w in response.json()["items"]] == ["Other"]
+
+
+def test_get_websites_sort_by_name(auth_client, make_website):
+    make_website(name="Bravo")
+    make_website(name="Alpha")
+
+    response = auth_client.get("/api/websites", params={"sort": "+name"})
+
+    assert [w["name"] for w in response.json()["items"]] == ["Alpha", "Bravo"]
+
+
+@pytest.mark.parametrize(
+    "sort, expected",
+    [
+        ("+expiration", ["Unknown", "Soon", "Late"]),
+        ("-expiration", ["Late", "Soon", "Unknown"]),
+    ],
+)
+def test_get_websites_sort_by_expiration(
+    auth_client, make_website, make_action_history, sort, expected
+):
+    # Late: older login but much longer interval -> expires after Soon
+    late = make_website(name="Late", expiration_interval=timedelta(days=30))
+    soon = make_website(name="Soon", expiration_interval=timedelta(days=1))
+    make_website(name="Unknown")
+    make_action_history(
+        late, ActionStatusCode.SUCCESS, datetime(2024, 5, 1), datetime(2024, 5, 1, 0, 1)
+    )
+    make_action_history(
+        soon, ActionStatusCode.SUCCESS, datetime(2024, 5, 10), datetime(2024, 5, 10, 0, 1)
+    )
+    # A newer failed login must not count as the last successful one
+    make_action_history(
+        soon, ActionStatusCode.FAILED, datetime(2024, 6, 10), datetime(2024, 6, 10, 0, 1)
+    )
+
+    response = auth_client.get("/api/websites", params={"sort": sort})
+
+    items = response.json()["items"]
+    assert [w["name"] for w in items] == expected
+    expiration_dates = {w["name"]: w["expiration_date"] for w in items}
+    assert expiration_dates == {
+        "Late": "2024-05-31T00:01:00Z",
+        "Soon": "2024-05-11T00:01:00Z",
+        "Unknown": None,
+    }
+
+
+def test_get_websites_expiration_without_successful_login(
+    auth_client, make_website, make_action_history
+):
+    website = make_website(expiration_interval=timedelta(days=1))
+    make_action_history(
+        website, ActionStatusCode.FAILED, datetime(2024, 5, 1), datetime(2024, 5, 1, 0, 1)
+    )
+
+    response = auth_client.get("/api/websites")
+
+    assert response.json()["items"][0]["expiration_date"] is None
+
+
+def test_get_websites_expiration_uses_latest_started_success(
+    auth_client, make_website, make_action_history
+):
+    # The newest success has no end time, so an older success must not be used instead
+    website = make_website(expiration_interval=timedelta(days=1))
+    make_action_history(
+        website, ActionStatusCode.SUCCESS, datetime(2024, 5, 1), datetime(2024, 5, 1, 0, 1)
+    )
+    make_action_history(website, ActionStatusCode.SUCCESS, datetime(2024, 5, 10))
+
+    response = auth_client.get("/api/websites")
+
+    assert response.json()["items"][0]["expiration_date"] is None
 
 
 # ---------------------------- GET /api/websites/{id} ----------------------------

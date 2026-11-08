@@ -62,13 +62,29 @@ class DataBase:
             .subquery()
         )
 
+        latest_success_subquery = (
+            select(
+                ActionHistory.website,
+                func.max(ActionHistory.execution_started).label(
+                    "max_success_started"
+                ),
+            )
+            .where(ActionHistory.execution_status == ActionStatusCode.SUCCESS)
+            .group_by(ActionHistory.website)
+            .subquery()
+        )
+
         action_alias = aliased(ActionHistory)
+        success_alias = aliased(ActionHistory)
 
         last_login_col = action_alias.execution_started.label("last_login_attempt")
         status_col = action_alias.execution_status.label("status")
+        last_success_ended_col = success_alias.execution_ended.label(
+            "last_success_ended"
+        )
 
         query = (
-            select(Website, last_login_col, status_col)
+            select(Website, last_login_col, status_col, last_success_ended_col)
             .where(Website.user == current_user.id)
             .outerjoin(
                 latest_action_subquery,
@@ -80,6 +96,18 @@ class DataBase:
                     action_alias.website == Website.id,
                     action_alias.execution_started
                     == latest_action_subquery.c.max_execution_started,
+                ),
+            )
+            .outerjoin(
+                latest_success_subquery,
+                Website.id == latest_success_subquery.c.website,
+            )
+            .outerjoin(
+                success_alias,
+                and_(
+                    success_alias.website == Website.id,
+                    success_alias.execution_started
+                    == latest_success_subquery.c.max_success_started,
                 ),
             )
             .options(joinedload(Website.action_interval))
@@ -99,20 +127,29 @@ class DataBase:
                 (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
                 else_=5,
             )
+            expiration_sort_col = func.julianday(last_success_ended_col) + (
+                func.julianday(Website.expiration_interval)
+                - func.julianday("1970-01-01")
+            )
             query = apply_sorting(
                 query,
                 sorting,
                 additional={
                     "last_login_attempt": last_login_col,
                     "status": status_sort_col,
+                    "expiration": expiration_sort_col,
                 },
             )
+
+        # Tie-breaker so rows with equal sort values (e.g. NULL) page consistently
+        query = query.order_by(Website.id)
 
         return paginate(
             session,
             query,
             transformer=lambda items: [
-                GetWebsite.from_sql_model(item[0], item[1], item[2]) for item in items
+                GetWebsite.from_sql_model(item[0], item[1], item[2], item[3])
+                for item in items
             ],
         )
 

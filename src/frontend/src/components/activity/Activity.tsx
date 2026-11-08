@@ -1,14 +1,16 @@
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
 import type { ActivityData } from './model.ts'
-import { Card, CardContent, Typography } from '@mui/material'
+import { Box, Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
 import { useActivity } from '../../api/hooks'
 import ActionsPopover from './ActionsPopover.tsx'
 import ActivityStatus from './ActivityStatus.tsx'
 import EmptyState from './EmptyState.tsx'
+import ExpirationDate from './ExpirationDate.tsx'
 import LoginHistoryDetails from './LoginHistoryDetails.tsx'
 import TimeDifference from './TimeDifference.tsx'
+import WebsiteName from './WebsiteName.tsx'
 import './Activity.scss'
 
 interface ActivityProps {
@@ -17,7 +19,8 @@ interface ActivityProps {
 
 const fieldMapping: Record<string, string> = {
   status: 'status',
-  name: 'name',
+  website: 'name',
+  expiration: 'expiration',
   nextLogin: 'next_schedule',
   lastLoginAttempt: 'last_login_attempt',
 }
@@ -63,21 +66,37 @@ export default function Activity(props: ActivityProps) {
         field: 'status',
         headerName: 'Status',
         flex: 1,
-        minWidth: 250,
+        minWidth: 120,
         sortable: true,
         renderCell: params => (
           <ActivityStatus
             status={params.row.status}
-            expirationDate={params.row.expirationDate}
           />
         ),
       },
       {
-        field: 'name',
-        headerName: 'Name',
+        field: 'website',
+        headerName: 'Website',
         flex: 1,
-        minWidth: 150,
+        minWidth: 200,
         sortable: true,
+        renderCell: params => (
+          <WebsiteName
+            key={params.row.url}
+            name={params.row.name}
+            url={params.row.url}
+          />
+        ),
+      },
+      {
+        field: 'expiration',
+        headerName: 'Expiration',
+        flex: 1,
+        minWidth: 100,
+        sortable: true,
+        renderCell: params => (
+          <ExpirationDate expirationDate={params.row.expirationDate} />
+        ),
       },
       {
         field: 'nextLogin',
@@ -87,7 +106,6 @@ export default function Activity(props: ActivityProps) {
         sortable: true,
         renderCell: params => (
           <TimeDifference
-            prefix=""
             datetime={params.row.nextLogin}
             tooltip
             negativeDifference="No login scheduled"
@@ -104,13 +122,12 @@ export default function Activity(props: ActivityProps) {
           params.row.lastLoginAttempt !== undefined
             ? (
                 <TimeDifference
-                  prefix=""
                   tooltip
                   datetime={params.row.lastLoginAttempt}
                 />
               )
             : (
-                'No logins yet'
+                <Box sx={{ color: 'text.secondary' }}>No logins yet</Box>
               ),
       },
       {

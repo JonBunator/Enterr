@@ -1,13 +1,9 @@
-import { Tooltip } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import './TimeDifference.scss'
 
 interface TimeDifferenceProps {
   datetime: Date
-  /**
-   * Prefix of the formatted time difference.
-   */
-  prefix?: string
   /**
    * String that is returned when the time difference is negative.
    */
@@ -19,7 +15,7 @@ interface TimeDifferenceProps {
 }
 
 export default function TimeDifference(props: TimeDifferenceProps) {
-  const { datetime, prefix, negativeDifference, tooltip } = props
+  const { datetime, negativeDifference, tooltip } = props
 
   const getFormatedTime = useCallback((): string => {
     const now = new Date()
@@ -40,20 +36,19 @@ export default function TimeDifference(props: TimeDifferenceProps) {
     const diffInHours = Math.floor(diffInMinutes / 60)
     const diffInDays = Math.floor(diffInHours / 24)
     const remainingMinutes = diffInMinutes % 60
-    const prefixString = prefix ?? ''
     if (diffInMinutes === 0 || diffInMinutes === -1) {
-      return `${prefixString}<1min${suffix}`
+      return `<1min${suffix}`
     }
     if (diffInDays > 0) {
-      return `${prefixString}${diffInDays}d${suffix}`
+      return `${diffInDays}d${suffix}`
     }
     else if (diffInHours > 0) {
-      return `${prefixString}${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}${suffix}`
+      return `${diffInHours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}${suffix}`
     }
     else {
-      return `${prefixString}${diffInMinutes}m${suffix}`
+      return `${diffInMinutes}m${suffix}`
     }
-  }, [datetime, negativeDifference, prefix])
+  }, [datetime, negativeDifference])
 
   const [formattedTime, setFormattedTime] = useState<string>(getFormatedTime())
 
@@ -79,9 +74,9 @@ export default function TimeDifference(props: TimeDifferenceProps) {
           </Tooltip>
         )
       : (
-          <div>
+          <Box sx={formattedTime === negativeDifference ? { color: 'text.secondary' } : undefined}>
             {formattedTime}
-          </div>
+          </Box>
         )
   )
 }
