@@ -37,6 +37,12 @@
     padding: 12px 16px;
   }
 
+  .status-card-selected {
+    position: absolute;
+    right: 12px;
+    bottom: 6px;
+  }
+
   .status-card-text {
     min-width: 0;
 
