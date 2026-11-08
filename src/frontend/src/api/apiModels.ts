@@ -19,6 +19,7 @@ export interface Website {
   custom_login_script: string | null
   action_interval: ActionInterval | null
   next_schedule: string | null
+  expiration_date: string | null
 }
 
 export type ActionStatusCode = 'SUCCESS' | 'FAILED' | 'IN_PROGRESS'

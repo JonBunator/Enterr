@@ -126,16 +126,23 @@ class GetWebsite(GetRequestBaseModel):
     next_schedule: Optional[datetime] = None
     last_login_attempt: Optional[datetime] = None
     status: Optional[str] = None
+    expiration_date: Optional[datetime] = None
 
     @staticmethod
     def from_sql_model(
         website: Website,
         last_login_attempt: datetime = None,
         status=None,
+        last_successful_login_ended: datetime = None,
     ) -> "GetWebsite":
+        expiration_date = None
         if website.expiration_interval is None:
             expiration_interval_minutes = None
         else:
+            if last_successful_login_ended is not None:
+                expiration_date = to_utc_time(
+                    last_successful_login_ended + website.expiration_interval
+                )
             expiration_interval_parts = timedelta_to_parts(website.expiration_interval)
             expiration_interval_minutes = (
                 expiration_interval_parts.days * 24 * 60
@@ -162,6 +169,7 @@ class GetWebsite(GetRequestBaseModel):
             next_schedule=to_utc_time(website.next_schedule),
             last_login_attempt=to_utc_time(last_login_attempt),
             status=status.value if status else None,
+            expiration_date=expiration_date,
         )
 
 

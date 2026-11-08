@@ -29,12 +29,7 @@ export function useActivity(page: number, pageSize: number, searchTerm?: string,
   const data: ActivityData[] = websites.map((website, index) => {
     const loginHistory = loginHistoryQueries[index]?.data ?? []
 
-    const lastSuccessfulLogin = loginHistory.find(login => login.execution_status === ActivityStatusCode.SUCCESS)
-    let expirationDate: Date | undefined
-    if (lastSuccessfulLogin && lastSuccessfulLogin.execution_ended != null && website.expiration_interval_minutes != null) {
-      expirationDate = new Date(lastSuccessfulLogin.execution_ended)
-      expirationDate.setMinutes(expirationDate.getUTCMinutes() + website.expiration_interval_minutes)
-    }
+    const expirationDate = website.expiration_date != null ? new Date(website.expiration_date) : undefined
 
     const lastLoginAttempt = loginHistory[0] !== undefined ? new Date(loginHistory[0]?.execution_started) : undefined
     let status = (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode
