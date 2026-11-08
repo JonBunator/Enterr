@@ -20,6 +20,7 @@
   }
 
   .app-header-nav {
+    position: relative;
     align-self: stretch;
     display: flex;
     gap: 8px;
@@ -32,23 +33,29 @@
       text-transform: none;
       font-size: 1rem;
       color: var(--mui-palette-text-secondary);
-
-      &::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -1px;
-        height: 2px;
-        background-color: var(--mui-palette-primary-main);
-        transform: scaleX(0);
-      }
+      transition: color 200ms ease;
 
       &.active {
         color: var(--mui-palette-primary-main);
+      }
+    }
 
-        &::after {
-          transform: scaleX(1);
+    .app-header-indicator {
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      height: 2px;
+      background-color: var(--mui-palette-primary-main);
+      pointer-events: none;
+
+      &.animate {
+        transition:
+          transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+          width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 200ms ease;
+
+        @media (prefers-reduced-motion: reduce) {
+          transition: none;
         }
       }
     }
