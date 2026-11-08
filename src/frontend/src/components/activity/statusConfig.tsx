@@ -29,7 +29,7 @@ export function getStatusConfig(status: WebsiteStatusCode): StatusConfig {
       }
     case WebsiteStatusCode.NO_LOGIN:
       return {
-        label: 'No login',
+        label: 'No logins yet',
         description: 'No login has been attempted yet.',
         color: 'error',
         icon: <XMarkIcon />,
