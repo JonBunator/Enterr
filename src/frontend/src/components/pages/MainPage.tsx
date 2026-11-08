@@ -6,7 +6,6 @@ import Search from '../actionBar/Search.tsx'
 import Activity from '../activity/Activity.tsx'
 import StatusSummary from '../activity/StatusSummary.tsx'
 import Content from '../layout/Content.tsx'
-import AccountButton from '../settings/AccountButton.tsx'
 import ProtectedPage from './ProtectedPage.tsx'
 import './MainPage.scss'
 
@@ -16,8 +15,7 @@ export default function MainPage() {
 
   return (
     <ProtectedPage>
-      <AccountButton />
-      <Content>
+      <Content header>
         <div className="main-page">
           <section className="main-page-section">
             <Typography variant="h6" component="h2">
