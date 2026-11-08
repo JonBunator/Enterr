@@ -8,7 +8,6 @@ import './StatusIcon.scss'
 export enum ActivityStatusCode {
   IN_PROGRESS = 'IN_PROGRESS',
   FAILED = 'FAILED',
-  PAUSED = 'PAUSED',
   SUCCESS = 'SUCCESS',
 }
 
@@ -37,10 +36,6 @@ export default function StatusIcon(props: StatusIconProps) {
       case ActivityStatusCode.IN_PROGRESS:
         i = <CircularProgress size={14} />
         t = 'running'
-        break
-      case ActivityStatusCode.PAUSED:
-        i = <span>!</span>
-        t = 'paused'
         break
       default:
         i = null

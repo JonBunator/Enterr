@@ -123,7 +123,7 @@ def websites_with_statuses(make_website, make_action_history):
     make_action_history(failed, ActionStatusCode.SUCCESS, datetime(2024, 5, 1))
     make_action_history(failed, ActionStatusCode.FAILED, datetime(2024, 5, 2))
 
-    # A website without any login counts as failed
+    # A website without any login is filtered and counted as failed
     make_website(name="Never")
 
     running = make_website(name="Running")
@@ -150,6 +150,38 @@ def test_get_websites_filter_by_status(
 
     assert response.status_code == 200
     assert response.json()["total"] == len(expected)
+    assert [w["name"] for w in response.json()["items"]] == expected
+
+
+def test_get_websites_returns_effective_status(auth_client, websites_with_statuses):
+    response = auth_client.get("/api/websites")
+
+    statuses = {w["name"]: w["status"] for w in response.json()["items"]}
+    assert statuses == {
+        "Success": "SUCCESS",
+        "Failed": "FAILED",
+        "Never": "NO_LOGIN",
+        "Running": "IN_PROGRESS",
+        "Paused": "PAUSED",
+    }
+
+
+def test_get_websites_filter_by_no_login(auth_client, websites_with_statuses):
+    response = auth_client.get("/api/websites", params={"status": "NO_LOGIN"})
+
+    assert [w["name"] for w in response.json()["items"]] == ["Never"]
+
+
+@pytest.mark.parametrize("search", ["%", "_"])
+def test_get_websites_search_wildcards_match_literally(
+    auth_client, make_website, search
+):
+    make_website(name="my_site")
+    make_website(name="myXsite")
+
+    response = auth_client.get("/api/websites", params={"search": search})
+
+    expected = ["my_site"] if search == "_" else []
     assert [w["name"] for w in response.json()["items"]] == expected
 
 

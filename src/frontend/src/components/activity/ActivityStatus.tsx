@@ -1,9 +1,9 @@
-import type { ActivityStatusCode } from './StatusIcon.tsx'
+import type { WebsiteStatusCode } from '../../api/apiModels.ts'
 import { Chip, Tooltip } from '@mui/material'
 import { getStatusConfig } from './statusConfig.tsx'
 
 interface ActivityStatusProps {
-  status: ActivityStatusCode
+  status: WebsiteStatusCode
 }
 
 export default function ActivityStatus(props: ActivityStatusProps) {

@@ -1,13 +1,13 @@
 import type {
   ChangeWebsite,
 } from '../components/activity/model.ts'
-import type { ActivityStatusCode } from '../components/activity/StatusIcon.tsx'
 import type {
   ActionHistory,
   EditNotification,
   Notification,
   UserData,
   Website,
+  WebsiteStatusCode,
   WebsiteStatusCounts,
 } from './apiModels.ts'
 import apiClient from './apiClient.ts'
@@ -22,7 +22,7 @@ export async function getWebsites(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
-  status?: ActivityStatusCode,
+  status?: WebsiteStatusCode,
 ): Promise<PaginatedResponse<Website>> {
   let url = `/websites?page=${page}&size=${pageSize}`
   if (searchTerm !== undefined && searchTerm !== '') {

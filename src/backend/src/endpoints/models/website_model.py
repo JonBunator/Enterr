@@ -19,6 +19,7 @@ from utils.utils import timedelta_to_parts
 class WebsiteStatus(str, Enum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
+    NO_LOGIN = "NO_LOGIN"
     PAUSED = "PAUSED"
     IN_PROGRESS = "IN_PROGRESS"
 
@@ -183,7 +184,7 @@ class GetWebsite(GetRequestBaseModel):
             ),
             next_schedule=to_utc_time(website.next_schedule),
             last_login_attempt=to_utc_time(last_login_attempt),
-            status=status.value if status else None,
+            status=status,
             expiration_date=expiration_date,
         )
 

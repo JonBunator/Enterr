@@ -1,7 +1,7 @@
 import type { AxiosError } from 'axios'
 import type { ActivityData } from '../../components/activity/model.ts'
+import type { WebsiteStatusCode } from '../apiModels.ts'
 import { useQueries } from '@tanstack/react-query'
-import { ActivityStatusCode } from '../../components/activity/StatusIcon'
 import * as api from '../apiRequests'
 import { useWebsites } from './useWebsites'
 
@@ -10,9 +10,14 @@ export function useActivity(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
-  status?: ActivityStatusCode,
+  status?: WebsiteStatusCode,
 ) {
-  const { data: websitesData, isLoading: isLoadingWebsites } = useWebsites(
+  const {
+    data: websitesData,
+    isLoading: isLoadingWebsites,
+    isPlaceholderData,
+    isSuccess: isWebsitesSuccess,
+  } = useWebsites(
     page,
     pageSize,
     searchTerm,
@@ -39,14 +44,11 @@ export function useActivity(
     const expirationDate = website.expiration_date != null ? new Date(website.expiration_date) : undefined
 
     const lastLoginAttempt = loginHistory[0] !== undefined ? new Date(loginHistory[0]?.execution_started) : undefined
-    let status = (loginHistory[0]?.execution_status ?? ActivityStatusCode.FAILED) as ActivityStatusCode
-    status = website.paused ? ActivityStatusCode.PAUSED : status
-
     const nextLogin = website?.next_schedule !== null ? new Date(website?.next_schedule) : new Date(0)
 
     return {
       id: website.id,
-      status,
+      status: website.status,
       name: website.name,
       url: website.url,
       success_url: website.success_url,
@@ -60,6 +62,7 @@ export function useActivity(
   return {
     data,
     rowCount,
+    isRowCountFresh: isWebsitesSuccess && !isPlaceholderData,
     isLoading,
     error,
     isError: !!error,

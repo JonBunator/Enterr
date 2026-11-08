@@ -14,7 +14,7 @@
       }
     }
 
-    &:hover {
+    &:hover:not(:has(.Mui-disabled)) {
       border-color: rgb(var(--status-color-channel) / 0.4);
     }
 

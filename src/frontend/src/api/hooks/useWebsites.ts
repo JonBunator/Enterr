@@ -1,8 +1,7 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import type { ChangeWebsite } from '../../components/activity/model.ts'
-import type { ActivityStatusCode } from '../../components/activity/StatusIcon.tsx'
-import type { Website, WebsiteStatusCounts } from '../apiModels'
+import type { Website, WebsiteStatusCode, WebsiteStatusCounts } from '../apiModels'
 import type { PaginatedResponse } from '../apiRequests'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../apiRequests'
@@ -13,7 +12,7 @@ export function useWebsites(
   pageSize: number,
   searchTerm?: string,
   orderBy?: string,
-  status?: ActivityStatusCode,
+  status?: WebsiteStatusCode,
   options?: Omit<UseQueryOptions<PaginatedResponse<Website>, AxiosError>, 'queryKey' | 'queryFn' | 'placeholderData'>,
 ) {
   const queryKey = ['websites', 'all', `pageSize=${pageSize}`, `page=${page}`]

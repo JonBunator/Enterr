@@ -2,7 +2,7 @@ import type { ChipProps } from '@mui/material'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { CircularProgress } from '@mui/material'
-import { ActivityStatusCode } from './StatusIcon.tsx'
+import { WebsiteStatusCode } from '../../api/apiModels.ts'
 
 export interface StatusConfig {
   label: string
@@ -11,30 +11,37 @@ export interface StatusConfig {
   icon: ChipProps['icon']
 }
 
-export function getStatusConfig(status: ActivityStatusCode): StatusConfig {
+export function getStatusConfig(status: WebsiteStatusCode): StatusConfig {
   switch (status) {
-    case ActivityStatusCode.SUCCESS:
+    case WebsiteStatusCode.SUCCESS:
       return {
         label: 'Success',
         description: 'The last login attempt was successful.',
         color: 'success',
         icon: <CheckIcon />,
       }
-    case ActivityStatusCode.FAILED:
+    case WebsiteStatusCode.FAILED:
       return {
         label: 'Failed',
         description: 'The last login attempt failed. Check the login history for details.',
         color: 'error',
         icon: <XMarkIcon />,
       }
-    case ActivityStatusCode.IN_PROGRESS:
+    case WebsiteStatusCode.NO_LOGIN:
+      return {
+        label: 'No login',
+        description: 'No login has been attempted yet.',
+        color: 'error',
+        icon: <XMarkIcon />,
+      }
+    case WebsiteStatusCode.IN_PROGRESS:
       return {
         label: 'Running',
         description: 'A login is currently in progress.',
         color: 'info',
         icon: <CircularProgress size={16} color="inherit" />,
       }
-    case ActivityStatusCode.PAUSED:
+    case WebsiteStatusCode.PAUSED:
       return {
         label: 'Paused',
         description: 'Automatic login is paused. No logins will be scheduled until it is resumed.',

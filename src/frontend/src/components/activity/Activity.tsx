@@ -1,6 +1,6 @@
 import type { GridColDef, GridPaginationModel, GridSortModel } from '@mui/x-data-grid'
+import type { WebsiteStatusCode } from '../../api/apiModels.ts'
 import type { ActivityData } from './model.ts'
-import type { ActivityStatusCode } from './StatusIcon.tsx'
 import { Box, Card, CardContent, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { useCallback, useMemo, useState } from 'react'
@@ -16,7 +16,7 @@ import './Activity.scss'
 
 interface ActivityProps {
   searchTerm?: string
-  statusFilter?: ActivityStatusCode
+  statusFilter?: WebsiteStatusCode
 }
 
 const fieldMapping: Record<string, string> = {
@@ -55,6 +55,7 @@ export default function Activity(props: ActivityProps) {
   const {
     data: rows = [],
     rowCount,
+    isRowCountFresh,
     isLoading,
   } = useActivity(
     paginationModel.page + 1,
@@ -66,7 +67,7 @@ export default function Activity(props: ActivityProps) {
 
   // Rows can leave the filtered result on their own (e.g. a status change), so keep the page in range
   const lastPage = Math.max(0, Math.ceil(rowCount / paginationModel.pageSize) - 1)
-  if (!isLoading && paginationModel.page > lastPage) {
+  if (isRowCountFresh && paginationModel.page > lastPage) {
     setPaginationModel(model => ({ ...model, page: lastPage }))
   }
 

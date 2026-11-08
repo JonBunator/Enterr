@@ -1,4 +1,4 @@
-import type { ActivityStatusCode } from '../activity/StatusIcon.tsx'
+import type { WebsiteStatusCode } from '../../api/apiModels.ts'
 import { Typography } from '@mui/material'
 import { useState } from 'react'
 import AddWebsite from '../actionBar/addWebsite/AddWebsite.tsx'
@@ -12,7 +12,7 @@ import './MainPage.scss'
 
 export default function MainPage() {
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<ActivityStatusCode>()
+  const [statusFilter, setStatusFilter] = useState<WebsiteStatusCode>()
 
   return (
     <ProtectedPage>

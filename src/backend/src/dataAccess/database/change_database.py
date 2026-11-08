@@ -73,9 +73,10 @@ class DataBase:
 
     @staticmethod
     def _website_status(action_alias):
-        """Effective website status. Websites without any login count as failed."""
+        """Effective website status."""
         return case(
             (Website.paused == True, WebsiteStatus.PAUSED.value),
+            (action_alias.id == None, WebsiteStatus.NO_LOGIN.value),
             (
                 action_alias.execution_status == ActionStatusCode.IN_PROGRESS,
                 WebsiteStatus.IN_PROGRESS.value,
@@ -91,9 +92,9 @@ class DataBase:
     def _filter_search(query, search):
         if not search:
             return query
-        search_term = f"%{search}%"
         return query.where(
-            Website.name.ilike(search_term) | Website.url.ilike(search_term)
+            Website.name.icontains(search, autoescape=True)
+            | Website.url.icontains(search, autoescape=True)
         )
 
     @staticmethod
@@ -122,10 +123,13 @@ class DataBase:
         success_alias = aliased(ActionHistory)
 
         last_login_col = action_alias.execution_started.label("last_login_attempt")
-        status_col = action_alias.execution_status.label("status")
+
         last_success_ended_col = success_alias.execution_ended.label(
             "last_success_ended"
         )
+
+        status_expr = DataBase._website_status(action_alias)
+        status_col = status_expr.label("status")
 
         query = select(
             Website, last_login_col, status_col, last_success_ended_col
@@ -149,8 +153,14 @@ class DataBase:
 
         query = DataBase._filter_search(query, search)
 
-        status_expr = DataBase._website_status(action_alias)
-        if website_status:
+        if website_status == WebsiteStatus.FAILED:
+            # Websites without any login are shown as failed
+            query = query.where(
+                status_expr.in_(
+                    [WebsiteStatus.FAILED.value, WebsiteStatus.NO_LOGIN.value]
+                )
+            )
+        elif website_status:
             query = query.where(status_expr == website_status.value)
 
         if sorting:
@@ -158,6 +168,7 @@ class DataBase:
                 {
                     WebsiteStatus.IN_PROGRESS.value: 1,
                     WebsiteStatus.FAILED.value: 2,
+                    WebsiteStatus.NO_LOGIN.value: 2,
                     WebsiteStatus.PAUSED.value: 3,
                     WebsiteStatus.SUCCESS.value: 4,
                 },
@@ -204,9 +215,15 @@ class DataBase:
         query = DataBase._join_latest_action(query, action_alias)
         query = DataBase._filter_search(query, search).group_by(status_expr)
 
-        counts = {website_status.value.lower(): 0 for website_status in WebsiteStatus}
+        counts = {
+            website_status.value.lower(): 0
+            for website_status in WebsiteStatus
+            if website_status != WebsiteStatus.NO_LOGIN
+        }
         for website_status, count in session.execute(query).all():
-            counts[website_status.lower()] = count
+            if website_status == WebsiteStatus.NO_LOGIN.value:
+                website_status = WebsiteStatus.FAILED.value
+            counts[website_status.lower()] += count
         return counts
 
     @staticmethod

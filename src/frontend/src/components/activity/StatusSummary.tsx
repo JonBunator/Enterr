@@ -1,20 +1,20 @@
 import type { WebsiteStatusCounts } from '../../api/apiModels.ts'
 import { Card, CardActionArea, Skeleton, Typography } from '@mui/material'
+import { WebsiteStatusCode } from '../../api/apiModels.ts'
 import { useWebsiteStatusCounts } from '../../api/hooks'
 import { getStatusConfig } from './statusConfig.tsx'
-import { ActivityStatusCode } from './StatusIcon.tsx'
 import './StatusSummary.scss'
 
 const summaryStatuses = [
-  ActivityStatusCode.SUCCESS,
-  ActivityStatusCode.FAILED,
-  ActivityStatusCode.PAUSED,
+  WebsiteStatusCode.SUCCESS,
+  WebsiteStatusCode.FAILED,
+  WebsiteStatusCode.PAUSED,
 ]
 
 interface StatusSummaryProps {
   searchTerm?: string
-  selected?: ActivityStatusCode
-  onSelect: (status?: ActivityStatusCode) => void
+  selected?: WebsiteStatusCode
+  onSelect: (status?: WebsiteStatusCode) => void
 }
 
 export default function StatusSummary(props: StatusSummaryProps) {
@@ -26,6 +26,8 @@ export default function StatusSummary(props: StatusSummaryProps) {
       {summaryStatuses.map((status) => {
         const { label, color, icon } = getStatusConfig(status)
         const isSelected = selected === status
+        const count = counts?.[status.toLowerCase() as keyof WebsiteStatusCounts] ?? 0
+        const isDisabled = !isSelected && (isLoading || count === 0)
 
         return (
           <Card
@@ -35,6 +37,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
             <CardActionArea
               className="status-card-action"
               aria-pressed={isSelected}
+              disabled={isDisabled}
               onClick={() => onSelect(isSelected ? undefined : status)}
             >
               <div className="status-card-icon">{icon}</div>
@@ -43,7 +46,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
                   {label}
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {isLoading ? <Skeleton width={100} /> : (counts?.[status.toLowerCase() as keyof WebsiteStatusCounts] ?? 0)}
+                  {isLoading ? <Skeleton width={100} /> : count}
                 </Typography>
               </div>
             </CardActionArea>
