@@ -1,40 +1,37 @@
 import { ArrowTopRightOnSquareIcon, Cog6ToothIcon, HomeIcon } from '@heroicons/react/24/solid'
 import { Tab, Tabs } from '@mui/material'
-import { NavLink, useLocation } from 'react-router'
+import { matchPath, NavLink, useLocation } from 'react-router'
 import AccountButton from '../settings/AccountButton.tsx'
 import './Header.scss'
 
-const navPaths = ['/', '/settings']
-
-function isNavPathActive(path: string, pathname: string) {
-  return path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`)
-}
+const navItems = [
+  { path: '/', label: 'Home', icon: HomeIcon },
+  { path: '/settings', label: 'Settings', icon: Cog6ToothIcon },
+]
 
 export default function Header() {
   const location = useLocation()
-  const selectedTab = navPaths.find(path => isNavPathActive(path, location.pathname)) ?? false
+  const selectedTab = navItems.find(({ path }) =>
+    matchPath({ path, end: path === '/' }, location.pathname),
+  )?.path ?? false
 
   return (
     <header className="app-header">
       <div className="app-header-inner">
         <nav className="app-header-nav">
           <Tabs value={selectedTab}>
-            <Tab
-              component={NavLink}
-              to="/"
-              value="/"
-              label="Home"
-              icon={<HomeIcon className="icon" />}
-              iconPosition="start"
-            />
-            <Tab
-              component={NavLink}
-              to="/settings"
-              value="/settings"
-              label="Settings"
-              icon={<Cog6ToothIcon className="icon" />}
-              iconPosition="start"
-            />
+            {navItems.map(({ path, label, icon: Icon }) => (
+              <Tab
+                key={path}
+                component={NavLink}
+                to={path}
+                end={path === '/'}
+                value={path}
+                label={label}
+                icon={<Icon className="icon" />}
+                iconPosition="start"
+              />
+            ))}
             <Tab
               component="a"
               className="app-header-external-tab"

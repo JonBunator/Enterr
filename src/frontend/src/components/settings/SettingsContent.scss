@@ -9,10 +9,12 @@
       justify-content: flex-start;
       width: 200px;
       &.Mui-selected {
-        background: #242424;
+        background: var(--mui-palette-action-selected);
       }
-      &:hover {
-        background: #303030;
+      @media (hover: hover) {
+        &:hover {
+          background: var(--mui-palette-action-hover);
+        }
       }
     }
   }
