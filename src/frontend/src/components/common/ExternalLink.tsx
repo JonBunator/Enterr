@@ -24,7 +24,7 @@ export default function ExternalLink(props: ExternalLinkProps) {
   return (
     <Typography>
       {parts[0]}
-      <Link rel="noopener" target="_blank" href={href}>
+      <Link rel="noopener noreferrer" target="_blank" href={href}>
         {linkText}
         <ArrowTopRightOnSquareIcon className="icon-small" />
       </Link>

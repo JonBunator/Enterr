@@ -14,7 +14,7 @@ export default function MainPage() {
   return (
     <div className="main-page">
       <section className="main-page-section">
-        <Typography variant="h6" component="h2">
+        <Typography variant="h6">
           Overview
         </Typography>
         <StatusSummary
@@ -24,8 +24,8 @@ export default function MainPage() {
         />
       </section>
       <section className="main-page-section activity-section">
-        <Typography variant="h6" component="h2">
-          Activity
+        <Typography variant="h6">
+          Websites
         </Typography>
         <div className="main-page-header">
           <Search value={searchTerm} onChange={setSearchTerm} />

@@ -1,14 +1,18 @@
 import { ArrowTopRightOnSquareIcon, Cog6ToothIcon, HomeIcon } from '@heroicons/react/24/solid'
-import { Button, Tab, Tabs } from '@mui/material'
+import { Tab, Tabs } from '@mui/material'
 import { NavLink, useLocation } from 'react-router'
 import AccountButton from '../settings/AccountButton.tsx'
 import './Header.scss'
 
 const navPaths = ['/', '/settings']
 
+function isNavPathActive(path: string, pathname: string) {
+  return path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`)
+}
+
 export default function Header() {
   const location = useLocation()
-  const selectedTab = navPaths.includes(location.pathname) ? location.pathname : false
+  const selectedTab = navPaths.find(path => isNavPathActive(path, location.pathname)) ?? false
 
   return (
     <header className="app-header">
@@ -31,16 +35,17 @@ export default function Header() {
               icon={<Cog6ToothIcon className="icon" />}
               iconPosition="start"
             />
+            <Tab
+              component="a"
+              className="app-header-external-tab"
+              href="https://github.com/JonBunator/Enterr/wiki"
+              target="_blank"
+              rel="noopener noreferrer"
+              label="Docs"
+              icon={<ArrowTopRightOnSquareIcon className="icon" />}
+              iconPosition="end"
+            />
           </Tabs>
-          <Button
-            component="a"
-            href="https://github.com/JonBunator/Enterr/wiki"
-            target="_blank"
-            rel="noopener"
-            endIcon={<ArrowTopRightOnSquareIcon className="icon" />}
-          >
-            Docs
-          </Button>
         </nav>
         <div className="app-header-spacer" />
         <AccountButton />

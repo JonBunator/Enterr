@@ -8,22 +8,18 @@
 
   .app-header-inner {
     width: 100%;
+    max-width: var(--content-max-width);
     height: 56px;
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 0 16px;
-
-    @media (min-width: 1100px) {
-      width: 1100px;
-    }
   }
 
   .app-header-nav {
     position: relative;
     align-self: stretch;
     display: flex;
-    gap: 8px;
 
     .MuiTabs-root,
     .MuiTabs-scroller,
@@ -45,8 +41,7 @@
       }
     }
 
-    .MuiTab-root,
-    .MuiButton-root {
+    .MuiTab-root {
       min-width: 0;
       min-height: 0;
       height: 100%;
@@ -57,10 +52,7 @@
       line-height: 1.75;
       color: var(--mui-palette-text-secondary);
       transition: color 200ms ease;
-    }
 
-
-    .MuiTab-root {
       @media (hover: hover) {
         &:hover {
           background-color: var(--mui-palette-action-hover);
@@ -71,8 +63,12 @@
         color: var(--mui-palette-primary-main);
       }
 
-      > .MuiTab-icon {
+      &:not(.app-header-external-tab) > .MuiTab-icon {
         margin-left: -4px;
+      }
+
+      &.app-header-external-tab > .MuiTab-icon {
+        margin-right: -4px;
       }
     }
 

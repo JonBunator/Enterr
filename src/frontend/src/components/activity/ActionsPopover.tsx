@@ -176,7 +176,7 @@ export default function ActionsPopover(props: ActionsPopoverProps) {
         description={(
           <>
             <Typography>You manually visited the website </Typography>
-            <Link rel="noopener" href={websiteURL}>
+            <Link rel="noopener noreferrer" href={websiteURL}>
               {websiteURL}
               <ArrowTopRightOnSquareIcon className="icon-small" />
             </Link>

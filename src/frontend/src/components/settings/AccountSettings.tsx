@@ -19,7 +19,7 @@ export default function AccountSettings() {
         <Typography variant="h6">Password</Typography>
         <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
           The password can only be changed via the terminal. See
-          <Link rel="noopener" href="https://github.com/JonBunator/Enterr">
+          <Link rel="noopener noreferrer" href="https://github.com/JonBunator/Enterr">
             GitHub
             <ArrowTopRightOnSquareIcon className="icon-small" />
           </Link>

@@ -6,7 +6,9 @@ export default function SettingsPage() {
   return (
     <div className="main-page">
       <div className="main-page-header">
-        <Typography variant="h4">Settings</Typography>
+        <Typography variant="h5">
+          Settings
+        </Typography>
       </div>
       <SettingsContent />
     </div>
