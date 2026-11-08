@@ -66,7 +66,7 @@ export default function Activity(props: ActivityProps) {
         field: 'status',
         headerName: 'Status',
         flex: 1,
-        minWidth: 220,
+        minWidth: 120,
         sortable: true,
         renderCell: params => (
           <ActivityStatus

@@ -20,11 +20,13 @@
     }
   }
 
-  .activity-status {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
+  .activity-status-chip {
+    font-weight: 500;
 
+    .MuiChip-icon {
+      width: 18px;
+      height: 18px;
+    }
   }
 
   .website-name {
