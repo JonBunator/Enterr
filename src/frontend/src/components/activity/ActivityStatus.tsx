@@ -1,9 +1,8 @@
 import type { ChipProps } from '@mui/material'
+import { ClockIcon } from '@heroicons/react/24/outline'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { Chip, CircularProgress, Tooltip } from '@mui/material'
 import { ActivityStatusCode } from './StatusIcon.tsx'
-import { ClockIcon } from '@heroicons/react/24/outline'
-
 
 interface ActivityStatusProps {
   status: ActivityStatusCode
