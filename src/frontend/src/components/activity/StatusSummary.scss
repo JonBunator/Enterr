@@ -6,13 +6,21 @@
   .status-card {
     border-color: #515151;
 
+    @each $color in success, error, info, warning {
+      &.status-card-#{$color} {
+        --status-color: var(--mui-palette-#{$color}-main);
+        --status-color-channel: var(--mui-palette-#{$color}-mainChannel);
+        --status-color-contrast: var(--mui-palette-#{$color}-contrastText);
+      }
+    }
+
     &:hover {
-      border-color: var(--status-color-border);
+      border-color: rgb(var(--status-color-channel) / 0.4);
     }
 
     &.selected {
       border-color: var(--status-color);
-      background-image: linear-gradient(var(--status-color-tint), var(--status-color-tint));
+      background-color: rgb(var(--status-color-channel) / 0.08);
 
       .status-card-icon {
         background-color: var(--status-color);
@@ -46,7 +54,7 @@
     width: 48px;
     height: 48px;
     border-radius: 10px;
-    background-color: var(--status-color-soft);
+    background-color: rgb(var(--status-color-channel) / 0.15);
     color: var(--status-color);
 
     svg {

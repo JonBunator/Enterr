@@ -1,6 +1,5 @@
 import type { WebsiteStatusCounts } from '../../api/apiModels.ts'
 import { Card, CardActionArea, Skeleton, Typography } from '@mui/material'
-import { alpha } from '@mui/material/styles'
 import { useWebsiteStatusCounts } from '../../api/hooks'
 import { getStatusConfig } from './statusConfig.tsx'
 import { ActivityStatusCode } from './StatusIcon.tsx'
@@ -31,14 +30,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
         return (
           <Card
             key={status}
-            className={`status-card ${isSelected ? 'selected' : ''}`}
-            sx={theme => ({
-              '--status-color': theme.palette[color].main,
-              '--status-color-contrast': theme.palette[color].contrastText,
-              '--status-color-soft': alpha(theme.palette[color].main, 0.15),
-              '--status-color-tint': alpha(theme.palette[color].main, 0.08),
-              '--status-color-border': alpha(theme.palette[color].main, 0.4),
-            })}
+            className={`status-card status-card-${color} ${isSelected ? 'selected' : ''}`}
           >
             <CardActionArea
               className="status-card-action"
