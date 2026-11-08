@@ -203,8 +203,9 @@ class DataBase:
         query = DataBase._join_latest_action(query, action_alias)
         query = DataBase._filter_search(query, search).group_by(status_expr)
 
-        counts = {website_status.value: 0 for website_status in WebsiteStatus}
-        counts.update(dict(session.execute(query).all()))
+        counts = {website_status.value.lower(): 0 for website_status in WebsiteStatus}
+        for website_status, count in session.execute(query).all():
+            counts[website_status.lower()] = count
         return counts
 
     @staticmethod

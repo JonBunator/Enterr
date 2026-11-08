@@ -1,3 +1,4 @@
+import type { WebsiteStatusCounts } from '../../api/apiModels.ts'
 import { Card, CardActionArea, Skeleton, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useWebsiteStatusCounts } from '../../api/hooks'
@@ -50,7 +51,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
                   {label}
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {isLoading ? <Skeleton width={100} /> : (counts?.[status] ?? 0)}
+                  {isLoading ? <Skeleton width={100} /> : (counts?.[status.toLowerCase() as keyof WebsiteStatusCounts] ?? 0)}
                 </Typography>
               </div>
             </CardActionArea>

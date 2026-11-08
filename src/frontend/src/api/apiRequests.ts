@@ -8,6 +8,7 @@ import type {
   Notification,
   UserData,
   Website,
+  WebsiteStatusCounts,
 } from './apiModels.ts'
 import apiClient from './apiClient.ts'
 
@@ -42,13 +43,13 @@ export async function getWebsites(
 
 export async function getWebsiteStatusCounts(
   searchTerm?: string,
-): Promise<Record<ActivityStatusCode, number>> {
+): Promise<WebsiteStatusCounts> {
   let url = '/websites/status-counts'
   if (searchTerm !== undefined && searchTerm !== '') {
     url += `?search=${encodeURIComponent(searchTerm)}`
   }
   const data = await apiClient.get(url)
-  return data.data as Record<ActivityStatusCode, number>
+  return data.data as WebsiteStatusCounts
 }
 
 export async function getWebsite(websiteId: number): Promise<Website> {

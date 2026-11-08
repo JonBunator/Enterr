@@ -1,3 +1,10 @@
+export interface WebsiteStatusCounts {
+  success: number
+  failed: number
+  paused: number
+  in_progress: number
+}
+
 export interface ActionInterval {
   id: number
   date_minutes_start: number

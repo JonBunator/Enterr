@@ -24,10 +24,10 @@ class WebsiteStatus(str, Enum):
 
 
 class GetWebsiteStatusCounts(BaseModel):
-    SUCCESS: int
-    FAILED: int
-    PAUSED: int
-    IN_PROGRESS: int
+    success: int
+    failed: int
+    paused: int
+    in_progress: int
 
 
 class DateTime(BaseModel):

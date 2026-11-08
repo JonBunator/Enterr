@@ -167,10 +167,10 @@ def test_get_website_status_counts(auth_client, websites_with_statuses):
 
     assert response.status_code == 200
     assert response.json() == {
-        "SUCCESS": 1,
-        "FAILED": 2,
-        "PAUSED": 1,
-        "IN_PROGRESS": 1,
+        "success": 1,
+        "failed": 2,
+        "paused": 1,
+        "in_progress": 1,
     }
 
 
@@ -178,10 +178,10 @@ def test_get_website_status_counts_search(auth_client, websites_with_statuses):
     response = auth_client.get("/api/websites/status-counts", params={"search": "fail"})
 
     assert response.json() == {
-        "SUCCESS": 0,
-        "FAILED": 1,
-        "PAUSED": 0,
-        "IN_PROGRESS": 0,
+        "success": 0,
+        "failed": 1,
+        "paused": 0,
+        "in_progress": 0,
     }
 
 
@@ -193,10 +193,10 @@ def test_get_website_status_counts_hides_other_users_websites(
     response = auth_client.get("/api/websites/status-counts")
 
     assert response.json() == {
-        "SUCCESS": 0,
-        "FAILED": 0,
-        "PAUSED": 0,
-        "IN_PROGRESS": 0,
+        "success": 0,
+        "failed": 0,
+        "paused": 0,
+        "in_progress": 0,
     }
 
 
