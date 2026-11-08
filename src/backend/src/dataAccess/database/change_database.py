@@ -62,6 +62,16 @@ class DataBase:
             .subquery()
         )
 
+        last_success_subquery = (
+            select(
+                ActionHistory.website,
+                func.max(ActionHistory.execution_ended).label("max_execution_ended"),
+            )
+            .where(ActionHistory.execution_status == ActionStatusCode.SUCCESS)
+            .group_by(ActionHistory.website)
+            .subquery()
+        )
+
         action_alias = aliased(ActionHistory)
 
         last_login_col = action_alias.execution_started.label("last_login_attempt")
@@ -82,6 +92,10 @@ class DataBase:
                     == latest_action_subquery.c.max_execution_started,
                 ),
             )
+            .outerjoin(
+                last_success_subquery,
+                Website.id == last_success_subquery.c.website,
+            )
             .options(joinedload(Website.action_interval))
         )
 
@@ -99,12 +113,21 @@ class DataBase:
                 (action_alias.execution_status == ActionStatusCode.SUCCESS, 4),
                 else_=5,
             )
+            # Expiration = end of last successful login + expiration interval.
+            # SQLite stores intervals as an offset from the epoch, so convert both to days.
+            expiration_sort_col = func.julianday(
+                last_success_subquery.c.max_execution_ended
+            ) + (
+                func.julianday(Website.expiration_interval)
+                - func.julianday("1970-01-01")
+            )
             query = apply_sorting(
                 query,
                 sorting,
                 additional={
                     "last_login_attempt": last_login_col,
                     "status": status_sort_col,
+                    "expiration": expiration_sort_col,
                 },
             )
 

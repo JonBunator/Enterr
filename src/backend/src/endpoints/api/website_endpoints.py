@@ -20,7 +20,9 @@ def register_website_endpoints(app: FastAPI, data_access: DataAccess):
     def get_websites(
         search: Optional[str] = Query(None),
         sorting: SortingValues = Depends(
-            create_sorting("name", "next_schedule", "last_login_attempt", "status")
+            create_sorting(
+                "name", "next_schedule", "last_login_attempt", "status", "expiration"
+            )
         ),
         session: Session = Depends(get_db),
         current_user=Depends(DataAccess.get_current_user),

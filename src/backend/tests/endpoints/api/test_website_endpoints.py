@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 
-from dataAccess.database.database import Website
+from dataAccess.database.database import ActionStatusCode, Website
 
 
 # ---------------------------- GET /api/websites ----------------------------
@@ -36,6 +36,45 @@ def test_get_websites_search(auth_client, make_website):
     response = auth_client.get("/api/websites", params={"search": "other"})
 
     assert [w["name"] for w in response.json()["items"]] == ["Other"]
+
+
+def test_get_websites_sort_by_name(auth_client, make_website):
+    make_website(name="Bravo")
+    make_website(name="Alpha")
+
+    response = auth_client.get("/api/websites", params={"sort": "+name"})
+
+    assert [w["name"] for w in response.json()["items"]] == ["Alpha", "Bravo"]
+
+
+@pytest.mark.parametrize(
+    "sort, expected",
+    [
+        ("+expiration", ["Unknown", "Soon", "Late"]),
+        ("-expiration", ["Late", "Soon", "Unknown"]),
+    ],
+)
+def test_get_websites_sort_by_expiration(
+    auth_client, make_website, make_action_history, sort, expected
+):
+    # Late: older login but much longer interval -> expires after Soon
+    late = make_website(name="Late", expiration_interval=timedelta(days=30))
+    soon = make_website(name="Soon", expiration_interval=timedelta(days=1))
+    make_website(name="Unknown")
+    make_action_history(
+        late, ActionStatusCode.SUCCESS, datetime(2024, 5, 1), datetime(2024, 5, 1, 0, 1)
+    )
+    make_action_history(
+        soon, ActionStatusCode.SUCCESS, datetime(2024, 5, 10), datetime(2024, 5, 10, 0, 1)
+    )
+    # A newer failed login must not count as the last successful one
+    make_action_history(
+        soon, ActionStatusCode.FAILED, datetime(2024, 6, 10), datetime(2024, 6, 10, 0, 1)
+    )
+
+    response = auth_client.get("/api/websites", params={"sort": sort})
+
+    assert [w["name"] for w in response.json()["items"]] == expected
 
 
 # ---------------------------- GET /api/websites/{id} ----------------------------

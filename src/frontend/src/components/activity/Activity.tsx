@@ -19,7 +19,8 @@ interface ActivityProps {
 
 const fieldMapping: Record<string, string> = {
   status: 'status',
-  name: 'name',
+  website: 'name',
+  expiration: 'expiration',
   nextLogin: 'next_schedule',
   lastLoginAttempt: 'last_login_attempt',
 }
@@ -92,7 +93,7 @@ export default function Activity(props: ActivityProps) {
         headerName: 'Expiration',
         flex: 1,
         minWidth: 100,
-        sortable: false,
+        sortable: true,
         renderCell: params => (
           <ExpirationDate expirationDate={params.row.expirationDate} />
         ),
