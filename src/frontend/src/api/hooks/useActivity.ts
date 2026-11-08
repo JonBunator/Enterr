@@ -35,7 +35,7 @@ export function useActivity(
     })),
   })
 
-  const isLoading = isLoadingWebsites || loginHistoryQueries.some(q => q.isLoading)
+  const isLoading = isLoadingWebsites || isPlaceholderData || loginHistoryQueries.some(q => q.isLoading)
   const error = loginHistoryQueries.find(q => q.error)?.error as AxiosError | undefined
 
   const data: ActivityData[] = websites.map((website, index) => {
