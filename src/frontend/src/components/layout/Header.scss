@@ -25,38 +25,54 @@
     display: flex;
     gap: 8px;
 
+    .MuiTabs-root,
+    .MuiTabs-scroller,
+    .MuiTabs-list {
+      height: 100%;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .MuiTabs-list {
+      gap: 8px;
+    }
+
+    .MuiTabs-indicator {
+      bottom: -1px;
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    .MuiTab-root,
     .MuiButton-root {
-      position: relative;
+      min-width: 0;
+      min-height: 0;
       height: 100%;
       padding: 0 12px;
       border-radius: 0;
       text-transform: none;
       font-size: 1rem;
+      line-height: 1.75;
       color: var(--mui-palette-text-secondary);
       transition: color 200ms ease;
-
-      &.active {
-        color: var(--mui-palette-primary-main);
-      }
     }
 
-    .app-header-indicator {
-      position: absolute;
-      left: 0;
-      bottom: -1px;
-      height: 2px;
-      background-color: var(--mui-palette-primary-main);
-      pointer-events: none;
 
-      &.animate {
-        transition:
-          transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
-          width 300ms cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 200ms ease;
-
-        @media (prefers-reduced-motion: reduce) {
-          transition: none;
+    .MuiTab-root {
+      @media (hover: hover) {
+        &:hover {
+          background-color: var(--mui-palette-action-hover);
         }
+      }
+
+      &.Mui-selected {
+        color: var(--mui-palette-primary-main);
+      }
+
+      > .MuiTab-icon {
+        margin-left: -4px;
       }
     }
 

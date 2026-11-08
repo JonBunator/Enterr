@@ -37,22 +37,6 @@
   gap: 16px;
 }
 
-.MuiTabs-root {
-  .MuiTab-root {
-    text-transform: none;
-    min-height: 32px;
-    display: flex;
-    justify-content: flex-start;
-    width: 200px;
-    &.Mui-selected {
-      background: #242424;
-    }
-    &:hover {
-      background: #303030;
-    }
-  }
-}
-
 .spacer {
   flex: 1;
 }
