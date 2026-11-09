@@ -1,6 +1,23 @@
 .settings-content {
   height: 100%;
   display: flex;
+  .MuiTabs-root {
+    .MuiTab-root {
+      text-transform: none;
+      min-height: 32px;
+      display: flex;
+      justify-content: flex-start;
+      width: 200px;
+      &.Mui-selected {
+        background: var(--mui-palette-action-selected);
+      }
+      @media (hover: hover) {
+        &:hover {
+          background: var(--mui-palette-action-hover);
+        }
+      }
+    }
+  }
   .settings-content-container {
     padding: 24px 32px;
     width: 100%;

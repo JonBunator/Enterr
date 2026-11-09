@@ -1,24 +1,14 @@
 .main-page {
   width: 100%;
+  max-width: var(--content-max-width);
   height: 100%;
+  max-height: 836px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 24px;
 
-  padding: 64px 16px 16px;
-
-  @media (min-height: 836px) {
-    height: 836px;
-  }
-
-  @media (min-width: 1134px) {
-    width: 1134px;
-  }
-
-  @media (min-width: 1300px) {
-    padding-top: 16px;
-  }
+  padding: 16px;
 
   .main-page-section {
     display: flex;

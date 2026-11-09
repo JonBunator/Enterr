@@ -2,9 +2,11 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
+import Content from './components/layout/Content.tsx'
 import LoginPage from './components/pages/LoginPage.tsx'
 import MainPage from './components/pages/MainPage.tsx'
+import ProtectedPage from './components/pages/ProtectedPage.tsx'
 import SettingsPage from './components/pages/SettingsPage.tsx'
 import ReactQueryProvider from './components/provider/ReactQueryProvider.tsx'
 import SnackbarProvider from './components/provider/SnackbarProvider.tsx'
@@ -71,8 +73,18 @@ export default function App() {
               <BrowserRouter>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/" element={<MainPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route
+                    element={(
+                      <ProtectedPage>
+                        <Content header>
+                          <Outlet />
+                        </Content>
+                      </ProtectedPage>
+                    )}
+                  >
+                    <Route path="/" element={<MainPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Route>
                 </Routes>
               </BrowserRouter>
             </ReactQueryProvider>

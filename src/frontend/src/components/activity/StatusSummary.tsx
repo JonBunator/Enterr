@@ -49,6 +49,16 @@ export default function StatusSummary(props: StatusSummaryProps) {
                   {isLoading ? <Skeleton width={100} /> : count}
                 </Typography>
               </div>
+              {isSelected && (
+                <Typography
+                  className="status-card-selected"
+                  aria-hidden
+                  variant="caption"
+                  sx={{ color: 'text.secondary' }}
+                >
+                  selected
+                </Typography>
+              )}
             </CardActionArea>
           </Card>
         )

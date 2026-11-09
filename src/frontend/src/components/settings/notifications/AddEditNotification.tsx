@@ -201,7 +201,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
           <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
             Enterr uses
             {' '}
-            <Link rel="noopener" href="https://github.com/caronc/apprise" target="_blank">
+            <Link rel="noopener noreferrer" href="https://github.com/caronc/apprise" target="_blank">
               Apprise
               {' '}
               <ArrowTopRightOnSquareIcon className="icon-small" />
@@ -258,7 +258,7 @@ export default function AddEditNotification(props: AddEditNotificationProps) {
             helperText={(
               <>
                 Body is used as the content of the notification. It can contain variables (See
-                <Link rel="noopener" href="https://github.com/JonBunator/Enterr/wiki" target="_blank">
+                <Link rel="noopener noreferrer" href="https://github.com/JonBunator/Enterr/wiki" target="_blank">
                   Docs
                   <ArrowTopRightOnSquareIcon className="icon-small" />
                 </Link>

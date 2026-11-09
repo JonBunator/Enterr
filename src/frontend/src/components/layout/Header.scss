@@ -1,0 +1,83 @@
+.app-header {
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  background-color: var(--mui-palette-background-default);
+  border-bottom: 1px solid var(--mui-palette-divider);
+
+  .app-header-inner {
+    width: 100%;
+    max-width: var(--content-max-width);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .app-header-nav {
+    position: relative;
+    align-self: stretch;
+    display: flex;
+
+    .MuiTabs-root,
+    .MuiTabs-scroller,
+    .MuiTabs-list {
+      height: 100%;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .MuiTabs-list {
+      gap: 8px;
+    }
+
+    .MuiTabs-indicator {
+      bottom: -1px;
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    .MuiTab-root {
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      padding: 0 12px;
+      border-radius: 0;
+      text-transform: none;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--mui-palette-text-secondary);
+      transition: color 200ms ease;
+
+      @media (hover: hover) {
+        &:hover {
+          background-color: var(--mui-palette-action-hover);
+        }
+      }
+
+      &.Mui-selected {
+        color: var(--mui-palette-primary-main);
+      }
+
+      &:not(.app-header-external-tab) > .MuiTab-icon {
+        margin-left: -4px;
+      }
+
+      &.app-header-external-tab > .MuiTab-icon {
+        margin-right: -4px;
+      }
+    }
+
+    .icon {
+      width: 20px;
+    }
+  }
+
+  .app-header-spacer {
+    flex: 1 1 auto;
+  }
+}

@@ -1,4 +1,4 @@
-import { AdjustmentsHorizontalIcon, ArrowRightEndOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/solid'
+import { ArrowRightEndOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { Chip, ListItemIcon, ListItemText, MenuItem, MenuList, Popover } from '@mui/material'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -19,10 +19,6 @@ export default function AccountButton() {
 
   const handleClose = () => {
     setAnchorEl(null)
-  }
-
-  async function openSettings() {
-    await navigate('/settings')
   }
 
   async function logout() {
@@ -73,12 +69,6 @@ export default function AccountButton() {
         style={{ marginTop: 8 }}
       >
         <MenuList>
-          <MenuItem onClick={() => void openSettings()}>
-            <ListItemIcon>
-              <AdjustmentsHorizontalIcon className="icon" />
-            </ListItemIcon>
-            <ListItemText primary="Settings" />
-          </MenuItem>
           <MenuItem onClick={() => void logout()}>
             <ListItemIcon>
               <ArrowRightEndOnRectangleIcon className="icon" />
