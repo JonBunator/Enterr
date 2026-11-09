@@ -8,9 +8,6 @@
 
 Some websites delete your account after a period of inactivity. Enterr helps manage your logins by automatically logging into your accounts, ensuring they remain active.
 
-> [!WARNING]
-> This tool is still at an early stage of development. Expect breaking changes.
-
 > [!CAUTION]
 > Disclaimer: **Use of this tool may violate the Terms of Service (TOS) of the websites it interacts with.** Users are solely responsible for any consequences. The developers are not liable for misuse or damages.
 
