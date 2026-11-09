@@ -2,7 +2,7 @@
 FROM node:24-slim AS frontend
 WORKDIR /app/frontend
 COPY frontend/ .
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 # ------------ COMBINE BACKEND AND FRONTEND ------------

@@ -1,6 +1,10 @@
 {
+  "extends": ["schedule:weekly"],
+  "minimumReleaseAge": "3 days",
   "packageRules": [
     {
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
       "automerge": true,
       "automergeType": "branch",
       "matchCurrentVersion": "!/^0/",
