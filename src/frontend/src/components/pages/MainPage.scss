@@ -2,16 +2,13 @@
   width: 100%;
   max-width: var(--content-max-width);
   height: 100%;
+  max-height: 836px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 24px;
 
   padding: 16px;
-
-  @media (min-height: 892px) {
-    height: 836px;
-  }
 
   .main-page-section {
     display: flex;
