@@ -54,7 +54,7 @@ export default function StatusSummary(props: StatusSummaryProps) {
                   className="status-card-selected"
                   aria-hidden
                   variant="caption"
-                  sx={{ color: 'text.secondary', fontStyle: 'italic' }}
+                  sx={{ color: 'text.secondary' }}
                 >
                   selected
                 </Typography>
