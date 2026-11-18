@@ -11,5 +11,16 @@
     .screenshot {
       width: 100%;
     }
+
+    .live-feed-unavailable,
+    .image-dialog-message {
+      padding: 8px;
+    }
+
+    .image-dialog-loading {
+      display: flex;
+      justify-content: center;
+      padding: 32px;
+    }
   }
 }
