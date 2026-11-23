@@ -32,6 +32,16 @@ class DataAccessInternal:
     def get_website_all_users(website_id: int) -> Website:
         return DataBase.get_website_all_users(website_id)
 
+    def _action_history_changed(
+        self, action_history_id: int, website_id: int, user_id: int
+    ):
+        # Only the owner of the website is notified
+        self.webhook_endpoints.action_history_changed(
+            action_history_id=action_history_id,
+            website_id=website_id,
+            user_id=user_id,
+        )
+
     def unexpected_execution_failure(
         self, website_id: int, execution_started: datetime
     ):
@@ -39,25 +49,25 @@ class DataAccessInternal:
             website_id=website_id, execution_started=execution_started
         )
 
+        user_id = DataBase.get_website_owner_id(website_id)
+        if user_id is None:
+            return
         for action_history_id in ids:
-            self.webhook_endpoints.action_history_changed(
-                action_history_id=action_history_id,
-                website_id=website_id,
-            )
+            self._action_history_changed(action_history_id, website_id, user_id)
 
-    def add_action_history(self, website_id: int, action_history: ActionHistory):
+    def add_action_history(
+        self, website_id: int, user_id: int, action_history: ActionHistory
+    ):
         created_action_history = DataBase.add_action_history(website_id, action_history)
 
-        self.webhook_endpoints.action_history_changed(
-            action_history_id=created_action_history.id,
-            website_id=website_id,
-        )
+        self._action_history_changed(created_action_history.id, website_id, user_id)
 
         return created_action_history.id
 
     def action_history_finish_execution(
         self,
         action_history_id: int,
+        user_id: int,
         execution_status: ActionStatusCode,
         failed_details: ActionFailedDetails,
         custom_failed_details_message: str = None,
@@ -72,10 +82,7 @@ class DataAccessInternal:
         )
 
         if website_id is not None:
-            self.webhook_endpoints.action_history_changed(
-                action_history_id=action_history_id,
-                website_id=website_id,
-            )
+            self._action_history_changed(action_history_id, website_id, user_id)
 
     @staticmethod
     def set_next_schedule(website_id: int):

@@ -1,4 +1,5 @@
 export * from './useActivity'
 export * from './useNotifications'
+export * from './useScreenshot'
 export * from './useUser'
 export * from './useWebsites'

@@ -6,10 +6,15 @@
   }
 
   .screenshot {
+    display: block;
     width: 350px;
     max-height: 197px;
     object-fit: cover;
     object-position: top;
+  }
+
+  .live-feed-unavailable {
+    padding: 8px;
   }
 
   .login-history-details-header {
@@ -18,9 +23,6 @@
     align-items: center;
     border-radius: 0;
     padding: 8px;
-    margin-top: -6px;
-    margin-left: -1px;
-    margin-right: -1px;
     .status-icon-container {
       width: 1rem;
       height: 1rem;
